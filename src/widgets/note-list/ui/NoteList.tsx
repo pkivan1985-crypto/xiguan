@@ -100,7 +100,7 @@ function NoteList(props: NoteListProps) {
 	const sortedNotes = useMemo(() => (
 		// Reverses pre-sorted ascending array to achieve descending order
 		sortOrder === 'desc'
-			? taggedNotes.toReversed()
+			? [...taggedNotes].reverse()
 			: taggedNotes
 	), [sortOrder, taggedNotes]);
 

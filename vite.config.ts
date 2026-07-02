@@ -49,6 +49,10 @@ export default defineConfig({
 		host: true
 	},
 
+	build: {
+		target: 'es2022'
+	},
+
 	plugins: [
 		react(),
 		svgr(),

@@ -31,7 +31,8 @@ function toggleYesterdayStatus(params: Params): Habit[] {
 			// Remove yesterday entry
 			return {
 				...habit,
-				completedDays: habit.completedDays.toSpliced(targetIndex, 1)
+				// completedDays: habit.completedDays.toSpliced(targetIndex, 1)
+				completedDays: habit.completedDays.filter((_, i) => i !== targetIndex)
 			};
 		}
 
@@ -46,7 +47,12 @@ function toggleYesterdayStatus(params: Params): Habit[] {
 
 		return {
 			...habit,
-			completedDays: habit.completedDays.toSpliced(insertIndex, 0, completedYday)
+			// completedDays: habit.completedDays.toSpliced(insertIndex, 0, completedYday)
+			completedDays: [
+				...habit.completedDays.slice(0, insertIndex),
+				completedYday,
+				...habit.completedDays.slice(insertIndex)
+			]
 		};
 	});
 }
