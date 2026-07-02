@@ -65,7 +65,7 @@
 	transform: unset;
 }
 
-@media screen and (width >= 576px) {
+@media screen and (min-width: 576px) {
 	.drawer {
 		left: calc(50% - 222px);
 		width: 444px;

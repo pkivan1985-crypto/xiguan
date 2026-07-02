@@ -12,7 +12,7 @@
 	gap: 10px;
 }
 
-@media screen and (width >= 576px) {
+@media screen and (min-width: 576px) {
 	.habitList {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);

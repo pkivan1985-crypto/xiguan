@@ -30,7 +30,7 @@
 	height: 22px;
 }
 
-@media screen and (width >= 576px) {
+@media screen and (min-width: 576px) {
 	.toolbar {
 		bottom: 16px;
 		width: var(--app-width);
