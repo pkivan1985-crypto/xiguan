@@ -16,18 +16,27 @@
 }
 
 .toolbar button {
-	width: var(--toolbar-height);
 	height: var(--toolbar-height);
 	pointer-events: auto;
 }
 
+.cancelSelection {
+	width: auto;
+	margin-right: auto;
+}
+
 .scrollToTopButton {
-	background-color: var(--bg-color-secondary);
+	/* background-color: var(--bg-color-secondary); */
 }
 
 .activateNoteFormButton svg {
 	width: 22px;
 	height: 22px;
+}
+
+.buttonSquare {
+	width: var(--toolbar-height);
+	height: var(--toolbar-height);
 }
 
 @media screen and (min-width: 576px) {

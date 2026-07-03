@@ -6,7 +6,7 @@ interface IconProps {
 	[key: string]: unknown;
 }
 
-export type ButtonVariant = 'secondary' | 'text' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'text' | 'danger';
 export type ButtonIndicator = 'arrow' | 'external' | 'checkmark' | 'none';
 
 export interface ButtonProps extends HTMLMotionProps<'button'> {
