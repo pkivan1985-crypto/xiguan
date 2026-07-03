@@ -1,9 +1,23 @@
 :root {
 	--app-inline-padding: 16px;
+	--grad-dir: to bottom;
 }
 
 .App {
 	padding: 0 var(--app-inline-padding);
+}
+
+.header-wrapper,
+.stuck-to-the-bottom {
+	background-image: linear-gradient(
+		var(--grad-dir),
+		var(--bg),
+		color-mix(in srgb, var(--bg) 94%, transparent) 10%,
+		color-mix(in srgb, var(--bg) 90%, transparent) 30%,
+		color-mix(in srgb, var(--bg) 65%, transparent) 70%,
+		color-mix(in srgb, var(--bg) 20%, transparent) 90%,
+		transparent 100%
+	);
 }
 
 .header-wrapper {
@@ -14,15 +28,6 @@
 	z-index: 10;
 	height: var(--header-height);
 	margin: 0 auto;
-	background-image: linear-gradient(
-  		to bottom,
-		var(--bg),
-  		color-mix(in srgb, var(--bg) 94%, transparent) 10%,
-  		color-mix(in srgb, var(--bg) 90%, transparent) 30%,
-  		color-mix(in srgb, var(--bg) 65%, transparent) 70%,
-  		color-mix(in srgb, var(--bg) 20%, transparent) 90%,
-  		transparent 100%
-	);
 }
 
 .bg-surface-bordered {
@@ -30,6 +35,15 @@
 	border: 1px solid var(--bg-color-secondary);
 	border-radius: var(--border-radius-primary);
 	box-shadow: 0 0 12px color-mix(in srgb, var(--bg) 50%, transparent);
+}
+
+.stuck-to-the-bottom {
+	position: fixed;
+	bottom: 0;
+	padding-top: 16px;
+	padding-bottom: calc(16px + env(safe-area-max-inset-bottom, 0px));
+
+	--grad-dir: to top;
 }
 
 .toast {
