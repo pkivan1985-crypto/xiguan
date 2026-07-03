@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { useLongPress } from 'use-long-press';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheck } from 'react-icons/fa';
 import NoteText from './note-text/NoteText';
 import { useNotesStore } from '../model/store';
 import type { Note } from '../model/types';
@@ -94,7 +94,7 @@ function NoteCard(props: NoteCardProps) {
 			{/* Render checkmark if note is selected */}
 			{isSelected && (
 				<div className={styles.selectBadge}>
-					<FaCheckCircle />
+					<FaCheck />
 				</div>
 			)}
 		</div>

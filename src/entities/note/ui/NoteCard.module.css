@@ -37,10 +37,19 @@
 
 .selectBadge {
 	position: absolute;
-	top: 8px;
-	right: 8px;
+	top: 10px;
+	right: 10px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--accent-color);
+	padding: 6px;
+	color: var(--color-primary);
+	background-color: var(--accent-color);
+	border-radius: 50%;
+	box-shadow: 0 0 4px color-mix(in srgb, var(--bg) 50%, transparent);
+}
+
+.selectBadge svg {
+	width: 12px;
+	height: 12px;
 }
