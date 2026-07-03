@@ -1,5 +1,6 @@
 {
 	"achievements": {
+		"desc": "追踪里程碑与进度",
 		"groups": {
 			"onboarding": "新手入门"
 		},

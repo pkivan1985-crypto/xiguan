@@ -5,7 +5,7 @@
  * If a route requires navigation state, define it in `ExplicitRouteStates` (.types).
  */
 export const ROUTES = {
-	ACHIEVEMENTS: 'achievements',
+	ACHIEVEMENTS: 'menu/achievements',
 	APPEARANCE: 'menu/appearance',
 	ARCHIVE: 'menu/archive',
 	DATA_MANAGEMENT: 'menu/data-management',

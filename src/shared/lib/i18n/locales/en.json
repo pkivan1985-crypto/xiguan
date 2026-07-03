@@ -1,5 +1,6 @@
 {
 	"achievements": {
+		"desc": "Track milestones and progress",
 		"groups": {
 			"onboarding": "Getting Started"
 		},

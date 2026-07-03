@@ -1,5 +1,6 @@
 {
 	"achievements": {
+		"desc": "Отслеживание целей и прогресса",
 		"groups": {
 			"onboarding": "Первые шаги"
 		},

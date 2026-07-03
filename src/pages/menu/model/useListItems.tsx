@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { HiArchiveBox } from 'react-icons/hi2';
-import { FaBug, FaGithub, FaPaintBrush } from 'react-icons/fa';
+import { FaAward, FaBug, FaGithub, FaPaintBrush } from 'react-icons/fa';
 import { BsFillDatabaseFill } from 'react-icons/bs';
 import { getNavigationTarget } from '@shared/lib/router';
 import type { ListItemProps } from '@shared/ui';
@@ -9,6 +9,16 @@ function useListItems() {
 	const { t } = useTranslation();
 
 	const habitItems: ListItemProps[] = [
+		{
+			icon: FaAward,
+			iconProps: { color: '#f0d05d' },
+			title: t('achievements.title'),
+			description: t('achievements.desc'),
+			...getNavigationTarget('ACHIEVEMENTS', {
+				modalTitle: t('achievements.title')
+			}),
+			indicator: { type: 'arrow' }
+		},
 		{
 			icon: HiArchiveBox,
 			iconProps: { color: '#7b68ee' },
