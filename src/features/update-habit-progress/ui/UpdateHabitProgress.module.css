@@ -5,11 +5,11 @@
 }
 
 .wrapper.completed {
-	animation: scale-in 0.2s ease-in;
+	animation: scale-in 0.2s ease-in-out;
 }
 
 .wrapper.updated {
-	animation: scale-out 0.2s ease-in;
+	animation: scale-out 0.2s ease-in-out;
 }
 
 /* button */
@@ -18,18 +18,6 @@
 	flex-shrink: 0;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
-	height: 32px;
-}
-
-.button.multiFrequency {
-	border-radius: 0 var(--border-radius-tertiary) var(--border-radius-tertiary) 0;
-}
-
-/* icon */
-.button svg {
-	width: 24px;
-	height: 24px;
 }
 
 /* animation */

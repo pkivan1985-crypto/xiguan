@@ -34,6 +34,7 @@
 		"linkify-react": "^4.3.3",
 		"react": "^19.2.0",
 		"react-chartjs-2": "^5.3.1",
+		"react-circular-progressbar": "^2.2.0",
 		"react-dom": "^19.2.0",
 		"react-error-boundary": "^6.1.1",
 		"react-i18next": "^17.0.8",

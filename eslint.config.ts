@@ -164,6 +164,7 @@ export default defineConfig([
 						'setProperty',
 						'querySelector',
 						'getContext',
+						'buildStyles',
 						/^Intl\..+/,
 						/^localStorage\..+/,
 						/^console\..+/,

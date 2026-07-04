@@ -1,1 +1,1 @@
-export { UpdateHabitProgress } from './ui/main/UpdateHabitProgress';
+export { UpdateHabitProgress } from './ui/UpdateHabitProgress';
