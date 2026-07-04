@@ -2,13 +2,20 @@
 	--container-padding: 4px;
 }
 
+.wrapper {
+  	position: relative;
+ 	width: 100%;
+ 	overflow: hidden;
+	border-radius: var(--border-radius-secondary);
+}
+
 .container {
 	display: flex;
 	gap: 4px;
+	height: 100%;
 	padding: var(--container-padding);
 	overflow-x: scroll;
 	background-color: var(--bg-color-primary);
-	border-radius: var(--border-radius-secondary);
 }
 
 .tab,
@@ -40,4 +47,29 @@
 .tabText {
 	position: relative;
 	z-index: 1;
+}
+
+.gradient {
+  	position: absolute;
+  	top: 0;
+  	bottom: 0;
+  	z-index: 10;
+  	width: 60px;
+  	pointer-events: none;
+	opacity: 0;
+  	transition: opacity 0.2s ease;
+}
+
+.left {
+	left: 0;
+	background: linear-gradient(to right, var(--bg-color-primary), transparent);
+}
+
+.right {
+	right: 0;
+	background: linear-gradient(to left, var(--bg-color-primary), transparent);
+}
+
+.visible {
+	opacity: 1;
 }
