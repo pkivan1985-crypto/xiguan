@@ -86,10 +86,7 @@ export default defineConfig([
 						'action',
 						'variant',
 						'type',
-						'color',
-						'borderColor',
-						'pointBackgroundColor',
-						'backgroundColor',
+						/.*[Cc]olor$/,
 						'transition',
 						'ease',
 						'path',
@@ -100,12 +97,9 @@ export default defineConfig([
 						'target',
 						'rel',
 						'length',
-						'baseColor',
-						'darkenedColor',
-						'softenedColor',
-						'accentColor',
 						'width',
-						'height'
+						'height',
+						'bg'
 					],
 				},
 				words: {
