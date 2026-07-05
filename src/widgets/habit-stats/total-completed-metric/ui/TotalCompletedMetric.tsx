@@ -8,7 +8,7 @@ interface Props {
 	days: CompletedDay[];
 }
 
-const BG = '#7bffb920';
+const BG = '#7cc6ff20';
 
 /**
  * Displays the total number of completions for a habit over a selected period.
@@ -23,7 +23,7 @@ function TotalCompletedMetric({ days }: Props) {
 			badgeIcon={<FaHashtag />}
 			badgeColors={{
 				bg: BG,
-				color: '#38A169'
+				color: '#3d97dc'
 			}}
 			style={{ backgroundColor: BG }}
 		>

@@ -12,6 +12,8 @@ interface StreakHistoryProps {
 	colorVariants: ColorVariants;
 }
 
+const BG = '#7dffb720';
+
 /**
  * Renders a list of habit streaks recorded over a specific period.
  */
@@ -22,7 +24,7 @@ function StreakHistory(props: StreakHistoryProps) {
 	} = props;
 
 	const { t } = useTranslation();
-	const { baseColor, darkenedColor } = colorVariants;
+	const { darkenedColor } = colorVariants;
 	const [listLength, setListLength] = useState(5);
 	const streakList = streaks.slice(0, listLength);
 
@@ -36,7 +38,12 @@ function StreakHistory(props: StreakHistoryProps) {
 		<Card
 			title={t('habits.stats.streakHistoryTitle')}
 			description={t('habits.stats.streakHistoryDesc')}
-			extra={<FaBinoculars style={{ color: baseColor }} />}
+			badgeIcon={<FaBinoculars />}
+			badgeColors={{
+				bg: BG,
+				color: '#3cb371',
+			}}
+			style={{ backgroundColor: BG }}
 		>
 			<div className={styles.history}>
 				<ul className={styles.list}>
