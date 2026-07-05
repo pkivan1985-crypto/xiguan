@@ -1,7 +1,7 @@
 import styles from './ModalLayout.module.css';
 import { useContext } from 'react';
 import { Outlet, useNavigate } from 'react-router';
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
 import ModalHeader from './ModalHeader';
 import { modalMotionProps } from '../model/modal.animations';
 import { DirectionContext, useInitialRouteState } from '@shared/lib/router';

@@ -3,7 +3,6 @@
 	inset: 0;
 	display: flex;
 	flex-direction: column;
-	padding: 0 var(--app-inline-padding);
 	overflow: hidden;
 	background-color: var(--bg);
 }
@@ -11,6 +10,7 @@
 /* content */
 .content {
 	flex: 1;
+	padding-inline: var(--app-inline-padding);
 	padding-top: var(--header-height);
 	padding-bottom: 16px;
 	overflow-y: auto;
