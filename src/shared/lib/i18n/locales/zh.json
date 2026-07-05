@@ -198,7 +198,7 @@
 			"longestStreak": "最长",
 			"monthlyChartTitle": "每月完成度",
 			"streak": "连续天数",
-			"streakHistoryDesc": "展示连续 2 天以上的记录。",
+			"streakHistoryDesc": "展示连续 2 天以上的记录",
 			"streakHistoryTitle": "连续记录",
 			"title": "统计",
 			"totalCompleted": "总计完成天数",

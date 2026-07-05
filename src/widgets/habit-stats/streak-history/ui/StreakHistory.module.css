@@ -4,68 +4,10 @@
 }
 
 /* streaks */
-.streaks {
+.list {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-}
-
-/* card */
-.card {
-	display: flex;
-	gap: 16px;
-	align-items: center;
-	padding-bottom: 10px;
-	border-bottom: 1px solid;
-}
-
-.card.isLast {
-	padding-bottom: unset;
-	border-bottom: unset;
-}
-
-/* length */
-.length {
-	display: flex;
-	flex-shrink: 0;
-	align-items: center;
-	justify-content: center;
-	width: 48px;
-	height: 48px;
-	font-weight: bold;
-	background-color: var(--bg-color-secondary);
-	border-radius: var(--border-radius-secondary);
-}
-
-/* desc */
-.desc {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 16px;
-	width: 100%;
-}
-
-/* dateWrapper */
-.dateWrapper {
-	display: flex;
-	gap: 16px;
-	align-items: center;
-}
-
-/* label */
-.label {
-	padding: 4px 8px;
-	border-radius: var(--border-radius-tertiary);
-}
-
-.label.start {
-	color: mediumseagreen;
-	background-color: color-mix(in srgb, mediumseagreen, black 50%);
-}
-
-.label.end {
-	color: indianred;
-	background-color: color-mix(in srgb, indianred, black 50%);
 }
 
 .buttonWrapper {
