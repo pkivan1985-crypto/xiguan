@@ -20,7 +20,7 @@
 	pointer-events: none;
 
 	/* Light box-shadow visible only on light theme */
-	box-shadow: 0 0 12px #0001;
+	box-shadow: var(--shadow-lg);
 }
 
 /* 'per Day' */
@@ -41,7 +41,7 @@
 
 .buttonsWrapper button {
 	/* Light box-shadow visible only on light theme */
-	box-shadow: 0 0 12px #0001
+	box-shadow: var(--shadow-lg);
 }
 
 .buttonsWrapper button:first-child {

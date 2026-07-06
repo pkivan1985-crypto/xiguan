@@ -6,7 +6,7 @@
 	outline-offset: -2px;
 
 	/* Light box-shadow visible only on light theme */
-	box-shadow: 0 0 12px #0001;
+	box-shadow: var(--shadow-lg);
 }
 
 .input:focus {
