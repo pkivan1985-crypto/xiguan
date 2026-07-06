@@ -36,12 +36,15 @@
 .titleWrapper {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 4px;
+	justify-content: space-between;
 	width: 100%;
+	height: 48px;
 	overflow: hidden;
 }
 
 .title {
+	margin-top: 2px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -52,4 +55,13 @@
 	display: flex;
 	gap: 8px;
 	color: gray;
+}
+
+.badge {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	padding: 4px 8px;
+	font-weight: 900;
+	border-radius: var(--border-radius-tertiary);
 }
