@@ -1,5 +1,6 @@
 {
 	"achievements": {
+		"desc": "追踪里程碑与进度",
 		"groups": {
 			"onboarding": "新手入门"
 		},
@@ -195,13 +196,17 @@
 			"chartCompletions": "完成数",
 			"currentStreak": "当前",
 			"longestStreak": "最长",
-			"monthlyChartTitle": "每月完成度",
+			"monthlyChartTitle": "按月份统计完成度",
+			"monthlyChartDesc": "各月份的完成次数分布",
 			"streak": "连续天数",
-			"streakHistoryDesc": "展示连续 2 天以上的记录。",
+			"streakHistoryDesc": "展示连续 2 天以上的记录",
 			"streakHistoryTitle": "连续记录",
 			"title": "统计",
 			"totalCompleted": "总计完成天数",
-			"weekdayChartTitle": "单周完成度"
+			"totalCompletedTitle": "总计完成",
+			"totalCompletedDesc": "今年完成次数",
+			"weekdayChartTitle": "按星期统计完成度",
+			"weekdayChartDesc": "各星期的完成次数分布"
 		}
 	},
 	"menu": {

@@ -3,7 +3,6 @@
 	inset: 0;
 	display: flex;
 	flex-direction: column;
-	padding: 0 16px;
 	overflow: hidden;
 	background-color: var(--bg);
 }
@@ -11,7 +10,9 @@
 /* content */
 .content {
 	flex: 1;
-	padding-bottom: 16px;
+	padding-inline: var(--app-inline-padding);
+	padding-top: var(--header-height);
+	padding-bottom: var(--app-bottom-padding);
 	overflow-y: auto;
 }
 

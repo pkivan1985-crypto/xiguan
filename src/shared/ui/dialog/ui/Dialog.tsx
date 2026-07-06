@@ -1,4 +1,5 @@
 import styles from './Dialog.module.css';
+import clsx from 'clsx';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDialogStore } from '../model/store';
@@ -23,7 +24,7 @@ function Dialog() {
 					{createPortal(
 						<motion.div
 							key='dialog'
-							className={styles.dialog}
+							className={clsx('bg-surface-bordered', styles.dialog)}
 							variants={variants}
 							initial='initial'
 							animate='animate'

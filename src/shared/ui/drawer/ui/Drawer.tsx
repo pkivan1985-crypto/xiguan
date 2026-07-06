@@ -1,11 +1,11 @@
 import styles from './Drawer.module.css';
+import clsx from 'clsx';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion'
 import { variants } from '../model/animations';
 import { useDrawerStore } from '../model/store';
 import { useNativeBackClose } from '@shared/lib/dom';
 import { Button, Overlay, Placeholder } from '@shared/ui';
-import clsx from 'clsx';
 
 /**
  * Interactive bottom sheet component controlled via global state.
@@ -31,7 +31,7 @@ function Drawer() {
 					{createPortal(
 						<motion.div
 							key='drawer'
-							className={styles.drawer}
+							className={clsx('bg-surface-bordered', styles.drawer)}
 							variants={variants}
 							initial='initial'
 							animate='animate'

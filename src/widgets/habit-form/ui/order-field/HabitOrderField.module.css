@@ -16,12 +16,20 @@
 	height: var(--input-height-primary);
 	text-align: center;
 	pointer-events: none;
+
+	/* Light box-shadow visible only on light theme */
+	box-shadow: var(--shadow-lg);
 }
 
 .buttonsWrapper {
 	display: flex;
 	gap:4px;
 	width: 100%
+}
+
+.buttonsWrapper button {
+	/* Light box-shadow visible only on light theme */
+	box-shadow: var(--shadow-lg);
 }
 
 .buttonsWrapper button:first-child {

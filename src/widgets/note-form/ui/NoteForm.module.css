@@ -1,30 +1,26 @@
 :root {
-	--textarea-padding: 32px;
+	--textarea-padding: 28px;
 	--button-size: 48px;
 }
 
 /* form */
 .form {
-	/* outline: 1px solid tomato; */
-	position: fixed;
 	right: 0;
-	bottom: env(safe-area-inset-bottom, 0);
 	left: 0;
 	z-index: 240;
-	display: flex;
-	gap: 8px;
-	width: 100%;
+	max-width: var(--app-width);
+	padding-inline: var(--app-inline-padding);
+	margin: 0 auto;
+	background-image: unset;
 }
 
 .form textarea {
 	width: 100%;
 	padding: var(--textarea-padding);
-	padding-right: calc(var(--button-size) + var(--textarea-padding));
 	font-size: 1rem;
+	line-height: 1.5rem;
 	resize: none;
-	background-color: var(--bg-color-secondary);
-	border: none;
-	border-radius: var(--border-radius-primary)  var(--border-radius-primary) 0 0;
+	box-shadow: unset;
 }
 
 .form textarea:focus {
@@ -32,18 +28,15 @@
 }
 
 .actionButton {
-	position: fixed;
-	right: 16px;
-	bottom: 0;
+	position: absolute;
+	right: var(--textarea-padding);
 	bottom: calc(
 		env(safe-area-inset-bottom, 0px) +
 		var(--textarea-padding) +
-		0.5rem -
-		25px +
+		0.5rem +
 		1px
 	);
 	z-index: 250;
-	flex-shrink: 0;
 	width: var(--button-size);
 	height: var(--button-size);
 	border-radius: var(--border-radius-secondary);
@@ -57,23 +50,4 @@
 .actionButton:disabled {
 	color: var(--color-secondary);
 	background-color: var(--bg-color-tertiary);
-}
-
-@media screen and (min-width: 576px) {
-	.form {
-		bottom: 0;
-		width: var(--app-width);
-		padding: 0 16px;
-		margin: 0 auto;
-	}
-
-	.actionButton {
-		right: calc((100vw - var(--app-width)) / 2 + 32px);
-		bottom: calc(
-			var(--textarea-padding) +
-			0.5rem -
-			25px +
-			1px
-		);
-	}
 }

@@ -3,9 +3,13 @@
 	position: relative;
 	display: flex;
 	flex-direction: column;
+	gap: 16px;
 }
 
 .noteGroupsWrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 	padding-bottom: 80px;
 }
 
@@ -19,18 +23,12 @@
 
 .monthLabelWrapper {
 	position: sticky;
-	top: calc(56px + 8px);
+	top: 0;
 	z-index: 1;
 	display: flex;
-	padding-top: 4px;
 	padding-bottom: 8px;
-	margin-top: 16px;
 	color: var(--color-secondary);
 	pointer-events: none;
-}
-
-.monthLabelWrapper[data-first-group] {
-	margin-top: 0;
 }
 
 .monthLabel {

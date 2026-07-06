@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { HiArchiveBox } from 'react-icons/hi2';
-import { FaBug, FaGithub, FaPaintBrush } from 'react-icons/fa';
+import { FaAward, FaBug, FaGithub, FaPaintBrush } from 'react-icons/fa';
 import { BsFillDatabaseFill } from 'react-icons/bs';
 import { getNavigationTarget } from '@shared/lib/router';
 import type { ListItemProps } from '@shared/ui';
@@ -9,6 +9,16 @@ function useListItems() {
 	const { t } = useTranslation();
 
 	const habitItems: ListItemProps[] = [
+		{
+			icon: FaAward,
+			iconProps: { color: '#f0d05d' },
+			title: t('achievements.title'),
+			description: t('achievements.desc'),
+			...getNavigationTarget('ACHIEVEMENTS', {
+				modalTitle: t('achievements.title')
+			}),
+			indicator: { type: 'arrow' }
+		},
 		{
 			icon: HiArchiveBox,
 			iconProps: { color: '#7b68ee' },
@@ -49,7 +59,7 @@ function useListItems() {
 			icon: FaGithub,
 			iconProps: { color: '#7fc7ff' },
 			title: t('menu.shared.gitHub.title'),
-			description: t('menu.shared.gitHub.desc'),
+			// description: t('menu.shared.gitHub.desc'),
 			onClick: () => window.open('https://github.com/iNikAnn/DoHabit', '_blank'),
 			indicator: { type: 'external' }
 		},
@@ -57,7 +67,7 @@ function useListItems() {
 			icon: FaBug,
 			iconProps: { color: '#EF4444' },
 			title: t('menu.shared.feedback.title'),
-			description: t('menu.shared.feedback.desc'),
+			// description: t('menu.shared.feedback.desc'),
 			onClick: () => window.open('https://github.com/iNikAnn/DoHabit/issues/new', '_blank'),
 			indicator: { type: 'external' }
 		}

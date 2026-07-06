@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import type { Habit } from '../../model/types';
 import HabitHeader from '../habit-header/HabitHeader';
 import { type ColorVariants } from '@shared/lib/theme';
+import { Card } from '@shared/ui';
 
 interface HabitCardProps {
 	habit: Habit;
@@ -26,6 +27,7 @@ function HabitCard(props: HabitCardProps) {
 
 	// Dynamic colors as CSS variables
 	const style = {
+		padding: 0,
 		'--habit-color-base': colorVariants.baseColor,
 		'--habit-color-dark': colorVariants.darkenedColor,
 		'--habit-color-soft': colorVariants.softenedColor,
@@ -33,7 +35,7 @@ function HabitCard(props: HabitCardProps) {
 	} as CSSProperties;
 
 	return (
-		<div
+		<Card
 			style={style}
 			className={clsx('paletteItem', styles.habit)}
 			onClick={onClick}
@@ -49,7 +51,7 @@ function HabitCard(props: HabitCardProps) {
 					{content}
 				</div>
 			)}
-		</div>
+		</Card>
 	);
 }
 

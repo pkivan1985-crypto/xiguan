@@ -1,4 +1,5 @@
 .mainPage {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
@@ -9,6 +10,8 @@
 .content {
 	position: relative;
 	flex: 1;
-	padding-bottom: 16px;
+	padding-inline: var(--app-inline-padding);
+	padding-top: var(--header-height);
+	padding-bottom: var(--app-bottom-padding);
 	overflow-y: auto;
 }

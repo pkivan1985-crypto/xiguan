@@ -1,5 +1,6 @@
 {
 	"achievements": {
+		"desc": "Track milestones and progress",
 		"groups": {
 			"onboarding": "Getting Started"
 		},
@@ -33,7 +34,7 @@
 				"title": "Fresh Start"
 			},
 			"gotham-protector": {
-				"desc": "You wrote a note after 01:00. What's keeping you awake? Are you protecting Gotham, or just overthinking again?",
+				"desc": "You wrote a note after 00:00. What's keeping you awake? Are you protecting Gotham, or just overthinking again?",
 				"title": "The Dark Knight"
 			},
 			"gravity-falls-journal": {
@@ -195,13 +196,16 @@
 			"chartCompletions": "Completions",
 			"currentStreak": "Current",
 			"longestStreak": "Longest",
-			"monthlyChartTitle": "Completions / Month",
+			"monthlyChartTitle": "Completions by month",
+			"monthlyChartDesc": "Distribution of completions across months",
 			"streak": "Streak",
-			"streakHistoryDesc": "Shows streaks of 2 days or more.",
+			"streakHistoryDesc": "Shows streaks of 2 days or more",
 			"streakHistoryTitle": "Streak history",
 			"title": "Statistics",
-			"totalCompleted": "Total completed days",
-			"weekdayChartTitle": "Completions / Weekday"
+			"totalCompletedTitle": "Total completions",
+			"totalCompletedDesc": "Times completed during this year",
+			"weekdayChartTitle": "Completions by weekday",
+			"weekdayChartDesc": "Distribution of completions across days"
 		}
 	},
 	"menu": {

@@ -1,5 +1,6 @@
 /* card */
 .card {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
@@ -7,6 +8,9 @@
 	padding: 16px;
 	background-color: var(--bg-color-primary);
 	border-radius: var(--border-radius-secondary);
+
+	/* Light box-shadow visible only on light theme */
+	box-shadow: var(--shadow-lg);
 }
 
 .body {

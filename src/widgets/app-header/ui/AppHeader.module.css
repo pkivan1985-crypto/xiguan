@@ -2,9 +2,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	height: var(--header-height);
-	padding: 0 10px;
-	background-color: var(--bg);
+	height: 100%;
+	padding-inline: var(--app-inline-padding);
 }
 
 /* logo */
@@ -13,6 +12,7 @@
 	display: flex;
 	gap: 8px;
 	align-items: center;
+	margin-left: 10px;
 }
 
 .logo {
@@ -28,15 +28,19 @@
 }
 
 /* btnsWrapper */
+.nav {
+	height: 48px;
+	padding-inline: 4px;
+}
+
 .navList {
 	display: flex;
-	gap: 16px;
 	align-items: center;
 }
 
 .navItem {
-	width: 32px;
-	height: 32px;
+	width: 48px;
+	height: 48px;
 	padding: 0;
 	background-color: unset;
 }

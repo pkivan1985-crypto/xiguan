@@ -12,13 +12,17 @@
 	height: calc(var(--indicator-width) + var(--switch-padding) * 2);
 	cursor: pointer;
 	background-color: var(--bg);
-	border: 2px solid var(--bg-color-tertiary);
+	border: 1px solid var(--bg-color-secondary);
 	border-radius: 40px;
 }
 
 .switch.disabled {
 	cursor: not-allowed;
 	opacity: 0.5;
+}
+
+.switch:has(.input:checked) {
+	background-color: color-mix(in srgb, var(--accent-color) 15%, transparent);
 }
 
 .switch:has(.input:focus-visible) {

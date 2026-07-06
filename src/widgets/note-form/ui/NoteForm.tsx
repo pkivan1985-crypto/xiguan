@@ -1,4 +1,5 @@
 import styles from './NoteForm.module.css';
+import clsx from 'clsx';
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -124,7 +125,7 @@ function NoteForm(props: Props) {
 							exit={{ opacity: 0 }}
 							transition={{ duration: 0.2 }}
 
-							className={styles.form}
+							className={clsx('stuck-to-the-bottom', styles.form)}
 							action='submit'
 							onSubmit={handleSubmitForm}
 						>
@@ -137,6 +138,7 @@ function NoteForm(props: Props) {
 								value={draftText}
 								placeholder={t('notes.form.textPlaceholder')}
 								autoComplete='off'
+								className='bg-surface-bordered'
 								onChange={(e) => setDraftText(e.target.value)}
 								onKeyDown={handleKeyDown}
 

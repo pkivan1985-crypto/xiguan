@@ -4,6 +4,9 @@
 	height: var(--input-height-primary);
 	padding: 0 16px;
 	outline-offset: -2px;
+
+	/* Light box-shadow visible only on light theme */
+	box-shadow: var(--shadow-lg);
 }
 
 .input:focus {

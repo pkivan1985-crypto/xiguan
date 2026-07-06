@@ -2,27 +2,38 @@
 	--toolbar-height: 56px;
 }
 
-.toolbar {
+.wrapper {
 	position: fixed;
 	right: 0;
-	bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+	bottom: 0;
 	left: 0;
+	max-width: var(--app-width);
+	margin: 0 auto;
+}
+
+.toolbar {
 	display: flex;
 	gap: 8px;
 	justify-content: flex-end;
 	height: var(--toolbar-height);
-	padding: 0 32px;
+	padding: 0 var(--app-inline-padding);
 	pointer-events: none;
 }
 
 .toolbar button {
-	width: var(--toolbar-height);
 	height: var(--toolbar-height);
+	font-size: 1rem;
 	pointer-events: auto;
+	background-color: var(--bg-color-primary);
+}
+
+.cancelSelection {
+	width: auto;
+	margin-right: auto;
 }
 
 .scrollToTopButton {
-	background-color: var(--bg-color-secondary);
+	/* background-color: var(--bg-color-secondary); */
 }
 
 .activateNoteFormButton svg {
@@ -30,11 +41,7 @@
 	height: 22px;
 }
 
-@media screen and (min-width: 576px) {
-	.toolbar {
-		bottom: 16px;
-		width: var(--app-width);
-		padding: 0 32px;
-		margin: 0 auto;
-	}
+.buttonSquare {
+	width: var(--toolbar-height);
+	height: var(--toolbar-height);
 }

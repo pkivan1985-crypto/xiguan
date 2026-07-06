@@ -3,11 +3,12 @@ import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { useLongPress } from 'use-long-press';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheck } from 'react-icons/fa';
 import NoteText from './note-text/NoteText';
 import { useNotesStore } from '../model/store';
 import type { Note } from '../model/types';
 import { formatDate } from '@shared/lib/date-time';
+import { Card } from '@shared/ui';
 
 interface NoteCardProps {
 	note: Note;
@@ -67,7 +68,7 @@ function NoteCard(props: NoteCardProps) {
 	const dateTimeStr = formatDate(new Date(note.createdAt), { includeTime: true });
 
 	return (
-		<div
+		<Card
 			{...bind()}
 			className={clsx(
 				styles.note,
@@ -94,10 +95,10 @@ function NoteCard(props: NoteCardProps) {
 			{/* Render checkmark if note is selected */}
 			{isSelected && (
 				<div className={styles.selectBadge}>
-					<FaCheckCircle />
+					<FaCheck />
 				</div>
 			)}
-		</div>
+		</Card>
 	);
 }
 

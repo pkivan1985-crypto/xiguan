@@ -1,29 +1,49 @@
+.wrapper {
+	padding: 0 var(--app-inline-padding);
+}
+
 /* header */
 .header {
 	display: flex;
-	flex-shrink: 0;
-	gap: 16px;
+	gap: 8px;
 	align-items: center;
 	height: var(--header-height);
 }
 
+.buttonWrapper {
+	display: flex;
+	align-items: center;
+	height: 48px;
+}
+
 .closeButton {
 	flex-shrink: 0;
+	width: 48px;
+	height: 48px;
 	padding: 0;
 	background-color: unset;
 }
 
 .closeButton svg {
-	width: 26px;
-	height: 26px;
+	width: 22px;
+	height: 22px;
 	stroke-width: 20;
-	transform: rotate(180deg);
 }
 
 /* title */
 .title {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	font-size: 1.6rem;
-	white-space: nowrap;
+	display: flex;
+    align-items: center;
+    min-width: 0;
+    height: 48px;
+    padding: 0 16px;
+    font-size: 1.4rem;
+}
+
+.titleText {
+	display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

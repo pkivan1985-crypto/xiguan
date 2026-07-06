@@ -6,19 +6,14 @@
 }
 
 .actions {
-	position: fixed;
 	right: 0;
-	bottom: 0;
 	left: 0;
 	z-index: 10;
 	display: flex;
 	gap: 8px;
 	max-width: var(--app-width);
-	padding: 0 var(--app-inline-padding);
-	padding-top: 16px;
-	padding-bottom: calc(16px + env(safe-area-max-inset-bottom, 0px));
+	padding-inline: var(--app-inline-padding);
 	margin: 0 auto;
-	background-image: linear-gradient(transparent, var(--bg));
 }
 
 .actions button {

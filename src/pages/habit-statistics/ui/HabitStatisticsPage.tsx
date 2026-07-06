@@ -18,7 +18,7 @@ function HabitStatisticsPage() {
 	const habit = habits.find((h) => h.id === habitId);
 
 	const colorVariants = getAppPalette()[habit ? habit.colorIndex : 0];
-	const { baseColor, darkenedColor } = colorVariants;
+	const { baseColor } = colorVariants;
 
 	const completedDays = habit ? habit.completedDays : [];
 
@@ -44,13 +44,13 @@ function HabitStatisticsPage() {
 	const chartOptions: ChartOptions<'bar' | 'line'> = {
 		scales: {
 			x: {
-				grid: { color: darkenedColor, lineWidth: 0.4 },
-				ticks: { color: 'gray' }
+				border: { display: false },
+				grid: { color: 'transparent', lineWidth: 0.4 },
 			},
 
 			y: {
-				grid: { color: darkenedColor, lineWidth: 0.4 },
-				ticks: { color: 'gray' }
+				border: { display: false },
+				grid: { color: 'transparent', lineWidth: 0.4 },
 			}
 		}
 	};
@@ -78,7 +78,6 @@ function HabitStatisticsPage() {
 			<StreakOverview
 				currentStreak={currentStreak}
 				longestStreak={longestStreak}
-				color={baseColor}
 			/>
 
 			<WeekdayChart
@@ -89,7 +88,6 @@ function HabitStatisticsPage() {
 
 			<TotalCompletedMetric
 				days={selectedDays}
-				color={baseColor}
 			/>
 
 			<MonthlyChart
@@ -100,7 +98,6 @@ function HabitStatisticsPage() {
 
 			<StreakHistory
 				streaks={filteredStreaks}
-				colorVariants={colorVariants}
 			/>
 		</div>
 	);

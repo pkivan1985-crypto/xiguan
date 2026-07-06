@@ -42,7 +42,12 @@ function WeekdayChart({ options, days, color }: Props) {
 	return (
 		<Card
 			title={t('habits.stats.weekdayChartTitle')}
-			extra={<FaCalendarWeek style={{ color }} />}
+			description={t('habits.stats.weekdayChartDesc')}
+			badgeIcon={<FaCalendarWeek />}
+			badgeColors={{
+				bg: 'var(--darkened-color)',
+				color: 'var(--base-color)'
+			}}
 		>
 			<Bar {...config} />
 		</Card>

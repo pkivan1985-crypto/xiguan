@@ -7,7 +7,7 @@ interface Props {
 	initialFrequency?: number;
 }
 
-const MAX_FREQUENCY = 6;
+const MAX_FREQUENCY = 12;
 
 function HabitFrequencyField({ initialFrequency = 1 }: Props) {
 	const { t } = useTranslation();
@@ -51,7 +51,8 @@ function HabitFrequencyField({ initialFrequency = 1 }: Props) {
 						onClick={() => handleClick('decrement')}
 						disabled={frequency <= 1}
 					>
-						-
+						{/* eslint-disable-line */}
+						—
 					</Button>
 
 					<Button

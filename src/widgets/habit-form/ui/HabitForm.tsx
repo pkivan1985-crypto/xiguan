@@ -1,4 +1,5 @@
 import styles from './HabitForm.module.css';
+import clsx from 'clsx';
 import { type KeyboardEventHandler, type SubmitEventHandler, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -108,7 +109,7 @@ function HabitForm({ habitId }: HabitFormProps) {
 				initialIconTitle={currentHabit?.iconTitle}
 			/>
 
-			<div className={styles.actions}>
+			<div className={clsx('stuck-to-the-bottom', styles.actions)}>
 				{(isEditMode && habitId) && (
 					<HabitExtraActions
 						habitId={habitId}

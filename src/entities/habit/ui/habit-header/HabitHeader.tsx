@@ -1,6 +1,6 @@
 import styles from './HabitHeader.module.css';
 import { type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { FaFire } from 'react-icons/fa';
 import { type Habit, HABIT_ICONS_MAP } from '@entities/habit';
 
 interface HabitHeaderProps {
@@ -15,8 +15,6 @@ function HabitHeader(props: HabitHeaderProps) {
 		action,
 		currentStreak,
 	} = props;
-
-	const { t } = useTranslation();
 
 	// Get icon by title or use default fallback
 	const Icon = HABIT_ICONS_MAP[habit.iconTitle]?.icon
@@ -35,13 +33,19 @@ function HabitHeader(props: HabitHeaderProps) {
 
 				{currentStreak !== undefined && (
 					<div className={styles.description}>
-						<small>
-							<span>
-								{t('habits.stats.streak')}
-							</span>
+						<div
+							style={{
+								backgroundColor: 'var(--habit-color-dark)',
+								color: 'var(--habit-color-base)'
+							}}
+							className={styles.badge}
+						>
+							<FaFire size={14} />
 
-							<strong>: {currentStreak}</strong>
-						</small>
+							<small>
+								{currentStreak}
+							</small>
+						</div>
 					</div>
 				)}
 			</div>

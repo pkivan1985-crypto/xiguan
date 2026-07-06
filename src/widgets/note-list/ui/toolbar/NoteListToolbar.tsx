@@ -4,9 +4,9 @@ import { AnimatePresence, motion, type Transition, type Variants } from 'framer-
 import { useTranslation } from 'react-i18next';
 import TagButton from '../tag-button/TagButton';
 import SortButton from '../sort-button/SortButton';
-import { useNotesStore, type Note } from '@entities/note';
+import { type Note } from '@entities/note';
 import { extractYearsFromTimeline } from '@shared/lib/date-time';
-import { Button, SegmentedControl } from '@shared/ui';
+import { SegmentedControl } from '@shared/ui';
 
 interface NoteListToolbarProps {
 	notes: Note[];
@@ -63,9 +63,10 @@ function NoteListToolbar(props: NoteListToolbarProps) {
 	// UI localization
 	const { t } = useTranslation();
 
-	const isSelectionMode = useNotesStore((s) => s.isSelectionMode);
-	const selectedIds = useNotesStore((s) => s.selectedIds);
-	const exitSelectionMode = useNotesStore((s) => s.exitSelectionMode);
+	// TODO: Clean up old selection toolbar logic and styles once the bottom toolbar implementation is stable
+	// const isSelectionMode = useNotesStore((s) => s.isSelectionMode);
+	// const selectedIds = useNotesStore((s) => s.selectedIds);
+	// const exitSelectionMode = useNotesStore((s) => s.exitSelectionMode);
 
 	/**
 	 * Extracts a list of years to populate the timeline filter options.
@@ -78,38 +79,38 @@ function NoteListToolbar(props: NoteListToolbarProps) {
 	return (
 		<div className={styles.wrapper}>
 			<AnimatePresence initial={false} mode='popLayout'>
-				{!isSelectionMode && (
-					<motion.div
-						key='note-list-toolbar'
-						className={styles.toolbar}
-						{...motionProps}
-					>
-						<SegmentedControl
-							options={[
-								{ value: 'all', label: t('common.all') },
-								...availableYears.map((v) => ({ value: String(v) }))
-							]}
-							value={selectedYear}
-							onChange={onYearChange}
+				{/* {!isSelectionMode && ( */}
+				<motion.div
+					key='note-list-toolbar'
+					className={styles.toolbar}
+					{...motionProps}
+				>
+					<SegmentedControl
+						options={[
+							{ value: 'all', label: t('common.all') },
+							...availableYears.map((v) => ({ value: String(v) }))
+						]}
+						value={selectedYear}
+						onChange={onYearChange}
+					/>
+
+					<div className={styles.toolbarActionsWrapper}>
+						<TagButton
+							isActive={hasActiveTag}
+							className={styles.actionSquare}
+							onClick={onTagAction}
 						/>
 
-						<div className={styles.toolbarActionsWrapper}>
-							<TagButton
-								isActive={hasActiveTag}
-								className={styles.actionSquare}
-								onClick={onTagAction}
-							/>
+						<SortButton
+							order={order}
+							className={styles.actionSquare}
+							onClick={onOrderChange}
+						/>
+					</div>
+				</motion.div>
+				{/* )} */}
 
-							<SortButton
-								order={order}
-								className={styles.actionSquare}
-								onClick={onOrderChange}
-							/>
-						</div>
-					</motion.div>
-				)}
-
-				{isSelectionMode && (
+				{/* {isSelectionMode && (
 					<motion.div
 						key='note-list-selection-toolbar'
 						className={styles.selectionToolbar}
@@ -131,7 +132,7 @@ function NoteListToolbar(props: NoteListToolbarProps) {
 							{t('common.cancel')}
 						</Button>
 					</motion.div>
-				)}
+				)} */}
 			</AnimatePresence>
 		</div>
 	);

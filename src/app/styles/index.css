@@ -22,18 +22,23 @@ input[type='number'] {
 	/* https://developer.chrome.com/docs/css-ui/edge-to-edge */
 	--safe-area-max-inset-bottom: env(safe-area-max-inset-bottom, 36px);
 	--app-width: 640px;
-	--header-height: 4rem;
+	--header-height: 80px;
 	--accent-color: dodgerblue;
-	--color-primary: light-dark(hsl(0deg 0% 10%), hsl(0deg 0% 90%));
-	--color-secondary: light-dark(hsl(0deg 0% 40%), hsl(0deg 0% 50%));
-	--bg: light-dark(hsl(0deg 0% 95%), black);
-	--bg-color-primary: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 8%));
-	--bg-color-secondary: light-dark(hsl(0deg 0% 90%), hsl(0deg 0% 12%));
-	--bg-color-tertiary: light-dark(hsl(0deg 0% 80%), hsl(0deg 0% 20%));
-	--border-radius-primary: 30px;
-	--border-radius-secondary: 20px;
-	--border-radius-tertiary: 10px;
+    --color-primary: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 94%));
+    --color-secondary: light-dark(hsl(0deg 0% 45%), hsl(0deg 0% 62%));
+    --bg: light-dark(hsl(0deg 0% 98%), black);
+    --bg-color-primary: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 8%));
+    --bg-color-secondary: light-dark(hsl(0deg 0% 92%), hsl(0deg 0% 16%));
+    --bg-color-tertiary: light-dark(hsl(0deg 0% 84%), hsl(0deg 0% 24%));
+	--border-radius-primary: 36px;
+	--border-radius-secondary: 24px;
+	--border-radius-tertiary: 14px;
 	--input-height-primary: 3rem;
+
+	/* shadow */
+	--shadow-sm: 0 0 4px rgb(0 0 0 / 5%);
+  	--shadow-md: 0 0 8px rgb(0 0 0 / 6%);
+  	--shadow-lg: 0 0 12px rgb(0 0 0 / 8%);
 }
 
 /* Override LightningCSS polyfill variables when dark theme is forced */

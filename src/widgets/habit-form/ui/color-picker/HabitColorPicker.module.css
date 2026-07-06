@@ -13,6 +13,9 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: var(--border-radius-tertiary);
+
+	/* Light box-shadow visible only on light theme */
+	box-shadow: var(--shadow-md);
 }
 
 .label:has(:checked) {

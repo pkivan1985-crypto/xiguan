@@ -19,7 +19,8 @@ function useListItems() {
 			description: t('menu.dataManagement.info.storage.description'),
 			...getNavigationTarget('STORAGE_INFO', {
 				modalTitle: t('menu.dataManagement.info.storage.title')
-			})
+			}),
+			indicator: { type: 'arrow' }
 		}
 	];
 

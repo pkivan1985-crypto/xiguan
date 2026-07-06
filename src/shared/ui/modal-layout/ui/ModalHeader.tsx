@@ -1,5 +1,6 @@
 import styles from './ModalHeader.module.css';
-import { IoIosArrowForward } from 'react-icons/io';
+import clsx from 'clsx';
+import { FaArrowLeft } from 'react-icons/fa6';
 import { Button } from '@shared/ui';
 
 interface ModalHeaderProps {
@@ -9,18 +10,24 @@ interface ModalHeaderProps {
 
 function ModalHeader({ title, onClose }: ModalHeaderProps) {
 	return (
-		<header className={styles.header}>
-			<Button
-				className={styles.closeButton}
-				onClick={onClose}
-			>
-				<IoIosArrowForward />
-			</Button>
+		<div className={clsx('header-wrapper', styles.wrapper)}>
+			<header className={styles.header}>
+				<div className={clsx('bg-surface-bordered', styles.buttonWrapper)}>
+					<Button
+						className={styles.closeButton}
+						onClick={onClose}
+					>
+						<FaArrowLeft />
+					</Button>
+				</div>
 
-			<h1 className={styles.title}>
-				{title}
-			</h1>
-		</header>
+				<h1 className={clsx('bg-surface-bordered', styles.title)}>
+					<span className={styles.titleText}>
+						{title}
+					</span>
+				</h1>
+			</header>
+		</div>
 	);
 }
 

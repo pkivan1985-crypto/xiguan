@@ -2,13 +2,13 @@
 .dialog {
 	position: fixed;
 	top: 50%;
+	right: 0;
 	left: 50%;
 	z-index: 999;
-	width: 85%;
-	padding: 1rem;
-	background-color: var(--bg-color-secondary);
-	border-radius: var(--border-radius-secondary);
-	box-shadow: 0 0 15px rgb(0 0 0 / 25%);
+	width: calc(100% - 16px);
+	max-width: 444px;
+	padding: 24px;
+	box-shadow: unset;
 }
 
 /* content */
@@ -16,7 +16,7 @@
 	/* outline: 1px solid tomato; */
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
+	gap: 16px;
 }
 
 /* subTitle */
@@ -34,7 +34,7 @@
 .text {
 	display: flex;
 	flex-direction: column;
-	gap: 0.4rem;
+	gap: 8px;
 }
 
 .actions {
@@ -48,10 +48,4 @@
 
 .actionButton {
 	width: 100%;
-}
-
-@media screen and (min-width: 576px) {
-	.dialog {
-		width: 600px;
-	}
 }

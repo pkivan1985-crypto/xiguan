@@ -1,6 +1,6 @@
 import styles from './YearPicker.module.css';
 import { FaMinus, FaPlus } from 'react-icons/fa';
-import { Button } from '@shared/ui';
+import { Button, Card } from '@shared/ui';
 
 interface YearPickerProps {
 	value: number;
@@ -30,7 +30,10 @@ function YearPicker(props: YearPickerProps) {
 	};
 
 	return (
-		<div className={styles.yearPicker}>
+		<Card
+			className={styles.card}
+			childrenClassName={styles.yearPicker}
+		>
 			<Button
 				className={styles.button}
 				variant='secondary'
@@ -48,7 +51,7 @@ function YearPicker(props: YearPickerProps) {
 			>
 				<FaPlus onClick={handleIncrease} />
 			</Button>
-		</div>
+		</Card>
 	);
 }
 

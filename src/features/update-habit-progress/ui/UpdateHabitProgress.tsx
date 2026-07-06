@@ -1,9 +1,11 @@
 import styles from './UpdateHabitProgress.module.css';
+import 'react-circular-progressbar/dist/styles.css';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
+import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
 import { useLongPress } from '@uidotdev/usehooks';
 import { FaCheck } from 'react-icons/fa';
-import ProgressBar from '../progress-bar/ProgressBar';
+import RadialSeparators from './radial-separators/RadialSeparators';
 import { type Habit, useHabitsStore, getTodayProgress } from '@entities/habit';
 import { Button } from '@shared/ui';
 
@@ -68,30 +70,54 @@ function UpdateHabitProgress({ habit }: Props) {
 				animation === 'updated' && styles.updated
 			)}
 		>
-			{frequency > 1 && (
-				<ProgressBar
-					segmentCount={frequency}
-					progress={progress}
-				/>
-			)}
-
 			<Button
 				style={{
 					backgroundColor: isCompleted
 						? 'var(--habit-color-base)'
 						: 'var(--habit-color-dark)'
 				}}
-				className={clsx(
-					styles.button,
-					frequency > 1 && styles.multiFrequency
-				)}
+				className={styles.button}
 				{...attrs}
 				onClick={() => handleUpdateProgress()}
 			>
-				{percentage >= 100 ? (
-					<FaCheck />
-				) : (
-					<strong>{percentage}%</strong>
+				{/* Render check for completed habits */}
+				{isCompleted && (
+					<FaCheck color="var(--color-primary)" />
+				)}
+
+				{/* Render faint check for uncompleted single-step habits */}
+				{(!isCompleted && frequency === 1) && (
+					<FaCheck color="var(--habit-color-soft)" />
+				)}
+
+				{/* Render progress bar for active multi-step habits */}
+				{(!isCompleted && frequency > 1) && (
+					<CircularProgressbarWithChildren
+						value={percentage}
+						strokeWidth={18}
+						styles={{
+							...buildStyles({
+								strokeLinecap: 'butt',
+								pathColor: 'var(--habit-color-base)',
+								trailColor: 'var(--habit-color-soft)',
+								textColor: 'var(--color-primary)',
+							}),
+							root: {
+								width: '36px',
+								height: '36px'
+							}
+						}}
+					>
+						<RadialSeparators
+							count={frequency}
+							style={{
+								background: 'var(--habit-color-dark)',
+								width: '2px',
+								// This needs to be equal to props.strokeWidth
+								height: `${18}%`
+							}}
+						/>
+					</CircularProgressbarWithChildren>
 				)}
 			</Button>
 		</div>

@@ -1,18 +1,56 @@
-/* top */
-.top {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+:root {
+    --title-height: calc(1.4rem * 1.2);
+    --desc-height: calc(0.875rem * 1);
+    --text-gap: 4px;
+    --badge-target-size: calc(var(--title-height) + var(--desc-height) + var(--text-gap) - 3px);
 }
 
-/* description */
+.header {
+	display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+/* textGroup */
+.textGroup {
+	display: flex;
+    flex-direction: column;
+    gap: var(--text-gap);
+    min-width: 0;
+}
+
+.title {
+	font-size: 1.2rem;
+	line-height: 1.2;
+}
+
 .description {
-	width: 100%;
-	color: gray;
+	line-height: 1;
+	color: var(--color-secondary);
 }
 
-/* extra */
-.extra {
+/* actions */
+.actions {
 	display: flex;
-	align-items: center;
+    flex-shrink: 0;
+    gap: 8px;
+    align-items: center;
+}
+
+/* badge */
+.badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--badge-size, var(--badge-target-size));
+    height: var(--badge-size, var(--badge-target-size));
+    color: var(--badge-color, var(--color-primary));
+    background-color: var(--badge-bg, var(--bg-color-secondary));
+    border-radius: var(--border-radius-tertiary, 12px);
+}
+
+.badge svg {
+    width: 50%;
+    height: 50%;
 }

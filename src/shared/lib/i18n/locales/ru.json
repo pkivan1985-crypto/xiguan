@@ -1,5 +1,6 @@
 {
 	"achievements": {
+		"desc": "Отслеживание целей и прогресса",
 		"groups": {
 			"onboarding": "Первые шаги"
 		},
@@ -195,13 +196,17 @@
 			"chartCompletions": "Выполнено",
 			"currentStreak": "Текущая",
 			"longestStreak": "Лучшая",
-			"monthlyChartTitle": "Выполнения / Месяц",
+			"monthlyChartTitle": "Выполнения по месяцам",
+			"monthlyChartDesc": "Распределение активности по месяцам",
 			"streak": "Серия",
-			"streakHistoryDesc": "Серии от 2 дней.",
+			"streakHistoryDesc": "Серии от 2 дней",
 			"streakHistoryTitle": "История серий",
 			"title": "Статистика",
 			"totalCompleted": "Всего выполненных дней",
-			"weekdayChartTitle": "Выполнения / День недели"
+			"weekdayChartTitle": "Выполнения по дням недели",
+			"weekdayChartDesc": "Распределение активности по дням",
+			"totalCompletedTitle": "Выполнено раз",
+			"totalCompletedDesc": "За этот год"
 		}
 	},
 	"menu": {

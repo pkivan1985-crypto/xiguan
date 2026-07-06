@@ -1,16 +1,12 @@
 :root {
 	--toolbar-height: 56px;
-	--toolbar-padding-bottom: 8px;
 }
 
 .wrapper {
-	position: sticky;
-	top: 0;
-	z-index: 5;
-	height: calc(var(--toolbar-height) + var(--toolbar-padding-bottom));
-	padding-bottom: var(--toolbar-padding-bottom);
+	height: var(--toolbar-height);
 	background-color: var(--bg);
-	box-shadow: 0 5px 5px color-mix(in srgb, var(--bg) 50%, transparent);
+
+	/* box-shadow: 0 5px 5px color-mix(in srgb, var(--bg) 50%, transparent); */
 }
 
 /* .toolbar */
@@ -28,6 +24,11 @@
 	display: flex;
 	gap: 8px;
 	height: 100%;
+}
+
+.toolbarActionsWrapper button {
+	/* Light box-shadow visible only on light theme */
+	box-shadow: var(--shadow-lg);
 }
 
 /* selectionToolbar */
@@ -56,7 +57,7 @@
 	aspect-ratio: 3 / 2;
 	font-weight: bold;
 	background-color: var(--bg-color-tertiary);
-	border-radius: 16px;
+	border-radius: calc(var(--border-radius-secondary) - 4px);
 }
 
 .selectionLabel {
