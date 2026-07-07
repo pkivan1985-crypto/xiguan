@@ -58,6 +58,7 @@ export interface NoteState {
 	enterSelectionMode: (initialId?: string) => void;
 	exitSelectionMode: () => void;
 	toggleSelect: (id: string) => void;
+	toggleSelectMany: (ids: string[]) => void;
 
 	notesDispatch: (action: NoteAction) => void;
 

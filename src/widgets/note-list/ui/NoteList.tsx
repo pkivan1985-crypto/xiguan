@@ -1,4 +1,5 @@
 import styles from './NoteList.module.css';
+import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { groupBy, startCase } from 'es-toolkit';
@@ -50,6 +51,7 @@ function NoteList(props: NoteListProps) {
 	// Management actions to trigger or modify bulk selection state
 	const enterSelectionMode = useNotesStore((s) => s.enterSelectionMode);
 	const toggleSelect = useNotesStore((s) => s.toggleSelect);
+	const toggleSelectMany = useNotesStore((s) => s.toggleSelectMany);
 
 	// Actions and menu controls
 	const openNoteForm = useNoteFormStore((s) => s.openEdit);
@@ -187,11 +189,27 @@ function NoteList(props: NoteListProps) {
 									<AnimatePresence mode='popLayout' propagate>
 										<motion.small
 											key={groupKey}
-											className={styles.monthLabel}
+											className={clsx(
+												styles.monthLabel,
+												isSelectionMode && styles.monthLabelSelectable
+											)}
 											variants={monthLabelVariants}
 											initial='initial'
 											animate='animate'
 											exit='exit'
+											// In selection mode the label toggles selection
+											// of all notes in this month group only
+											role={isSelectionMode ? 'button' : undefined}
+											tabIndex={isSelectionMode ? 0 : undefined}
+											onClick={() => {
+												if (isSelectionMode) toggleSelectMany(notes.map((n) => n.id));
+											}}
+											onKeyDown={(e) => {
+												if (isSelectionMode && (e.key === 'Enter' || e.key === ' ')) {
+													e.preventDefault();
+													toggleSelectMany(notes.map((n) => n.id));
+												}
+											}}
 										>
 											{startCase(monthLabels[monthIndex])}
 										</motion.small>

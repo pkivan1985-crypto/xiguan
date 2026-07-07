@@ -38,3 +38,18 @@
 	border-radius: var(--border-radius-tertiary);
 	box-shadow: 0 0 10px color-mix(in srgb, var(--bg) 50%, transparent);
 }
+
+/* in selection mode the label toggles selection of its month group */
+.monthLabelSelectable {
+	pointer-events: auto;
+	cursor: pointer;
+	transition: filter 0.15s ease;
+}
+
+.monthLabelSelectable:hover {
+	filter: brightness(1.2);
+}
+
+.monthLabelSelectable:active {
+	filter: brightness(0.9);
+}

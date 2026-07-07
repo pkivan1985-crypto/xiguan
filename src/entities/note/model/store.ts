@@ -89,6 +89,26 @@ export const useNotesStore = create<NoteState>()(
 				return { selectedIds: nextSelected, isSelectionMode };
 			}),
 
+			toggleSelectMany: (ids) => set((s) => {
+				const nextSelected = new Set(s.selectedIds);
+
+				// Select the whole group unless every note in it
+				// is already selected — then deselect the group
+				const allSelected = ids.length > 0 && ids.every((id) => nextSelected.has(id));
+
+				for (const id of ids) {
+					if (allSelected) {
+						nextSelected.delete(id);
+					} else {
+						nextSelected.add(id);
+					}
+				}
+
+				const isSelectionMode = nextSelected.size > 0;
+
+				return { selectedIds: nextSelected, isSelectionMode };
+			}),
+
 			notesDispatch: (action) => set(
 				(s) => ({ notes: notesReducer(s.notes, action) })
 			),
