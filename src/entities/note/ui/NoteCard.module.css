@@ -12,7 +12,6 @@
 	font-weight: 400;
     overflow-wrap: break-word;
 	white-space: pre-wrap;
-	background-color: var(--bg-color-primary);
 	border-radius: var(--border-radius-secondary);
 }
 

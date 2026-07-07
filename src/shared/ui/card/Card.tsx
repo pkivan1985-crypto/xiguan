@@ -1,7 +1,7 @@
 import styles from './Card.module.css';
+import clsx from 'clsx';
 import { type CSSProperties, type ReactNode } from 'react';
 import CardHeader from './CardHeader';
-import clsx from 'clsx';
 
 interface CardProps {
 	title?: string;
@@ -27,7 +27,8 @@ function Card(props: CardProps) {
 		style,
 		className,
 		childrenClassName,
-		onClick
+		onClick,
+		...restProps
 	} = props;
 
 	return (
@@ -35,6 +36,7 @@ function Card(props: CardProps) {
 			style={style}
 			className={clsx(styles.card, className)}
 			onClick={onClick}
+			{...restProps}
 		>
 			{title && (
 				<CardHeader

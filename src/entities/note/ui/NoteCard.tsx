@@ -60,7 +60,7 @@ function NoteCard(props: NoteCardProps) {
 		if (isLongPressedRef.current) {
 			isLongPressedRef.current = false;
 			return;
-		};
+		}
 
 		onCardClick();
 	};
@@ -70,7 +70,8 @@ function NoteCard(props: NoteCardProps) {
 	return (
 		<Card
 			{...bind()}
-			className={clsx(
+			style={{ padding: 0 }}
+			childrenClassName={clsx(
 				styles.note,
 				isSelected && styles.isSelected
 			)}
