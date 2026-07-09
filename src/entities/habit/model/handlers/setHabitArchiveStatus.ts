@@ -25,7 +25,7 @@ function setHabitArchiveStatus(params: Params): Habit[] {
 
 	// Sort archived habits to the end of the list
 	return nextHabits.sort(
-		(a, b) => Number(a.isArchived) - Number(b.isArchived)
+		(a, b) => Number(!!a.isArchived) - Number(!!b.isArchived)
 	);
 }
 
