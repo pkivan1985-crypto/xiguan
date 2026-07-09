@@ -157,14 +157,14 @@
 			"restoreConfirm": "¿Seguro que quieres restaurar este hábito?"
 		},
 		"form": {
-			"colorDesc": "Los puntos indican colores que ya están en uso. Aun así puedes reutilizarlos.",
+			"colorDesc": "Los puntos marcan colores en uso. Puedes reutilizarlos.",
 			"colorTitle": "Color",
 			"errors": {
 				"alreadyExists": "Ya existe."
 			},
 			"frequencyDesc": "Veces al día que quieres repetir este hábito.",
 			"frequencyTitle": "Frecuencia",
-			"iconDesc": "Los iconos atenuados ya están en uso. Aun así puedes reutilizarlos.",
+			"iconDesc": "Los iconos atenuados ya están en uso. Puedes reutilizarlos.",
 			"iconTitle": "Icono",
 			"namePlaceholder": "Nombre del hábito...",
 			"nameTitle": "Nombre",
@@ -197,14 +197,14 @@
 			"currentStreak": "Actual",
 			"longestStreak": "Máxima",
 			"monthlyChartTitle": "Cumplimientos por mes",
-			"monthlyChartDesc": "Distribución de los cumplimientos a lo largo de los meses",
+			"monthlyChartDesc": "Distribución de cumplimientos por mes",
 			"streak": "Racha",
 			"streakHistoryDesc": "Muestra rachas de 2 días o más",
 			"streakHistoryTitle": "Historial de rachas",
 			"title": "Estadísticas",
 			"totalCompleted": "Días completados en total",
-			"weekdayChartTitle": "Cumplimientos por día de la semana",
-			"weekdayChartDesc": "Distribución de los cumplimientos a lo largo de los días",
+			"weekdayChartTitle": "Cumplimientos por día",
+			"weekdayChartDesc": "Distribución de cumplimientos por día",
 			"totalCompletedTitle": "Cumplimientos totales",
 			"totalCompletedDesc": "Veces cumplido durante este año"
 		}
