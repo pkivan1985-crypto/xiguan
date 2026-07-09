@@ -260,7 +260,8 @@
 				"export": {
 					"desc": "Save a backup data to your device",
 					"dialogs": {
-						"exportConfirm": "Download backup file to your device?"
+						"exportConfirm": "Download backup file to your device?",
+						"passwordPrompt": "Optional: enter a password to encrypt the backup. Leave empty to export as plain JSON."
 					},
 					"title": "Export"
 				},
@@ -268,9 +269,13 @@
 					"desc": "Upload your app data from a backup file",
 					"notifications": {
 						"error": "Something went wrong during import.",
-						"success": "Data imported successfully! The application will now reload."
+						"success": "Data imported successfully! The application will now reload.",
+						"wrongPassword": "Decryption failed. The password may be incorrect or the file is corrupted."
 					},
-					"title": "Import"
+					"title": "Import",
+					"dialogs": {
+						"passwordPrompt": "This backup is encrypted. Enter the password to decrypt it:"
+					}
 				},
 				"sectionTitle": "Backup"
 			},

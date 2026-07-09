@@ -256,7 +256,8 @@
 				"export": {
 					"desc": "",
 					"dialogs": {
-						"exportConfirm": ""
+						"exportConfirm": "",
+						"passwordPrompt": "Opcional: introduce una contraseña para cifrar la copia de seguridad. Déjalo vacío para exportar como JSON sin cifrar."
 					},
 					"title": ""
 				},
@@ -264,9 +265,13 @@
 					"desc": "",
 					"notifications": {
 						"error": "",
-						"success": ""
+						"success": "",
+						"wrongPassword": "Error al descifrar. La contraseña puede ser incorrecta o el archivo está dañado."
 					},
-					"title": ""
+					"title": "",
+					"dialogs": {
+						"passwordPrompt": "Esta copia de seguridad está cifrada. Introduce la contraseña para descifrarla:"
+					}
 				},
 				"sectionTitle": ""
 			},

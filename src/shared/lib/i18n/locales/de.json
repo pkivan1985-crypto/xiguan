@@ -256,7 +256,8 @@
 				"export": {
 					"desc": "",
 					"dialogs": {
-						"exportConfirm": ""
+						"exportConfirm": "",
+						"passwordPrompt": "Optional: Passwort eingeben, um das Backup zu verschlüsseln. Leer lassen, um als unverschlüsseltes JSON zu exportieren."
 					},
 					"title": ""
 				},
@@ -264,9 +265,13 @@
 					"desc": "",
 					"notifications": {
 						"error": "",
-						"success": ""
+						"success": "",
+						"wrongPassword": "Entschlüsselung fehlgeschlagen. Das Passwort ist möglicherweise falsch oder die Datei ist beschädigt."
 					},
-					"title": ""
+					"title": "",
+					"dialogs": {
+						"passwordPrompt": "Dieses Backup ist verschlüsselt. Passwort zum Entschlüsseln eingeben:"
+					}
 				},
 				"sectionTitle": ""
 			},

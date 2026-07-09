@@ -261,7 +261,8 @@
 				"export": {
 					"desc": "保存备份数据至本地",
 					"dialogs": {
-						"exportConfirm": "下载备份文件？"
+						"exportConfirm": "下载备份文件？",
+						"passwordPrompt": "可选：输入密码以加密备份。留空则导出为未加密的 JSON。"
 					},
 					"title": "导出"
 				},
@@ -269,9 +270,13 @@
 					"desc": "从备份文件导入应用数据",
 					"notifications": {
 						"error": "导入过程中出错。",
-						"success": "导入成功！应用即将重载。"
+						"success": "导入成功！应用即将重载。",
+						"wrongPassword": "解密失败。密码可能不正确，或文件已损坏。"
 					},
-					"title": "导入"
+					"title": "导入",
+					"dialogs": {
+						"passwordPrompt": "此备份已加密。请输入密码进行解密："
+					}
 				},
 				"sectionTitle": "备份"
 			},

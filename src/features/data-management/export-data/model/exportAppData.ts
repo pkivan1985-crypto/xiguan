@@ -1,14 +1,20 @@
 import i18n from 'i18next';
 import { get } from 'idb-keyval';
 import { STORAGE_KEYS } from '@shared/const';
+import { encryptJsonWithPassword } from '@shared/lib/crypto';
 import { formatDate } from '@shared/lib/date-time';
 
 /**
- * Downloads a JSON file containing app data.
+ * Downloads a JSON file containing app data,
+ * optionally encrypted with a user-provided password.
  */
 async function exportAppData() {
 	// Notify user before starting the download
 	if (window.confirm(i18n.t('menu.dataManagement.backup.export.dialogs.exportConfirm'))) {
+		// Optional password for an encrypted backup; cancel aborts the export
+		const password = window.prompt(i18n.t('menu.dataManagement.backup.export.dialogs.passwordPrompt'), '');
+		if (password === null) return;
+
 		// Collect data from all storage keys
 		const [habits, notes, achievements] = await Promise.all([
 			get(STORAGE_KEYS.HABITS),
@@ -22,7 +28,11 @@ async function exportAppData() {
 			[STORAGE_KEYS.ACHIEVEMENTS]: achievements
 		};
 
-		const jsonStr = JSON.stringify(dataToExport);
+		// Keep the plain JSON format when no password was provided
+		const jsonStr = password
+			? await encryptJsonWithPassword(JSON.stringify(dataToExport), password)
+			: JSON.stringify(dataToExport);
+
 		const blob = new Blob([jsonStr], { type: 'application/json' });
 		const url = URL.createObjectURL(blob);
 

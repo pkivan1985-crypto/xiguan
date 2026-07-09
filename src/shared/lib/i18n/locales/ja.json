@@ -256,7 +256,8 @@
 				"export": {
 					"desc": "",
 					"dialogs": {
-						"exportConfirm": ""
+						"exportConfirm": "",
+						"passwordPrompt": "任意: バックアップを暗号化するパスワードを入力してください。空欄のままにすると暗号化せずに JSON としてエクスポートします。"
 					},
 					"title": ""
 				},
@@ -264,9 +265,13 @@
 					"desc": "",
 					"notifications": {
 						"error": "",
-						"success": ""
+						"success": "",
+						"wrongPassword": "復号に失敗しました。パスワードが間違っているか、ファイルが破損している可能性があります。"
 					},
-					"title": ""
+					"title": "",
+					"dialogs": {
+						"passwordPrompt": "このバックアップは暗号化されています。復号するパスワードを入力してください:"
+					}
 				},
 				"sectionTitle": ""
 			},
