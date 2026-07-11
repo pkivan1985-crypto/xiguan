@@ -1,114 +1,120 @@
-::-webkit-scrollbar {
-	display: none;
-}
-
--webkit-outer-spin-button,
--webkit-inner-spin-button {
-    margin: 0;
-    appearance: none;
-}
-
-input[type='number'] {
-    appearance: textfield;
-}
-
 * {
 	box-sizing: border-box;
 	padding: 0;
 	margin: 0;
 }
-
 :root {
-	/* https://developer.chrome.com/docs/css-ui/edge-to-edge */
-	--safe-area-max-inset-bottom: env(safe-area-max-inset-bottom, 36px);
+	font-family: 'PingFang SC', 'Microsoft YaHei UI', 'Noto Sans CJK SC', system-ui, sans-serif;
+	font-synthesis: none;
+	color-scheme: light dark;
+	text-rendering: optimizelegibility;
+
 	--app-width: 640px;
-	--header-height: 80px;
-	--accent-color: dodgerblue;
-    --color-primary: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 94%));
-    --color-secondary: light-dark(hsl(0deg 0% 45%), hsl(0deg 0% 62%));
-    --bg: light-dark(hsl(0deg 0% 98%), black);
-    --bg-color-primary: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 8%));
-    --bg-color-secondary: light-dark(hsl(0deg 0% 92%), hsl(0deg 0% 16%));
-    --bg-color-tertiary: light-dark(hsl(0deg 0% 84%), hsl(0deg 0% 24%));
-	--border-radius-primary: 36px;
-	--border-radius-secondary: 24px;
+	--page-bg: light-dark(#f3f7f8, #0d171b);
+	--surface-color: light-dark(#fff, #152329);
+	--text-color: light-dark(#173247, #e9f1f2);
+	--muted-color: light-dark(#617780, #9bb0b7);
+	--accent-color: light-dark(#167d6b, #54b9a6);
+	--accent-soft: light-dark(#e1f1ed, #173b36);
+	--achievement-color: light-dark(#d99a32, #efbb62);
+	--trail-color: light-dark(#9cb4b9, #60777d);
+	--border-color: light-dark(#d8e3e6, #2a3b41);
+	--border-strong: light-dark(#b9cacf, #496067);
+	--error-color: light-dark(#b84a3a, #e17b6d);
+	--radius-lg: 26px;
+	--shadow-sm: 0 8px 22px rgb(23 50 71 / 7%);
+	--shadow-md: 0 18px 48px rgb(23 50 71 / 14%);
+
+	/* Compatibility aliases for retained DoHabit UI infrastructure. */
+	--bg: var(--page-bg);
+	--bg-color-primary: var(--surface-color);
+	--bg-color-secondary: var(--border-color);
+	--bg-color-tertiary: var(--border-strong);
+	--color-primary: var(--text-color);
+	--color-secondary: var(--muted-color);
+	--border-radius-primary: 30px;
+	--border-radius-secondary: 22px;
 	--border-radius-tertiary: 14px;
 	--input-height-primary: 3rem;
-
-	/* shadow */
-	--shadow-sm: 0 0 4px rgb(0 0 0 / 5%);
-  	--shadow-md: 0 0 8px rgb(0 0 0 / 6%);
-  	--shadow-lg: 0 0 12px rgb(0 0 0 / 8%);
 }
 
-/* Override LightningCSS polyfill variables when dark theme is forced */
-html[style*="color-scheme: dark"] {
+html[style*='color-scheme: dark'] {
 	--lightningcss-light: ;
-  	--lightningcss-dark: initial;
+	--lightningcss-dark: initial;
 }
 
-/* Override LightningCSS polyfill variables when light theme is forced */
-html[style*="color-scheme: light"] {
-  	--lightningcss-light: initial;
-  	--lightningcss-dark: ;
+html[style*='color-scheme: light'] {
+	--lightningcss-light: initial;
+	--lightningcss-dark: ;
 }
 
 html,
-body {
+body,
+#root {
+	min-height: 100%;
+}
+
+html {
 	overscroll-behavior-y: contain;
+	color: var(--text-color);
+	background: var(--page-bg);
 }
 
 body {
-	margin: 0;
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans',
-		'Droid Sans', 'Helvetica Neue', sans-serif;
+	min-width: 320px;
+	min-height: 100dvh;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
 
-code {
-	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-}
-
-html {
-	color: var(--color-primary);
-	user-select: none;
-	color-scheme: light dark;
-	background-color: var(--bg);
-}
-
 a {
-	color: unset;
+	color: inherit;
 	text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+	font: inherit;
+}
+
+button,
+a,
+[role='button'] {
+	-webkit-tap-highlight-color: transparent;
 }
 
 button {
 	color: inherit;
-	border: none;
-}
-
-/* Remove mobile tap highlight */
-button,
-a,
-[role="button"] {
-    -webkit-tap-highlight-color: transparent;
 	cursor: pointer;
+	border: 0;
 }
 
-input {
-	background-color: var(--bg-color-primary);
-	border: none;
-	border-radius: var(--border-radius-secondary);
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+	outline: 3px solid color-mix(in srgb, var(--accent-color) 55%, transparent);
+	outline-offset: 3px;
+}
+
+input[type='number'] {
+	appearance: textfield;
 }
 
 li {
 	list-style: none;
 }
 
-textarea,
-input,
-button,
-select {
-    font-family: inherit;
-    font-size: inherit;
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+	}
 }

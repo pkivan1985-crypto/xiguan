@@ -1,0 +1,47 @@
+.page {
+	display: grid;
+	gap: 16px;
+}
+.miniSlots {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 7px;
+}
+
+.miniSlots span {
+	display: block;
+	aspect-ratio: 0.72;
+	background: var(--page-bg);
+	border: 1px dashed var(--border-strong);
+	border-radius: 10px;
+}
+
+.categories {
+	display: grid;
+	gap: 10px;
+}
+
+.category {
+	display: grid;
+	grid-template-columns: 32px 1fr auto;
+	gap: 10px;
+	align-items: center;
+	min-height: 58px;
+	padding: 10px 12px;
+	background: var(--page-bg);
+	border-radius: 18px;
+}
+
+.category svg {
+	font-size: 1.1rem;
+	color: var(--accent-color);
+}
+
+.category span {
+	font-weight: 700;
+}
+
+.category small {
+	font-size: 0.72rem;
+	color: var(--muted-color);
+}

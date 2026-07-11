@@ -1,58 +1,11 @@
 import { Navigate, type RouteObject } from 'react-router';
-import { AchievementsPage } from '@pages/achievements';
-import { AppearancePage } from '@pages/appearance';
-import { ArchivePage } from '@pages/archive';
-import { DataManagementPage } from '@pages/data-management';
-import { DiaryPage } from '@pages/diary';
-import { HabitEditorPage } from '@pages/habit-editor';
-import { MainPage } from '@pages/main';
-import { MenuPage } from '@pages/menu';
-import { HabitStatisticsPage } from '@pages/habit-statistics';
-import { ROUTES, type AppRouteKey } from '@shared/lib/router';
-import { ModalLayout } from '@shared/ui';
-import { StorageInfoPage } from '@pages/storage-info';
-
-/**
- * Individual route definitions for modal sub-pages.
- */
-export const modalChildRoutes: Record<AppRouteKey, RouteObject> = {
-	ACHIEVEMENTS: {
-		path: ROUTES.ACHIEVEMENTS,
-		element: <AchievementsPage />
-	},
-	APPEARANCE: {
-		path: ROUTES.APPEARANCE,
-		element: <AppearancePage />
-	},
-	ARCHIVE: {
-		path: ROUTES.ARCHIVE,
-		element: <ArchivePage />
-	},
-	DATA_MANAGEMENT: {
-		path: ROUTES.DATA_MANAGEMENT,
-		element: <DataManagementPage />
-	},
-	DIARY: {
-		path: ROUTES.DIARY,
-		element: <DiaryPage />
-	},
-	HABIT_EDITOR: {
-		path: ROUTES.HABIT_EDITOR,
-		element: <HabitEditorPage />
-	},
-	MENU: {
-		path: ROUTES.MENU,
-		element: <MenuPage />
-	},
-	STATISTICS: {
-		path: ROUTES.STATISTICS,
-		element: <HabitStatisticsPage />
-	},
-	STORAGE_INFO: {
-		path: ROUTES.STORAGE_INFO,
-		element: <StorageInfoPage />
-	}
-};
+import { HomePage } from '@pages/home';
+import { TodayPage } from '@pages/today';
+import { DeckPage } from '@pages/deck';
+import { HistoryPage } from '@pages/history';
+import { SettingsPage } from '@pages/settings';
+import { APP_ROUTES } from '@shared/config';
+import { AppShell } from '@widgets/app-shell';
 
 /**
  * Global route configuration.
@@ -64,17 +17,18 @@ export const modalChildRoutes: Record<AppRouteKey, RouteObject> = {
  */
 export const routeConfig: RouteObject[] = [
 	{
-		path: '/',
-		element: <MainPage />
+		path: APP_ROUTES.HOME,
+		element: <AppShell />,
+		children: [
+			{ index: true, element: <HomePage /> },
+			{ path: APP_ROUTES.TODAY.slice(1), element: <TodayPage /> },
+			{ path: APP_ROUTES.DECK.slice(1), element: <DeckPage /> },
+			{ path: APP_ROUTES.HISTORY.slice(1), element: <HistoryPage /> },
+			{ path: APP_ROUTES.SETTINGS.slice(1), element: <SettingsPage /> },
+		],
 	},
 	{
-		path: '/modal',
-		element: <ModalLayout />,
-		children: Object.values(modalChildRoutes)
-	},
-	{
-		/* Fallback for undefined routes */
 		path: '*',
-		element: <Navigate to='/' />
-	}
+		element: <Navigate to={APP_ROUTES.HOME} replace />,
+	},
 ];

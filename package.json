@@ -1,10 +1,9 @@
 {
-	"name": "dohabit",
-	"description": "Build lasting habits with zero friction. DoHabit is a minimalist, offline tracker. No accounts—just your progress, charts, and a personal habit journal.",
+	"name": "repeat-outcome",
+	"description": "把每天真实完成的重复行动，变成可累计、可回顾的可见成果。",
 	"private": true,
 	"license": "AGPL-3.0-only",
 	"version": "0.50.0",
-	"homepage": "https://inikann.github.io/DoHabit/",
 	"type": "module",
 	"packageManager": "npm@11.18.0",
 	"engines": {

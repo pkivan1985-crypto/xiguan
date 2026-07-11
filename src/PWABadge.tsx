@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useDialogStore } from '@shared/ui';
@@ -31,27 +32,25 @@ function PWABadge() {
 		}
 	});
 
-	function handleClose() {
-		setNeedRefresh(false);
-	}
+	useEffect(() => {
+		if (!needRefresh) return;
 
-	if (needRefresh) {
 		openDialog({
 			title: t('app.update.title'),
 			text: t('app.update.text'),
 			actions: [
 				{
 					label: t('common.reload'),
-					onClick: () => updateServiceWorker(true)
+					onClick: () => updateServiceWorker(true),
 				},
 				{
 					label: t('common.close'),
-					onClick: () => handleClose(),
-					style: { backgroundColor: 'var(--bg-color-tertiary)' }
-				}
-			]
+					onClick: () => setNeedRefresh(false),
+					style: { backgroundColor: 'var(--bg-color-tertiary)' },
+				},
+			],
 		});
-	}
+	}, [needRefresh, openDialog, setNeedRefresh, t, updateServiceWorker]);
 
 	return null;
 }

@@ -394,5 +394,90 @@
 		},
 		"titleLine1": "建立你的习惯。",
 		"titleLine2": "掌握你的数据。"
+	},
+	"shell": {
+		"actions": {
+			"openSettings": "打开设置"
+		},
+		"brand": {
+			"name": "重复成果显化"
+		},
+		"common": {
+			"comingSoon": "后续阶段接通",
+			"noFakeData": "这里只显示真实记录",
+			"shellStage": "M1 应用壳"
+		},
+		"deck": {
+			"categoriesDescription": "卡片创建和管理将在数据与卡套阶段接通。",
+			"categoriesTitle": "卡片大类",
+			"categoryMovement": "运动",
+			"categoryOutput": "输出",
+			"categoryReading": "阅读",
+			"todayDescription": "这里将与今日成果共用同一份当天选择。",
+			"todayTitle": "今日六个位置"
+		},
+		"error": {
+			"dataNotice": "此页面不会清除浏览器中的本地数据。",
+			"description": "应用外壳遇到了问题。可以重新载入，或查看技术详情帮助排查。",
+			"details": "查看详情",
+			"reload": "重新载入",
+			"title": "页面暂时无法打开"
+		},
+		"history": {
+			"emptyDescription": "成功保存每日成果后，行动记录会按本地日期出现在这里。",
+			"emptyTitle": "还没有真实成果记录"
+		},
+		"home": {
+			"calendarDescription": "有真实行动记录的日期才会出现成果标记。",
+			"calendarTitle": "成果月历",
+			"eyebrow": "真实行动 · 逐日累积",
+			"goalsDescription": "创建循环卡和目标后，这里会显示由行动记录计算的进度。",
+			"goalsTitle": "目标进度",
+			"sceneDescription": "应用壳已经就位。真实成果场景将在保存闭环接通后出现。",
+			"sceneTitle": "让重复行动留下看得见的轨迹",
+			"todayAction": "进入今日成果",
+			"todayActionDescription": "查看今日页面结构"
+		},
+		"nav": {
+			"deck": "我的卡套",
+			"history": "历史",
+			"home": "首页",
+			"primary": "主要导航",
+			"settings": "设置与数据",
+			"today": "今日成果"
+		},
+		"settings": {
+			"appearanceTitle": "外观与动效",
+			"dataDescription": "第一阶段没有账号和云同步，未来业务数据只保存在当前浏览器。",
+			"dataTitle": "本地数据",
+			"dataUnavailable": "3.0 导入、导出和清除将在数据结构稳定后接通。当前不会操作旧测试数据。",
+			"installAction": "查看安装方式",
+			"installed": "已安装",
+			"installTitle": "PWA 安装",
+			"license": "项目整体采用 AGPL-3.0；当前底座来源为 DoHabit。",
+			"openSourceTitle": "版本与开源",
+			"pwaStatus": {
+				"BROWSER_ONLY": "当前浏览器需要通过菜单安装或换用支持安装提示的浏览器。",
+				"CAN_INSTALL": "当前浏览器支持直接安装到设备。",
+				"INSTALLED": "应用正在独立窗口中运行。",
+				"IOS_MANUAL": "请使用 Safari 的“添加到主屏幕”。"
+			},
+			"projectSourcePending": "项目源代码仓库将在正式发布前公开。",
+			"reduceMotion": "减少动态效果",
+			"reduceMotionDescription": "关闭页面和组件的非必要运动。",
+			"sourceCode": "DoHabit 底座源代码",
+			"themeDark": "深色",
+			"themeLabel": "外观主题",
+			"themeLight": "浅色",
+			"themeSystem": "系统",
+			"version": "当前版本：{{version}}"
+		},
+		"today": {
+			"slotsDescription": "M3—M4 将接通真实用户卡、当天草稿、整批保存和播放。",
+			"slotsLabel": "六个今日成果位置",
+			"slotsTitle": "今日六个位置",
+			"viewportDescription": "这里只保留播放区域的真实空间，不展示虚构动画或成果。",
+			"viewportTitle": "成果播放区"
+		}
 	}
 }

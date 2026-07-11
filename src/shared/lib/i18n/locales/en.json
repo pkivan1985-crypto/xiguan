@@ -393,5 +393,86 @@
 		},
 		"titleLine1": "Build your routine.",
 		"titleLine2": "Own your data."
+	},
+	"shell": {
+		"actions": { "openSettings": "Open settings" },
+		"brand": { "name": "Visible Repetition" },
+		"common": {
+			"comingSoon": "Available in a later stage",
+			"noFakeData": "Only real records appear here",
+			"shellStage": "M1 application shell"
+		},
+		"deck": {
+			"categoriesDescription": "Card creation and management will be connected in a later stage.",
+			"categoriesTitle": "Card categories",
+			"categoryMovement": "Movement",
+			"categoryOutput": "Output",
+			"categoryReading": "Reading",
+			"todayDescription": "This will share today's selection with the Today page.",
+			"todayTitle": "Six places for today"
+		},
+		"error": {
+			"dataNotice": "This page does not clear local browser data.",
+			"description": "The application shell encountered a problem. Reload it or inspect the technical details.",
+			"details": "View details",
+			"reload": "Reload",
+			"title": "This page cannot open right now"
+		},
+		"history": {
+			"emptyDescription": "After a daily outcome is saved, action records will appear here by local date.",
+			"emptyTitle": "No real outcome records yet"
+		},
+		"home": {
+			"calendarDescription": "A date receives a result marker only after a real action record exists.",
+			"calendarTitle": "Outcome calendar",
+			"eyebrow": "Real actions · accumulated daily",
+			"goalsDescription": "Once cards and goals exist, progress calculated from action records will appear here.",
+			"goalsTitle": "Goal progress",
+			"sceneDescription": "The shell is ready. Real outcome scenes arrive after the save loop is connected.",
+			"sceneTitle": "Make repeated action leave a visible trail",
+			"todayAction": "Open today's outcomes",
+			"todayActionDescription": "View the Today page structure"
+		},
+		"nav": {
+			"deck": "My cards",
+			"history": "History",
+			"home": "Home",
+			"primary": "Primary navigation",
+			"settings": "Settings and data",
+			"today": "Today"
+		},
+		"settings": {
+			"appearanceTitle": "Appearance and motion",
+			"dataDescription": "The first stage has no account or cloud sync. Future business data stays in this browser.",
+			"dataTitle": "Local data",
+			"dataUnavailable": "3.0 import, export, and reset arrive after the data model is stable. Old test data is not touched.",
+			"installAction": "View installation options",
+			"installed": "Installed",
+			"installTitle": "PWA installation",
+			"license": "The project uses AGPL-3.0 and is based on DoHabit.",
+			"openSourceTitle": "Version and open source",
+			"pwaStatus": {
+				"BROWSER_ONLY": "Use the browser menu to install, or use a browser with an install prompt.",
+				"CAN_INSTALL": "This browser can install the app directly.",
+				"INSTALLED": "The app is running in its own window.",
+				"IOS_MANUAL": "Use Add to Home Screen in Safari."
+			},
+			"projectSourcePending": "The project repository will be public before release.",
+			"reduceMotion": "Reduce motion",
+			"reduceMotionDescription": "Disable non-essential page and component motion.",
+			"sourceCode": "DoHabit upstream source",
+			"themeDark": "Dark",
+			"themeLabel": "Color theme",
+			"themeLight": "Light",
+			"themeSystem": "System",
+			"version": "Current version: {{version}}"
+		},
+		"today": {
+			"slotsDescription": "M3–M4 will connect real cards, today's draft, batch saving, and playback.",
+			"slotsLabel": "Six places for today's outcomes",
+			"slotsTitle": "Six places for today",
+			"viewportDescription": "This reserves real playback space without showing fake animation or outcomes.",
+			"viewportTitle": "Outcome playback area"
+		}
 	}
 }

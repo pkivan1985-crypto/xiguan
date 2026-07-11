@@ -11,6 +11,7 @@ export { ModalLayout } from './modal-layout/ui/ModalLayout';
 export { Overlay } from './overlay/Overlay';
 export { Placeholder } from './placeholder/Placeholder';
 export { SectionHeader } from './section-header/SectionHeader';
+export { ShellSection } from './shell-section/ShellSection';
 export { SegmentedControl } from './segmented-control/SegmentedControl';
 export { Switch } from './switch/Switch';
 export { YearPicker } from './year-picker/YearPicker';

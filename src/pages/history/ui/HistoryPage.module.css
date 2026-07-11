@@ -1,0 +1,44 @@
+.empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: calc(100dvh - 240px);
+	padding: 36px 24px;
+	text-align: center;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 32px;
+}
+.icon {
+	display: grid;
+	place-items: center;
+	width: 70px;
+	height: 70px;
+	margin-bottom: 20px;
+	font-size: 1.8rem;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 50%;
+}
+
+.empty h2 {
+	margin-bottom: 8px;
+	font-size: 1.35rem;
+}
+
+.empty p {
+	max-width: 29ch;
+	font-size: 0.92rem;
+	line-height: 1.6;
+	color: var(--muted-color);
+}
+
+.empty span {
+	padding: 6px 10px;
+	margin-top: 18px;
+	font-size: 0.72rem;
+	color: var(--muted-color);
+	background: var(--page-bg);
+	border-radius: 99px;
+}
