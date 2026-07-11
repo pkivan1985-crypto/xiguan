@@ -4,7 +4,7 @@ import { parseQuantityToBase, seedSystemDefinitions } from '@entities/card-templ
 import type { LongTermGoal, StageGoal } from '@entities/goal';
 import type { UserCard } from '@entities/user-card';
 import { parseLocalDate } from '@shared/lib/date';
-import type { RepeatOutcomeDatabase } from '@shared/lib/db';
+import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 
 export interface CreateRunningCardInput {
 	cardTitle: string;
@@ -106,4 +106,8 @@ export async function createRunningCard(
 		await stageGoals.add(stageGoal);
 	});
 	return { userCard, longTermGoal, stageGoal };
+}
+
+export function createRunningCardInApp(input: CreateRunningCardInput): Promise<CreateRunningCardResult> {
+	return createRunningCard(appDatabase, input);
 }

@@ -4,10 +4,9 @@ import { useReducer, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiArrowRight, FiCalendar, FiCheck, FiChevronLeft, FiFlag, FiTarget, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router';
-import { createRunningCard } from '@features/create-running-card';
+import { createRunningCardInApp } from '@features/create-running-card';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
-import { appDatabase } from '@shared/lib/db';
 import { createInitialFormState, formReducer, type FormField, validateCurrentStep } from '../model/createRunningCardForm';
 
 const STEP_KEYS = ['card', 'longTerm', 'stage', 'review'] as const;
@@ -30,7 +29,7 @@ function CreateRunningCardPage() {
 		if (state.status === 'submitting') return;
 		dispatch({ type: 'submit' });
 		try {
-			await createRunningCard(appDatabase, {
+			await createRunningCardInApp({
 				...state.values,
 				endDate: state.values.endDate || undefined,
 				nowIso: new Date().toISOString(),

@@ -7,7 +7,7 @@ import { calculateGoalProgress, type GoalProgress, type LongTermGoal, type Stage
 import type { TodayDraft } from '@entities/today-draft';
 import type { UserCard } from '@entities/user-card';
 import type { LocalDate } from '@shared/lib/date';
-import type { RepeatOutcomeDatabase } from '@shared/lib/db';
+import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 
 export interface DeckSlotView {
 	slotIndex: number;
@@ -103,4 +103,8 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 	});
 
 	return { slots, categories };
+}
+
+export function loadCardDeckForDate(localDate: LocalDate): Promise<DeckView> {
+	return loadCardDeck(appDatabase, localDate);
 }

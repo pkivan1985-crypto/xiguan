@@ -2,10 +2,9 @@ import styles from './DeckPage.module.css';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { loadCardDeck, type DeckView } from '@features/load-card-deck';
+import { loadCardDeckForDate, type DeckView } from '@features/load-card-deck';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
-import { appDatabase } from '@shared/lib/db';
 import { CardDeck } from '@widgets/card-deck';
 import { TodayCardSlots } from '@widgets/today-card-slots';
 
@@ -18,7 +17,7 @@ function DeckPage() {
 
 	useEffect(() => {
 		let active = true;
-		loadCardDeck(appDatabase, formatLocalDate(new Date()))
+		loadCardDeckForDate(formatLocalDate(new Date()))
 			.then((nextView) => { if (active) setView(nextView); })
 			.catch(() => { if (active) setError(true); });
 		return () => { active = false; };
