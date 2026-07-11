@@ -34,6 +34,18 @@ test('reports package metadata and lockfile drift', () => {
 	assert.ok(errors.includes('package-lock root dependencies.react must be 19.2.7; received ^19.2.0'));
 	assert.ok(errors.includes('package-lock lockfileVersion must be 3; received 2'));
 });
+test('requires the approved M2 data dependencies at exact versions', () => {
+	const input = validInput();
+	delete input.packageJson.dependencies.dexie;
+	delete input.lockfile.packages[''].dependencies.dexie;
+	delete input.packageJson.devDependencies['fake-indexeddb'];
+	delete input.lockfile.packages[''].devDependencies['fake-indexeddb'];
+	const errors = validateProjectConfig(input);
+	assert.ok(errors.includes('dependencies.dexie must be 4.4.4; received undefined'));
+	assert.ok(errors.includes('package-lock root dependencies.dexie must be 4.4.4; received undefined'));
+	assert.ok(errors.includes('devDependencies.fake-indexeddb must be 6.2.5; received undefined'));
+	assert.ok(errors.includes('package-lock root devDependencies.fake-indexeddb must be 6.2.5; received undefined'));
+});
 test('extracts npm version from the npm user agent', () => {
 	assert.equal(npmVersionFromUserAgent('npm/11.18.0 node/v24.17.0 win32 x64'), '11.18.0');
 	assert.equal(npmVersionFromUserAgent(''), '');

@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-export const EXPECTED_DEPENDENCIES = Object.freeze({ 'framer-motion': '12.42.2', react: '19.2.7', 'react-dom': '19.2.7', 'react-router': '7.18.1', zustand: '5.0.14' });
-export const EXPECTED_DEV_DEPENDENCIES = Object.freeze({ '@testing-library/react': '16.3.2', '@vitejs/plugin-react': '6.0.3', typescript: '6.0.3', vite: '8.1.4', 'vite-plugin-pwa': '1.3.0', vitest: '4.1.10' });
+export const EXPECTED_DEPENDENCIES = Object.freeze({ dexie: '4.4.4', 'framer-motion': '12.42.2', react: '19.2.7', 'react-dom': '19.2.7', 'react-router': '7.18.1', zustand: '5.0.14' });
+export const EXPECTED_DEV_DEPENDENCIES = Object.freeze({ '@testing-library/react': '16.3.2', '@vitejs/plugin-react': '6.0.3', 'fake-indexeddb': '6.2.5', typescript: '6.0.3', vite: '8.1.4', 'vite-plugin-pwa': '1.3.0', vitest: '4.1.10' });
 const FORBIDDEN_DEPENDENCIES = ['cross-var', 'gh-pages', 'wrangler'];
 const FORBIDDEN_SCRIPTS = ['deploy:test', 'deploy:prod'];
 
