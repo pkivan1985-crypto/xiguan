@@ -11,8 +11,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	min-height: 104px;
-	padding: max(18px, env(safe-area-inset-top, 0px)) 20px 20px;
+	min-height: 64px;
+	padding: max(8px, env(safe-area-inset-top, 0px)) 14px 6px;
 	overflow: hidden;
 	background: color-mix(in srgb, var(--page-bg) 92%, transparent);
 	border-bottom: 1px solid var(--border-color);
@@ -20,16 +20,12 @@
 }
 
 .brand {
-	margin-bottom: 3px;
-	font-size: 0.75rem;
-	font-weight: 750;
-	color: var(--accent-color);
-	letter-spacing: 0.12em;
+	display: none;
 }
 
 .title {
-	font-size: clamp(1.45rem, 6vw, 1.8rem);
-	line-height: 1.1;
+	font-size: 1rem;
+	line-height: 1.2;
 }
 
 .settingsLink {
@@ -37,20 +33,13 @@
 	place-items: center;
 	width: 46px;
 	height: 46px;
-	font-size: 1.25rem;
-	background: var(--surface-color);
-	border: 1px solid var(--border-color);
-	border-radius: 50%;
-	box-shadow: var(--shadow-sm);
+	font-size: 1.1rem;
+	background: transparent;
+	border-radius: 14px;
 }
 
 .trail {
-	position: absolute;
-	right: 78px;
-	bottom: 17px;
-	display: flex;
-	gap: 6px;
-	align-items: center;
+	display: none;
 }
 
 .trail::before,
@@ -75,7 +64,7 @@
 }
 
 .content {
-	padding: 20px;
+	padding: 16px;
 }
 
 .navigation {

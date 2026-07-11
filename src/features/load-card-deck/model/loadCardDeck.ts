@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string -- Table names, indexes, statuses, and modes are domain identifiers. */
 import type { ActionRecord } from '@entities/action-record';
 import type { CardTemplate } from '@entities/card-template';
 import { seedSystemDefinitions } from '@entities/card-template';

@@ -6,6 +6,7 @@ export const APP_ROUTES = {
 	HOME: '/',
 	TODAY: '/today',
 	DECK: '/deck',
+	DECK_NEW: '/deck/new',
 	HISTORY: '/history',
 	SETTINGS: '/settings',
 } as const;

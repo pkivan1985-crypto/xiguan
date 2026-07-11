@@ -1,0 +1,135 @@
+.categories {
+	display: grid;
+	gap: 10px;
+}
+
+.category {
+	overflow: hidden;
+	background: var(--surface-color);
+	border-radius: 24px;
+	box-shadow: var(--shadow-sm);
+}
+
+.categoryHeader {
+	display: grid;
+	grid-template-columns: 30px 1fr auto;
+	gap: 10px;
+	align-items: center;
+	min-height: 56px;
+	padding: 8px 14px;
+}
+
+.categoryHeader > strong {
+	font-size: 0.82rem;
+}
+
+.categoryHeader > small {
+	font-size: 0.7rem;
+	color: var(--muted-color);
+}
+
+.categoryHeader button {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 4px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--accent-color);
+	background: transparent;
+}
+
+.categoryIcon {
+	display: grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	color: var(--sport-color, #65c95d);
+	background: var(--sport-soft, #e9f6e7);
+	border-radius: 14px;
+}
+
+.reading .categoryIcon {
+	color: var(--reading-color, #d99a32);
+	background: var(--reading-soft, #f8efdf);
+}
+
+.output .categoryIcon {
+	color: var(--output-color, #b35cc5);
+	background: var(--output-soft, #f3e8f5);
+}
+
+.card {
+	display: grid;
+	gap: 12px;
+	padding: 13px 14px;
+	margin: 0 10px 10px;
+	background: var(--bg-color-secondary);
+	border-radius: 18px;
+}
+
+.card header,
+.card header > div {
+	display: flex;
+}
+
+.card header {
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.card header > div {
+	flex-direction: column;
+	gap: 2px;
+}
+
+.card header strong {
+	font-size: 0.82rem;
+}
+
+.card header small,
+.goalLabel {
+	font-size: 0.66rem;
+	color: var(--muted-color);
+}
+
+.goal {
+	display: grid;
+	gap: 5px;
+}
+
+.goal > div:first-child {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 1px 8px;
+}
+
+.goalLabel {
+	grid-column: 1 / -1;
+}
+
+.goal span,
+.goal b {
+	font-size: 0.7rem;
+}
+
+.track {
+	height: 4px;
+	overflow: hidden;
+	background: var(--border-color);
+	border-radius: 99px;
+}
+
+.track i {
+	display: block;
+	height: 100%;
+	background: var(--sport-color, #65c95d);
+	border-radius: inherit;
+}
+
+.empty {
+	padding: 0 14px 14px 54px;
+	font-size: 0.72rem;
+	color: var(--muted-color);
+}

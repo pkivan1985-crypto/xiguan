@@ -25,6 +25,12 @@ describe('M1 route configuration', () => {
 		expect(childPaths).not.toContain('menu/achievements');
 	});
 
+	it('publishes the full-screen running-card creation route outside the shell', () => {
+		const createRoute = routeConfig.find((route) => route.path === '/deck/new');
+		expect(createRoute?.element).toBeTruthy();
+		expect(createRoute?.children).toBeUndefined();
+	});
+
 	it('has an unknown-route fallback', () => {
 		expect(routeConfig.some((route) => route.path === '*')).toBe(true);
 	});

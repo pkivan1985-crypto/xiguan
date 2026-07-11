@@ -22,6 +22,12 @@
 	--border-color: light-dark(#d8e3e6, #2a3b41);
 	--border-strong: light-dark(#b9cacf, #496067);
 	--error-color: light-dark(#b84a3a, #e17b6d);
+	--sport-color: light-dark(#52a94c, #65c95d);
+	--sport-soft: light-dark(#e9f6e7, #172617);
+	--reading-color: light-dark(#c68320, #e8ad5c);
+	--reading-soft: light-dark(#f8efdf, #382d1e);
+	--output-color: light-dark(#9e4fb0, #d66be7);
+	--output-soft: light-dark(#f3e8f5, #342039);
 	--radius-lg: 26px;
 	--shadow-sm: 0 8px 22px rgb(23 50 71 / 7%);
 	--shadow-md: 0 18px 48px rgb(23 50 71 / 14%);

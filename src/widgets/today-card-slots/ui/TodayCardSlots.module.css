@@ -1,0 +1,47 @@
+.heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 10px;
+	font-size: 0.82rem;
+	font-weight: 700;
+}
+
+.heading small {
+	font-size: 0.7rem;
+	font-weight: 500;
+	color: var(--muted-color);
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+}
+
+.slot {
+	display: grid;
+	gap: 5px;
+	place-items: center;
+	min-height: 72px;
+	padding: 8px;
+	font-size: 0.7rem;
+	color: var(--muted-color);
+	background: var(--surface-color);
+	border-radius: 16px;
+	box-shadow: var(--shadow-sm);
+}
+
+.slot svg {
+	font-size: 1rem;
+}
+
+.filled {
+	color: var(--sport-color, #65c95d);
+	background: var(--sport-soft, #172617);
+}
+
+.filled span {
+	font-weight: 700;
+	color: var(--text-color);
+}

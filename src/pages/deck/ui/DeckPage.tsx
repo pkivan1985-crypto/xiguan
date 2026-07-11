@@ -1,41 +1,36 @@
 import styles from './DeckPage.module.css';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiBookOpen, FiEdit3, FiHeart } from 'react-icons/fi';
-import { ShellSection } from '@shared/ui';
+import { useNavigate } from 'react-router';
+import { loadCardDeck, type DeckView } from '@features/load-card-deck';
+import { APP_ROUTES } from '@shared/config';
+import { formatLocalDate } from '@shared/lib/date';
+import { appDatabase } from '@shared/lib/db';
+import { CardDeck } from '@widgets/card-deck';
+import { TodayCardSlots } from '@widgets/today-card-slots';
 
 function DeckPage() {
 	const { t } = useTranslation();
-	const categories = [
-		{ label: t('shell.deck.categoryMovement'), icon: FiHeart },
-		{ label: t('shell.deck.categoryReading'), icon: FiBookOpen },
-		{ label: t('shell.deck.categoryOutput'), icon: FiEdit3 },
-	];
+	const navigate = useNavigate();
+	const [view, setView] = useState<DeckView | null>(null);
+	const [error, setError] = useState(false);
+	const [reloadKey, setReloadKey] = useState(0);
+
+	useEffect(() => {
+		let active = true;
+		loadCardDeck(appDatabase, formatLocalDate(new Date()))
+			.then((nextView) => { if (active) setView(nextView); })
+			.catch(() => { if (active) setError(true); });
+		return () => { active = false; };
+	}, [reloadKey]);
+
+	if (error) return <div className={styles.status}><p>{t('shell.deck.loadError')}</p><button type='button' onClick={() => { setError(false); setView(null); setReloadKey((key) => key + 1); }}>{t('shell.deck.retry')}</button></div>;
+	if (!view) return <p className={styles.loading}>{t('shell.deck.loading')}</p>;
 
 	return (
 		<div className={styles.page}>
-			<ShellSection
-				title={t('shell.deck.todayTitle')}
-				description={t('shell.deck.todayDescription')}
-			>
-				<div className={styles.miniSlots} aria-hidden='true'>
-					{Array.from({ length: 6 }, (_, index) => <span key={index} />)}
-				</div>
-			</ShellSection>
-
-			<ShellSection
-				title={t('shell.deck.categoriesTitle')}
-				description={t('shell.deck.categoriesDescription')}
-			>
-				<div className={styles.categories}>
-					{categories.map(({ label, icon: Icon }) => (
-						<div className={styles.category} key={label}>
-							<Icon aria-hidden='true' />
-							<span>{label}</span>
-							<small>{t('shell.common.comingSoon')}</small>
-						</div>
-					))}
-				</div>
-			</ShellSection>
+			<TodayCardSlots slots={view.slots} emptyLabel={t('shell.deck.emptySlot')} sectionLabel={t('shell.deck.todayActive')} />
+			<section><h2>{t('shell.deck.allCards')}</h2><CardDeck categories={view.categories} onCreateRunningCard={() => navigate(APP_ROUTES.DECK_NEW)} copy={{ create: t('shell.deck.create'), comingSoon: t('shell.common.comingSoon'), empty: t('shell.deck.emptyCards'), longTerm: t('shell.deck.longTerm'), stage: t('shell.deck.stage') }} /></section>
 		</div>
 	);
 }

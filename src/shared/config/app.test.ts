@@ -22,6 +22,7 @@ describe('M1 application contract', () => {
 			HOME: '/',
 			TODAY: '/today',
 			DECK: '/deck',
+			DECK_NEW: '/deck/new',
 			HISTORY: '/history',
 			SETTINGS: '/settings',
 		});

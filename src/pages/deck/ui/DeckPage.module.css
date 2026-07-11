@@ -1,48 +1,27 @@
 .page {
 	display: grid;
-	gap: 16px;
+	gap: 20px;
 }
 
-.miniSlots {
-	display: grid;
-	grid-template-columns: repeat(6, 1fr);
-	gap: 7px;
+.page h2 {
+	margin-bottom: 10px;
+	font-size: 0.82rem;
 }
 
-.miniSlots span {
-	display: block;
-	aspect-ratio: 0.72;
-	background: var(--page-bg);
-	border: 1px dashed var(--border-strong);
-	border-radius: 10px;
-}
-
-.categories {
-	display: grid;
-	gap: 10px;
-}
-
-.category {
-	display: grid;
-	grid-template-columns: 32px 1fr auto;
-	gap: 10px;
-	align-items: center;
-	min-height: 58px;
-	padding: 10px 12px;
-	background: var(--page-bg);
-	border-radius: 18px;
-}
-
-.category svg {
-	font-size: 1.1rem;
-	color: var(--accent-color);
-}
-
-.category span {
-	font-weight: 700;
-}
-
-.category small {
-	font-size: 0.72rem;
+.loading,
+.status {
+	padding: 32px 16px;
+	font-size: 0.82rem;
 	color: var(--muted-color);
+	text-align: center;
+}
+
+.status button {
+	min-height: 44px;
+	padding: 0 14px;
+	margin-top: 12px;
+	font-weight: 700;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 22px;
 }
