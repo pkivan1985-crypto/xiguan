@@ -15,8 +15,8 @@
 	--surface-color: light-dark(#fff, #152329);
 	--text-color: light-dark(#173247, #e9f1f2);
 	--muted-color: light-dark(#617780, #9bb0b7);
-	--accent-color: light-dark(#167d6b, #54b9a6);
-	--accent-soft: light-dark(#e1f1ed, #173b36);
+	--accent-color: light-dark(#1677d2, dodgerblue);
+	--accent-soft: light-dark(#e4f1fd, #152c43);
 	--achievement-color: light-dark(#d99a32, #efbb62);
 	--trail-color: light-dark(#9cb4b9, #60777d);
 	--border-color: light-dark(#d8e3e6, #2a3b41);
