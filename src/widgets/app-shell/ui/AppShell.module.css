@@ -3,6 +3,7 @@
 	min-height: 100dvh;
 	padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px));
 }
+
 .header {
 	position: sticky;
 	top: 0;

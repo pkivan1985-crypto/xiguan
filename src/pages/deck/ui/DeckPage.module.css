@@ -2,6 +2,7 @@
 	display: grid;
 	gap: 16px;
 }
+
 .miniSlots {
 	display: grid;
 	grid-template-columns: repeat(6, 1fr);

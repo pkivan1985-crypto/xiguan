@@ -10,6 +10,7 @@
 	border: 1px solid var(--border-color);
 	border-radius: 32px;
 }
+
 .icon {
 	display: grid;
 	place-items: center;

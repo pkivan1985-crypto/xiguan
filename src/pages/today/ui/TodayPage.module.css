@@ -2,6 +2,7 @@
 	display: grid;
 	gap: 16px;
 }
+
 .viewport {
 	display: flex;
 	flex-direction: column;
