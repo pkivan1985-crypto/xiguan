@@ -15,6 +15,9 @@ dev-dist
 coverage
 .wrangler
 
+# Project-local reproducible toolchain
+.tools/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
