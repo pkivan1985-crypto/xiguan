@@ -65,7 +65,7 @@ function WelcomeView() {
 				<div className={styles.textColumn}>
 					<div className={styles.logoWrapper}>
 						<img
-							src={`${BASE_URL}assets/brand/logo192-alpha.png`}
+							src={`${BASE_URL}favicon.svg`}
 							alt={t('common.logo')}
 							className={styles.logoImg}
 						/>
@@ -125,15 +125,6 @@ function WelcomeView() {
 							</Button>
 						)}
 					</div>
-				</div>
-
-				{/* Right side */}
-				<div className={styles.imageColumn}>
-					<img
-						src={`${BASE_URL}assets/img/welcome-hero-screenshot.webp`}
-						alt={t('common.screenshot')}
-						className={styles.screenshot}
-					/>
 				</div>
 
 			</div>

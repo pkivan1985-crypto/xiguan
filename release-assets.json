@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"assets": [
+		{
+			"path": "public/_redirects",
+			"source": "project-original static host configuration",
+			"license": "AGPL-3.0-only",
+			"releaseStatus": "included"
+		},
+		{
+			"path": "public/favicon.svg",
+			"source": "project-original M1-ICON-001",
+			"license": "AGPL-3.0-only",
+			"releaseStatus": "included",
+			"generatedOutputs": [
+				"apple-touch-icon-180x180.png",
+				"favicon.ico",
+				"maskable-icon-512x512.png",
+				"pwa-64x64.png",
+				"pwa-192x192.png",
+				"pwa-512x512.png"
+			]
+		},
+		{
+			"path": "public/robots.txt",
+			"source": "project-original static host configuration",
+			"license": "AGPL-3.0-only",
+			"releaseStatus": "included"
+		}
+	]
+}
