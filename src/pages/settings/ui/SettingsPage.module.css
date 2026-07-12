@@ -97,6 +97,59 @@
 	background: var(--page-bg);
 }
 
+.appFacts {
+	display: grid;
+	gap: 10px;
+}
+
+.appFacts p {
+	display: grid;
+	grid-template-columns: 24px 1fr;
+	gap: 10px;
+	align-items: start;
+	margin: 0;
+}
+
+.appFacts span {
+	display: grid;
+	gap: 3px;
+}
+
+.appFacts small {
+	font-size: 0.76rem;
+	line-height: 1.45;
+	color: var(--muted-color);
+}
+
+.appActions {
+	display: flex;
+	gap: 10px;
+	justify-content: space-between;
+}
+
+.appActions button {
+	display: flex;
+	gap: 7px;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 8px 13px;
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: var(--muted-color);
+	background: var(--page-bg);
+	border-radius: 14px;
+}
+
+.appActions .primaryAction {
+	color: #fff;
+	background: var(--accent-color);
+}
+
+.appActions button:disabled {
+	opacity: 0.5;
+}
+
 .notice {
 	display: flex;
 	gap: 10px;
@@ -114,6 +167,12 @@
 	margin-top: 2px;
 	font-size: 1.1rem;
 	color: var(--achievement-color);
+}
+
+.appFacts p > svg {
+	margin-top: 2px;
+	font-size: 1.05rem;
+	color: var(--accent-color);
 }
 
 .linkRow {

@@ -535,7 +535,11 @@
 			"today": "Today"
 		},
 		"settings": {
+			"appDescription": "Installation improves the standalone and offline experience, but it does not replace backups.",
+			"appTitle": "App and offline",
 			"appearanceTitle": "Appearance and motion",
+			"buildVersion": "Current version: {{version}} · {{build}}",
+			"checkUpdate": "Check for updates",
 			"dataDescription": "The first stage has no account or cloud sync. Future business data stays in this browser.",
 			"dataTitle": "Local data",
 			"dataAction": "Back up, restore, or clear data in this browser",
@@ -546,11 +550,16 @@
 			"license": "The project uses AGPL-3.0 and is based on DoHabit.",
 			"openSourceTitle": "Version and open source",
 			"pwaStatus": {
-				"BROWSER_ONLY": "Use the browser menu to install, or use a browser with an install prompt.",
+				"BROWSER_MENU": "Use the browser menu to install the app or add it to the home screen.",
 				"CAN_INSTALL": "This browser can install the app directly.",
 				"INSTALLED": "The app is running in its own window.",
-				"IOS_MANUAL": "Use Add to Home Screen in Safari."
+				"IOS_MANUAL": "In Safari, use Share → Add to Home Screen.",
+				"UNAVAILABLE": "This environment cannot install the app, but every core feature still works in the browser."
 			},
+			"offlineNow": "You are offline. Local features remain available.",
+			"offlinePreparing": "The offline app shell is prepared after the first online visit.",
+			"offlineReady": "The app shell is cached for offline local reading and recording.",
+			"offlineTitle": "Offline capability",
 			"projectSourcePending": "The project repository will be public before release.",
 			"reduceMotion": "Reduce motion",
 			"reduceMotionDescription": "Disable non-essential page and component motion.",
@@ -559,7 +568,33 @@
 			"themeLabel": "Color theme",
 			"themeLight": "Light",
 			"themeSystem": "System",
+			"updateApplying": "Switching to the new version.",
+			"updateAvailable": "A new version is ready. You decide when to update.",
+			"updateBlocked": "Local data is being saved. Update when it finishes.",
+			"updateChecking": "Checking for a new version.",
+			"updateFailed": "The update did not finish. The current version still works.",
+			"updateTitle": "Version updates",
 			"version": "Current version: {{version}}"
+		},
+		"pwa": {
+			"applyingDescription": "The page reloads once. Local data is not replaced.",
+			"applyingTitle": "Updating the app",
+			"blocked": {
+				"clear-data": "Local data is being cleared. Update when it finishes.",
+				"correct-record": "Record changes are being saved. Update when it finishes.",
+				"create-card": "A loop card is being created. Update when it finishes.",
+				"restore-backup": "A backup is being restored. Update when it finishes.",
+				"save-outcome": "Today's outcome is being saved. Update when it finishes."
+			},
+			"failedDescription": "You are still using the current version and can retry later.",
+			"failedTitle": "The update did not finish",
+			"later": "Later",
+			"offlineDescription": "Saved data remains in this browser.",
+			"offlineTitle": "You are offline. Local features remain available",
+			"retry": "Retry",
+			"updateDescription": "The current version still works. Updating does not replace local data.",
+			"updateNow": "Update now",
+			"updateTitle": "A new version is ready"
 		},
 		"dataManagement": {
 			"localTitle": "Local data",

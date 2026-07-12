@@ -2,7 +2,8 @@ import './styles/App.css';
 import { MotionConfig } from 'framer-motion';
 import { Toaster } from 'sonner'
 import { AppRouter } from './providers';
-import { PwaUpdateProvider } from '@features/pwa-update';
+import { PwaUpdateProvider } from '@features/pwa-update/model/PwaUpdateProvider';
+import { PwaStatusBar } from '@widgets/pwa-status-bar';
 import { useSettingsStore, useTheme } from '@entities/settings';
 import { useSystemMotion } from '@shared/lib/react';
 import { Dialog, Drawer } from '@shared/ui';
@@ -22,6 +23,7 @@ function App() {
 					<AppRouter />
 					<Dialog />
 					<Drawer />
+					<PwaStatusBar />
 
 					<Toaster
 						position='top-center'

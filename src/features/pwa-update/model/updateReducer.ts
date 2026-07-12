@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string -- Update states are internal discriminants. */
 import type { UpdateEvent, UpdateState } from './types';
 
 export function updateReducer(state: UpdateState, event: UpdateEvent): UpdateState {

@@ -1,0 +1,75 @@
+.statusBar {
+	position: fixed;
+	right: 12px;
+	bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+	left: 12px;
+	z-index: 35;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 12px;
+	align-items: center;
+	width: min(calc(100% - 24px), calc(var(--app-width) - 24px));
+	padding: 12px;
+	margin: 0 auto;
+	background: color-mix(in srgb, var(--surface-color) 96%, transparent);
+	border: 1px solid var(--border-color);
+	border-radius: 18px;
+	box-shadow: 0 12px 34px rgb(23 50 71 / 16%);
+	backdrop-filter: blur(18px);
+}
+
+.statusBar > div:first-child {
+	display: grid;
+	gap: 3px;
+	min-width: 0;
+}
+
+.statusBar strong {
+	font-size: 0.84rem;
+}
+
+.statusBar small {
+	font-size: 0.72rem;
+	line-height: 1.35;
+	color: var(--muted-color);
+}
+
+.actions {
+	display: flex;
+	gap: 8px;
+}
+
+.actions button {
+	min-height: 44px;
+	padding: 8px 12px;
+	font-size: 0.76rem;
+	font-weight: 700;
+	color: var(--muted-color);
+	background: var(--page-bg);
+	border-radius: 13px;
+}
+
+.actions .primary {
+	color: #fff;
+	background: var(--accent-color);
+}
+
+.actions button:disabled {
+	opacity: 0.48;
+}
+
+@media (max-width: 380px) {
+	.statusBar {
+		grid-template-columns: 1fr;
+	}
+
+	.actions {
+		justify-content: space-between;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.statusBar {
+		scroll-behavior: auto;
+	}
+}

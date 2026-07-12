@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string -- Update states are internal discriminants. */
 import type { CriticalOperationCoordinator, CriticalOperationKind, ReloadLease } from '@shared/lib/app-lifecycle';
 import { shouldCheckForUpdate } from './updateCheckPolicy';
 import type { UpdateState } from './types';

@@ -1,54 +1,62 @@
-/* eslint-disable i18next/no-literal-string -- Service Worker errors and build IDs are internal identifiers. */
-import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import pkg from '../../../../package.json';
 import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
+import { APP_BUILD_ID, APP_VERSION } from '@shared/config';
 import { installPwaQaBridge } from '../lib/pwaQaBridge';
 import { PwaUpdateContext } from './PwaUpdateContext';
-import { createUpdateController, type UpdateController } from './updateController';
+import { createUpdateController, type UpdateAdapter } from './updateController';
 
-const APP_VERSION = pkg.version;
-const BUILD_ID = import.meta.env.VITE_APP_BUILD_ID?.trim() || APP_VERSION;
+class RuntimeUpdateAdapter implements UpdateAdapter {
+	private registration?: ServiceWorkerRegistration;
+	private applyWorker: () => Promise<void> = async () => undefined;
+
+	setRegistration(registration?: ServiceWorkerRegistration): void {
+		this.registration = registration;
+	}
+
+	setApplyWorker(applyWorker: () => Promise<void>): void {
+		this.applyWorker = applyWorker;
+	}
+
+	async check(): Promise<void> {
+		if (!this.registration) throw new Error('SERVICE_WORKER_NOT_REGISTERED');
+		await this.registration.update();
+	}
+
+	apply(): Promise<void> {
+		return this.applyWorker();
+	}
+}
 
 export function PwaUpdateProvider({ children }: { children: ReactNode }) {
-	const registrationRef = useRef<ServiceWorkerRegistration | undefined>(undefined);
-	const controllerRef = useRef<UpdateController | null>(null);
+	const [online, setOnline] = useState(() => navigator.onLine);
+	const [dismissed, setDismissed] = useState(false);
+	const [runtime] = useState(() => new RuntimeUpdateAdapter());
+	const [controller] = useState(() => createUpdateController({
+		adapter: runtime,
+		coordinator: appLifecycleCoordinator,
+		now: Date.now,
+		isOnline: () => navigator.onLine,
+	}));
 	const {
-		needRefresh: [needRefresh],
 		offlineReady: [offlineReady],
 		updateServiceWorker,
 	} = useRegisterSW({
 		onRegisteredSW(_swUrl, registration) {
-			registrationRef.current = registration;
+			runtime.setRegistration(registration);
+		},
+		onNeedRefresh() {
+			controller.markAvailable();
+			setDismissed(false);
 		},
 		onRegisterError() {
-			controllerRef.current?.markRegistrationFailed();
+			controller.markRegistrationFailed();
 		},
 	});
-	if (!controllerRef.current) {
-		controllerRef.current = createUpdateController({
-			adapter: {
-				check: async () => {
-					if (!registrationRef.current) throw new Error('SERVICE_WORKER_NOT_REGISTERED');
-					await registrationRef.current.update();
-				},
-				apply: () => updateServiceWorker(true),
-			},
-			coordinator: appLifecycleCoordinator,
-			now: Date.now,
-			isOnline: () => navigator.onLine,
-		});
-	}
-	const controller = controllerRef.current;
-	const [online, setOnline] = useState(() => navigator.onLine);
-	const [dismissed, setDismissed] = useState(false);
-	const state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState);
-
 	useEffect(() => {
-		if (!needRefresh) return;
-		controller.markAvailable();
-		setDismissed(false);
-	}, [controller, needRefresh]);
+		runtime.setApplyWorker(() => updateServiceWorker(true));
+	}, [runtime, updateServiceWorker]);
+	const state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState);
 
 	useEffect(() => {
 		const handleOnline = () => {
@@ -71,7 +79,7 @@ export function PwaUpdateProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => installPwaQaBridge(
 		window as unknown as Record<string, unknown>,
-		BUILD_ID,
+		APP_BUILD_ID,
 		APP_VERSION,
 		appLifecycleCoordinator,
 	), []);
@@ -84,7 +92,7 @@ export function PwaUpdateProvider({ children }: { children: ReactNode }) {
 		offlineReady,
 		dismissed,
 		currentVersion: APP_VERSION,
-		buildId: BUILD_ID,
+		buildId: APP_BUILD_ID,
 		checkForUpdate: () => controller.checkForUpdate(true),
 		applyUpdate: () => controller.applyUpdate(),
 		dismiss: () => setDismissed(true),

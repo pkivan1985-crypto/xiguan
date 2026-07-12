@@ -540,7 +540,11 @@
 			"today": "今日成果"
 		},
 		"settings": {
+			"appDescription": "安装可改善独立窗口和离线体验，但不能代替数据备份。",
+			"appTitle": "应用与离线",
 			"appearanceTitle": "外观与动效",
+			"buildVersion": "当前版本：{{version}} · {{build}}",
+			"checkUpdate": "检查更新",
 			"dataDescription": "第一阶段没有账号和云同步，未来业务数据只保存在当前浏览器。",
 			"dataTitle": "本地数据",
 			"dataAction": "备份、恢复或清除当前浏览器中的数据",
@@ -551,11 +555,16 @@
 			"license": "项目整体采用 AGPL-3.0；当前底座来源为 DoHabit。",
 			"openSourceTitle": "版本与开源",
 			"pwaStatus": {
-				"BROWSER_ONLY": "当前浏览器需要通过菜单安装或换用支持安装提示的浏览器。",
+				"BROWSER_MENU": "请从浏览器菜单选择“安装应用”或“添加到主屏幕”。",
 				"CAN_INSTALL": "当前浏览器支持直接安装到设备。",
 				"INSTALLED": "应用正在独立窗口中运行。",
-				"IOS_MANUAL": "请使用 Safari 的“添加到主屏幕”。"
+				"IOS_MANUAL": "请使用 Safari 的“分享 → 添加到主屏幕”。",
+				"UNAVAILABLE": "当前环境不能安装，但全部核心功能仍可在网页中使用。"
 			},
+			"offlineNow": "当前离线，本地功能仍可使用。",
+			"offlinePreparing": "首次在线打开后将准备离线应用壳。",
+			"offlineReady": "应用壳已缓存，可离线读取和记录本地成果。",
+			"offlineTitle": "离线能力",
 			"projectSourcePending": "项目源代码仓库将在正式发布前公开。",
 			"reduceMotion": "减少动态效果",
 			"reduceMotionDescription": "关闭页面和组件的非必要运动。",
@@ -564,7 +573,33 @@
 			"themeLabel": "外观主题",
 			"themeLight": "浅色",
 			"themeSystem": "系统",
+			"updateApplying": "正在切换到新版本，请稍候。",
+			"updateAvailable": "新版本已准备好，由你决定何时更新。",
+			"updateBlocked": "正在保存本地数据，完成后可更新。",
+			"updateChecking": "正在检查新版本。",
+			"updateFailed": "更新没有完成，当前版本仍可继续使用。",
+			"updateTitle": "版本更新",
 			"version": "当前版本：{{version}}"
+		},
+		"pwa": {
+			"applyingDescription": "页面只会刷新一次，本地数据不会被替换。",
+			"applyingTitle": "正在更新应用",
+			"blocked": {
+				"clear-data": "正在清除本地数据，完成后可更新。",
+				"correct-record": "正在保存记录修改，完成后可更新。",
+				"create-card": "正在创建循环卡，完成后可更新。",
+				"restore-backup": "正在恢复备份，完成后可更新。",
+				"save-outcome": "正在保存今日成果，完成后可更新。"
+			},
+			"failedDescription": "你仍在使用当前版本，可以稍后重试。",
+			"failedTitle": "更新没有完成",
+			"later": "稍后",
+			"offlineDescription": "已保存的数据仍在当前浏览器中。",
+			"offlineTitle": "当前离线，本地功能仍可使用",
+			"retry": "重试",
+			"updateDescription": "当前版本可继续使用，更新不会替换本地数据。",
+			"updateNow": "现在更新",
+			"updateTitle": "新版本已准备好"
 		},
 		"dataManagement": {
 			"localTitle": "本地数据说明",
