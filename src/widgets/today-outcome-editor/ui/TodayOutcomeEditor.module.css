@@ -1,0 +1,326 @@
+.editor {
+	display: grid;
+	gap: 14px;
+	padding: 14px 14px 8px;
+}
+
+.preview {
+	display: grid;
+	grid-template-columns: 34px 1fr auto;
+	gap: 10px;
+	align-items: center;
+	padding: 11px 12px;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 18px;
+	box-shadow: var(--shadow-sm);
+}
+
+.previewIcon,
+.cardIcon {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 12px;
+}
+
+.preview strong {
+	display: block;
+	font-size: 0.78rem;
+}
+
+.preview p {
+	margin: 3px 0 0;
+	font-size: 0.66rem;
+	line-height: 1.35;
+	color: var(--muted-color);
+}
+
+.count {
+	align-self: start;
+	font-size: 0.68rem;
+	font-weight: 750;
+	color: var(--accent-color);
+}
+
+.heading {
+	display: flex;
+	gap: 8px;
+	align-items: end;
+	justify-content: space-between;
+}
+
+.heading small {
+	font-size: 0.66rem;
+	color: var(--muted-color);
+}
+
+.heading h2 {
+	margin: 3px 0 0;
+	font-size: 0.98rem;
+	line-height: 1.25;
+}
+
+.heading > span {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	font-size: 0.66rem;
+	color: var(--muted-color);
+	white-space: nowrap;
+}
+
+.track {
+	display: grid;
+}
+
+.row {
+	display: grid;
+	grid-template-columns: 30px 1fr;
+	min-height: 124px;
+}
+
+.rail {
+	position: relative;
+	display: flex;
+	justify-content: center;
+}
+
+.rail b {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	margin-top: 14px;
+	font-size: 0.63rem;
+	color: #fff;
+	background: var(--accent-color);
+	border-radius: 50%;
+	box-shadow: 0 0 0 4px var(--page-bg);
+}
+
+.rail i {
+	position: absolute;
+	top: 38px;
+	bottom: -13px;
+	width: 1px;
+	background: var(--border-strong);
+}
+
+.card {
+	align-self: start;
+	padding: 11px;
+	margin-bottom: 9px;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 17px;
+}
+
+.cardHeading {
+	display: grid;
+	grid-template-columns: 32px 1fr auto;
+	gap: 8px;
+	align-items: center;
+}
+
+.cardIcon {
+	width: 31px;
+	height: 31px;
+	color: var(--sport-color);
+	background: var(--sport-soft);
+}
+
+.cardHeading h3 {
+	margin: 0;
+	font-size: 0.84rem;
+}
+
+.cardHeading p {
+	margin: 2px 0 0;
+	font-size: 0.62rem;
+	color: var(--muted-color);
+}
+
+.tools {
+	display: flex;
+}
+
+.tools button {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	color: var(--muted-color);
+	background: transparent;
+	border-radius: 8px;
+}
+
+.tools button:disabled {
+	cursor: default;
+	opacity: 0.28;
+}
+
+.tools svg {
+	width: 13px;
+	height: 13px;
+}
+
+.valueField {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px;
+	align-items: center;
+	margin-top: 10px;
+}
+
+.valueCaption {
+	font-size: 0.66rem;
+	color: var(--muted-color);
+}
+
+.inputWrap {
+	display: flex;
+	align-items: center;
+	width: 148px;
+	height: 38px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--page-bg) 80%, #000);
+	border: 1px solid var(--border-strong);
+	border-radius: 11px;
+}
+
+.inputWrap:focus-within {
+	border-color: var(--accent-color);
+}
+
+.inputWrap input {
+	width: 100%;
+	min-width: 0;
+	padding: 0 10px;
+	font-size: 1rem;
+	font-weight: 720;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-color);
+	outline: 0;
+	background: transparent;
+	border: 0;
+}
+
+.inputWrap b {
+	display: grid;
+	place-items: center;
+	align-self: stretch;
+	min-width: 43px;
+	font-size: 0.65rem;
+	color: var(--muted-color);
+	border-left: 1px solid var(--border-color);
+}
+
+.addCard {
+	display: grid;
+	grid-template-columns: 28px 1fr 18px;
+	gap: 9px;
+	align-items: center;
+	width: calc(100% - 30px);
+	min-height: 52px;
+	padding: 8px 11px;
+	margin-left: 30px;
+	text-align: left;
+	background: transparent;
+	border: 1px dashed var(--border-strong);
+	border-radius: 15px;
+}
+
+.addCard > svg:first-child {
+	color: var(--accent-color);
+}
+
+.addCard strong,
+.addCard small {
+	display: block;
+}
+
+.addCard strong {
+	font-size: 0.76rem;
+}
+
+.addCard small {
+	margin-top: 2px;
+	font-size: 0.61rem;
+	color: var(--muted-color);
+}
+
+.footer {
+	position: sticky;
+	bottom: 0;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 14px max(10px, env(safe-area-inset-bottom));
+	margin-inline: -14px;
+	background: color-mix(in srgb, var(--page-bg) 94%, transparent);
+	border-top: 1px solid var(--border-color);
+	backdrop-filter: blur(14px);
+}
+
+.footerLabel,
+.footerValue {
+	display: block;
+	white-space: nowrap;
+}
+
+.footerLabel {
+	font-size: 0.61rem;
+	color: var(--muted-color);
+}
+
+.footerValue {
+	margin-top: 2px;
+	font-size: 0.75rem;
+}
+
+.submit {
+	display: inline-flex;
+	gap: 7px;
+	align-items: center;
+	justify-content: center;
+	min-height: 38px;
+	padding: 0 15px;
+	font-size: 0.75rem;
+	font-weight: 750;
+	color: #fff;
+	background: var(--accent-color);
+	border-radius: 19px;
+}
+
+.submit:disabled {
+	color: var(--muted-color);
+	cursor: not-allowed;
+	background: var(--border-color);
+}
+
+@media (max-width: 359px) {
+	.editor {
+		padding-inline: 10px;
+	}
+
+	.valueField {
+		grid-template-columns: 1fr;
+	}
+
+	.inputWrap {
+		width: 100%;
+	}
+
+	.footer {
+		padding-inline: 10px;
+		margin-inline: -10px;
+	}
+}
