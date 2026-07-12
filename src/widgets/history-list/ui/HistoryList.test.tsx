@@ -20,6 +20,7 @@ const model: HistoryModel = {
 			records: [{
 				id: 'today', localDate: '2026-07-12', cardTitle: '晨跑', quantityBaseValue: 7_500,
 				displayValue: '7.50', displayUnit: 'km', lastSavedAt: '2026-07-12T08:42:00.000Z',
+				basePerDisplayUnit: 1000, maxDecimalPlaces: 3, confirmationThresholdDisplay: 100,
 				longTermGoalTitle: '累计 100 km', stageGoalTitle: '阶段 20 km', canCorrect: true, relationAvailable: true,
 			}],
 		},
@@ -28,6 +29,7 @@ const model: HistoryModel = {
 			records: [{
 				id: 'past', localDate: '2026-07-10', cardTitle: '晨跑', quantityBaseValue: 5_000,
 				displayValue: '5.00', displayUnit: 'km', lastSavedAt: '2026-07-10T19:26:00.000Z',
+				basePerDisplayUnit: 1000, maxDecimalPlaces: 3, confirmationThresholdDisplay: 100,
 				canCorrect: false, relationAvailable: true,
 			}],
 		},
