@@ -2,7 +2,7 @@
 
 > 草案日期：2026-07-11  
 > 最终路径：`web/AGENTS.md`  
-> 当前状态：已批准并落地；M4 已 `DONE / USER_ACCEPTED`，M5 首页、历史与当天纠错正在按批准基线执行
+> 当前状态：已批准并落地；M4 已 `DONE / USER_ACCEPTED`，M5 首页、历史与当天纠错已实现并进入 `USER_ACCEPTANCE / PASS`
 > 适用范围：`web/` 及其全部子目录
 
 ## 一、上级规则与冲突处理
