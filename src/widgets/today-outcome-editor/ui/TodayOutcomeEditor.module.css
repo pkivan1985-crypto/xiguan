@@ -1,7 +1,7 @@
 .editor {
 	display: grid;
 	gap: 14px;
-	padding: 14px 14px 8px;
+	padding: 14px 14px 76px;
 }
 
 .preview {
@@ -257,17 +257,21 @@
 }
 
 .footer {
-	position: sticky;
-	bottom: 0;
+	position: fixed;
+	bottom: calc(72px + env(safe-area-inset-bottom));
+	left: 50%;
+	z-index: 18;
 	display: flex;
 	gap: 10px;
 	align-items: center;
 	justify-content: space-between;
-	padding: 10px 14px max(10px, env(safe-area-inset-bottom));
-	margin-inline: -14px;
+	width: min(100%, var(--app-width));
+	padding: 10px 14px;
+	margin: 0;
 	background: color-mix(in srgb, var(--page-bg) 94%, transparent);
 	border-top: 1px solid var(--border-color);
 	backdrop-filter: blur(14px);
+	transform: translateX(-50%);
 }
 
 .footerLabel,
@@ -321,6 +325,5 @@
 
 	.footer {
 		padding-inline: 10px;
-		margin-inline: -10px;
 	}
 }
