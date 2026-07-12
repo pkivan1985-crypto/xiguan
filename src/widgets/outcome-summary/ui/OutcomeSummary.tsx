@@ -18,12 +18,16 @@ function groupTotals(items: OutcomeBatchItem[]): Array<{ unit: string; value: st
 	return [...groups].map(([unit, { total, precision }]) => ({ unit, value: total.toFixed(precision).replace(/(\.\d{2}.*?)0+$/, '$1') }));
 }
 
+function progressValue(item: OutcomeBatchItem, quantityBaseValue: number): string {
+	return `${formatOutcomeItem({ ...item, quantityBaseValue })} ${item.displayUnit}`;
+}
+
 function OutcomeSummary({ batch, onBack }: OutcomeSummaryProps) {
 	const { t } = useTranslation();
 	const totals = groupTotals(batch.items);
 	return <main className={styles.summary}>
-		<section className={styles.hero}><span><FiCheck /></span><p>{batch.localDate} · {t('shell.today.batchSaved')}</p><div className={styles.totals}>{totals.map(({ unit, value }) => <h2 key={unit}>{t('shell.today.unitTotal', { value, unit })}</h2>)}</div><strong>{t('shell.today.summaryCards', { count: batch.items.length })}</strong></section>
-		<section className={styles.list}><h3>{t('shell.today.summaryResults')}</h3>{batch.items.map((item) => <div className={styles.row} key={`${item.slotIndex}:${item.userCardId}`}><span className={styles.icon}><FiActivity /></span><div><strong>{item.cardTitle}</strong><small>{item.longTermChange ? t('shell.today.longTermChange') : item.stageChange ? t('shell.today.stageChange') : t('shell.today.batchSaved')}</small></div><b>{formatOutcomeItem(item)} {item.displayUnit}</b></div>)}</section>
+		<section className={styles.hero}><span><FiCheck /></span><p>{t('shell.today.savedOnDate', { date: batch.localDate })}</p><div className={styles.totals}>{totals.map(({ unit, value }) => <h2 key={unit}>{t('shell.today.unitTotal', { value, unit })}</h2>)}</div><strong>{t('shell.today.summaryCards', { count: batch.items.length })}</strong></section>
+		<section className={styles.list}><h3>{t('shell.today.summaryResults')}</h3>{batch.items.map((item) => <div className={styles.row} key={`${item.slotIndex}:${item.userCardId}`}><span className={styles.icon}><FiActivity /></span><div><strong>{item.cardTitle}</strong>{item.longTermChange && <small>{t('shell.today.goalProgressLine', { goal: t('shell.today.longTermChange'), before: progressValue(item, item.longTermChange.before.quantityBaseValue), after: progressValue(item, item.longTermChange.after.quantityBaseValue) })}</small>}{item.stageChange && <small>{t('shell.today.goalProgressLine', { goal: t('shell.today.stageChange'), before: progressValue(item, item.stageChange.before.quantityBaseValue), after: progressValue(item, item.stageChange.after.quantityBaseValue) })}</small>}{!item.longTermChange && !item.stageChange && <small>{t('shell.today.batchSaved')}</small>}</div><b>{formatOutcomeItem(item)} {item.displayUnit}</b></div>)}</section>
 		<div className={styles.tip}><FiInfo /><span>{t('shell.today.overwriteNote')}</span></div>
 		<button className={styles.back} type='button' onClick={onBack}><FiChevronLeft />{t('shell.today.backToEditor')}</button>
 	</main>;

@@ -28,7 +28,7 @@ function TodayOutcomeEditor({ view, disabled, onValueChange, onMove, onRemove, o
 		<section className={styles.preview} aria-label={t('shell.today.playbackPreview')}>
 			<span className={styles.previewIcon}><FiPlay aria-hidden='true' /></span>
 			<div><strong>{t('shell.today.playbackPreview')}</strong><p>{t('shell.today.playbackPreviewDescription')}</p></div>
-			<span className={styles.count}>{view.selectedCards.length} / 6</span>
+			<span className={styles.count}>{t('shell.today.slotCount', { count: view.selectedCards.length })}</span>
 		</section>
 
 		<div className={styles.heading}>

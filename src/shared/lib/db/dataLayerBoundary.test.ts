@@ -12,13 +12,17 @@ const UI_FILES = [
 	'src/pages/history/ui/HistoryPage.tsx',
 	'src/pages/settings/ui/SettingsPage.tsx',
 	'src/widgets/app-shell/ui/AppShell.tsx',
+	'src/widgets/today-outcome-editor/ui/TodayOutcomeEditor.tsx',
+	'src/widgets/today-card-picker/ui/TodayCardPicker.tsx',
+	'src/widgets/outcome-playback/ui/OutcomePlayback.tsx',
+	'src/widgets/outcome-summary/ui/OutcomeSummary.tsx',
 ];
 
 describe('data layer boundary', () => {
 	it('keeps Dexie and repositories out of application UI files', () => {
 		for (const file of UI_FILES) {
 			const source = readFileSync(resolve(file), 'utf8');
-			expect(source, file).not.toMatch(/(?:from ['"]dexie['"]|@shared\/lib\/db|\/repository\/)/);
+			expect(source, file).not.toMatch(/(?:from ['"]dexie['"]|@shared\/lib\/db|appDatabase|\/repository\/)/);
 		}
 	});
 });

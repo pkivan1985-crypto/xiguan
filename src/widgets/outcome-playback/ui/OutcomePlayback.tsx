@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string -- The dynamic section tag is structural, not user-facing copy. */
 import { motion } from 'framer-motion';
 import { FiActivity, FiCheck, FiChevronRight, FiSkipForward } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';

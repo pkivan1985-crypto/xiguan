@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string -- Draft statuses and domain errors are identifiers. */
 import { parseLocalDate } from '@shared/lib/date';
 
 import type { LocalDate } from '@shared/lib/date';

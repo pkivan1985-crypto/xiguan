@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string -- Table names, transaction modes, and domain errors are identifiers. */
 import { createEmptyTodayDraft, validateTodayDraft, type TodayDraft } from '@entities/today-draft';
 import type { LocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
