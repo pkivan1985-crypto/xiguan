@@ -18,6 +18,7 @@ const UI_FILES = [
 	'src/widgets/outcome-summary/ui/OutcomeSummary.tsx',
 	'src/widgets/outcome-calendar/ui/OutcomeCalendar.tsx',
 	'src/widgets/goal-summary/ui/GoalSummary.tsx',
+	'src/widgets/history-list/ui/HistoryList.tsx',
 ];
 
 describe('data layer boundary', () => {

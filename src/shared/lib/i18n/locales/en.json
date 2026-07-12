@@ -458,8 +458,12 @@
 			"title": "This page cannot open right now"
 		},
 		"history": {
+			"correctRecord": "Edit {{title}}",
 			"emptyDescription": "After a daily outcome is saved, action records will appear here by local date.",
-			"emptyTitle": "No real outcome records yet"
+			"emptyTitle": "No real outcome records yet",
+			"readOnly": "Read only",
+			"today": "Today",
+			"unavailable": "Record relationship unavailable"
 		},
 		"home": {
 			"calendarDescription": "A date receives a result marker only after a real action record exists.",

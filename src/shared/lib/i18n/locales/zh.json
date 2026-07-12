@@ -463,8 +463,12 @@
 			"title": "页面暂时无法打开"
 		},
 		"history": {
+			"correctRecord": "修改{{title}}",
 			"emptyDescription": "成功保存每日成果后，行动记录会按本地日期出现在这里。",
-			"emptyTitle": "还没有真实成果记录"
+			"emptyTitle": "还没有真实成果记录",
+			"readOnly": "只读",
+			"today": "今天",
+			"unavailable": "记录关系不可用"
 		},
 		"home": {
 			"calendarDescription": "有真实行动记录的日期才会出现成果标记。",
