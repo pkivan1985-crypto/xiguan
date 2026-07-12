@@ -2,7 +2,7 @@
 
 > 草案日期：2026-07-11  
 > 最终路径：`web/AGENTS.md`  
-> 当前状态：已批准并落地；M5 已 `DONE / USER_ACCEPTED`，M6 备份、加密与版本升级已实现并进入 `USER_ACCEPTANCE`
+> 当前状态：已批准并落地；M6 已 `DONE / USER_ACCEPTED`，M7 PWA 安装、离线与安全更新进入设计门禁，尚未授权编码
 > 适用范围：`web/` 及其全部子目录
 
 ## 一、上级规则与冲突处理
