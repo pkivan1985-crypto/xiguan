@@ -7,6 +7,7 @@ import type { TodayDraft } from '@entities/today-draft';
 import type { UserCard } from '@entities/user-card';
 import { appDatabase, type RepeatOutcomeDatabase, type SettingRecord } from '@shared/lib/db';
 import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
+import Dexie from 'dexie';
 
 async function sha256Hex(value: string): Promise<string> {
 	const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
@@ -47,7 +48,9 @@ export async function restoreBackup(database: RepeatOutcomeDatabase, backup: Val
 		await batches.bulkPut(backup.envelope.data.outcomeBatches);
 		await settings.bulkPut(backup.envelope.data.settings);
 		const readback = await readUserPayload(database);
-		if (await backupFingerprint(readback, sha256Hex) !== backup.fingerprint) throw new Error('RESTORE_READBACK_MISMATCH');
+		if (await Dexie.waitFor(backupFingerprint(readback, sha256Hex)) !== backup.fingerprint) {
+			throw new Error('RESTORE_READBACK_MISMATCH');
+		}
 	});
 }
 

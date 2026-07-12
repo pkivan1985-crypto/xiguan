@@ -23,7 +23,10 @@ async function snapshot(database: RepeatOutcomeDatabase) {
 
 describe('atomic backup restore', () => {
 	const databases: RepeatOutcomeDatabase[] = [];
-	afterEach(async () => Promise.all(databases.splice(0).map((database) => database.delete())));
+	afterEach(async () => {
+		vi.restoreAllMocks();
+		await Promise.all(databases.splice(0).map((database) => database.delete()));
+	});
 
 	async function database(name: string) {
 		const db = new RepeatOutcomeDatabase(`${name}-${crypto.randomUUID()}`);
@@ -57,6 +60,19 @@ describe('atomic backup restore', () => {
 		await restoreBackup(target, backup);
 		expect(await snapshot(target)).toMatchObject({ cards: [{ id: 'source-card' }], long: [{ id: 'source-long' }], stage: [{ id: 'source-stage' }], settings: [{ value: '{"source":true}' }] });
 		expect(await target.tableFor<CardTemplate>('cardTemplates').toArray()).toEqual([running]);
+	});
+
+	it('keeps the transaction alive while Web Crypto verifies the readback', async () => {
+		const backup = await validatedSource();
+		const target = await targetWithOldData();
+		const digest = crypto.subtle.digest.bind(crypto.subtle);
+		vi.spyOn(crypto.subtle, 'digest').mockImplementation(async (...args) => {
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			return digest(...args);
+		});
+
+		await expect(restoreBackup(target, backup)).resolves.toBeUndefined();
+		expect(await snapshot(target)).toMatchObject({ cards: [{ id: 'source-card' }] });
 	});
 
 	it('rolls back when a write fails after old data was cleared', async () => {
