@@ -2,6 +2,12 @@
 	"schemaVersion": 1,
 	"assets": [
 		{
+			"path": "public/_headers",
+			"source": "project-original static host security configuration",
+			"license": "AGPL-3.0-only",
+			"releaseStatus": "included"
+		},
+		{
 			"path": "public/_redirects",
 			"source": "project-original static host configuration",
 			"license": "AGPL-3.0-only",

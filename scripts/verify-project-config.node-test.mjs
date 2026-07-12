@@ -12,7 +12,7 @@ function validInput() {
 	const dependencies = { ...EXPECTED_DEPENDENCIES };
 	const devDependencies = { ...EXPECTED_DEV_DEPENDENCIES };
 	return {
-		packageJson: { packageManager: 'npm@11.18.0', engines: { node: '24.17.0', npm: '11.18.0' }, scripts: { 'lint:css': 'stylelint "src/**/*.css"' }, dependencies, devDependencies },
+		packageJson: { packageManager: 'npm@11.18.0', engines: { node: '24.17.0', npm: '11.18.0' }, scripts: { 'lint:css': 'stylelint "src/**/*.css"', 'check:release': 'node scripts/verify-release-readiness.mjs', 'test:release': 'node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs' }, dependencies, devDependencies },
 		lockfile: { lockfileVersion: 3, packages: { '': { dependencies, devDependencies } } },
 		nodeVersion: 'v24.17.0', npmVersion: '11.18.0', nodeVersionFile: '24.17.0\n', npmrc: 'engine-strict=true\n',
 	};
@@ -25,6 +25,14 @@ test('reports runtime, script, and forbidden dependency drift', () => {
 	assert.ok(errors.includes('Node.js must be v24.17.0; received v22.22.3'));
 	assert.ok(errors.includes('lint:css must be stylelint "src/**/*.css"'));
 	assert.ok(errors.includes('Forbidden direct dependency: cross-var'));
+});
+test('requires deterministic release gate scripts', () => {
+	const input = validInput();
+	delete input.packageJson.scripts['check:release'];
+	input.packageJson.scripts['test:release'] = 'node --test';
+	const errors = validateProjectConfig(input);
+	assert.ok(errors.includes('check:release must be node scripts/verify-release-readiness.mjs; received undefined'));
+	assert.ok(errors.includes('test:release must be node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs; received node --test'));
 });
 test('reports package metadata and lockfile drift', () => {
 	const input = validInput(); input.packageJson.packageManager = 'npm@10.9.8'; input.packageJson.dependencies.react = '^19.2.0'; input.lockfile.packages[''].dependencies.react = '^19.2.0'; input.lockfile.lockfileVersion = 2;
