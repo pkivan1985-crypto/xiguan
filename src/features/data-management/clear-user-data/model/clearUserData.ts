@@ -1,5 +1,6 @@
 /* eslint-disable i18next/no-literal-string -- Dexie table names are schema identifiers. */
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
+import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 
 const USER_TABLE_NAMES = [
 	'userCards',
@@ -20,5 +21,5 @@ export async function clearUserData(database: RepeatOutcomeDatabase): Promise<vo
 }
 
 export function clearUserDataInApp(): Promise<void> {
-	return clearUserData(appDatabase);
+	return appLifecycleCoordinator.runCriticalOperation('clear-data', () => clearUserData(appDatabase));
 }

@@ -5,6 +5,7 @@ import type { LongTermGoal, StageGoal } from '@entities/goal';
 import type { UserCard } from '@entities/user-card';
 import { parseLocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
+import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 
 export interface CreateRunningCardInput {
 	cardTitle: string;
@@ -109,5 +110,5 @@ export async function createRunningCard(
 }
 
 export function createRunningCardInApp(input: CreateRunningCardInput): Promise<CreateRunningCardResult> {
-	return createRunningCard(appDatabase, input);
+	return appLifecycleCoordinator.runCriticalOperation('create-card', () => createRunningCard(appDatabase, input));
 }

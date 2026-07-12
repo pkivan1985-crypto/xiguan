@@ -6,6 +6,7 @@ import type { OutcomeBatch } from '@entities/outcome-batch';
 import type { TodayDraft } from '@entities/today-draft';
 import type { UserCard } from '@entities/user-card';
 import { appDatabase, type RepeatOutcomeDatabase, type SettingRecord } from '@shared/lib/db';
+import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 
 async function sha256Hex(value: string): Promise<string> {
 	const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
@@ -51,5 +52,5 @@ export async function restoreBackup(database: RepeatOutcomeDatabase, backup: Val
 }
 
 export function restoreBackupInApp(backup: ValidatedBackup): Promise<void> {
-	return restoreBackup(appDatabase, backup);
+	return appLifecycleCoordinator.runCriticalOperation('restore-backup', () => restoreBackup(appDatabase, backup));
 }

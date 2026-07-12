@@ -13,6 +13,7 @@ import type {
 } from '@entities/goal';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 import { parseLocalDate } from '@shared/lib/date';
+import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 
 export interface CorrectActionRecordInput {
 	actionRecordId: string;
@@ -157,5 +158,5 @@ export async function correctActionRecord(
 export function correctActionRecordInApp(
 	input: CorrectActionRecordInput,
 ): Promise<CorrectActionRecordResult> {
-	return correctActionRecord(appDatabase, input);
+	return appLifecycleCoordinator.runCriticalOperation('correct-record', () => correctActionRecord(appDatabase, input));
 }

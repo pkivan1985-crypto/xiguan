@@ -11,6 +11,7 @@ import type { TodayDraft } from '@entities/today-draft';
 import type { UserCard } from '@entities/user-card';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 import { parseLocalDate } from '@shared/lib/date';
+import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 
 export interface SaveTodayOutcomeInput {
 	localDate: string;
@@ -226,5 +227,5 @@ export async function saveTodayOutcome(
 }
 
 export function saveTodayOutcomeInApp(input: SaveTodayOutcomeInput): Promise<OutcomeBatch> {
-	return saveTodayOutcome(appDatabase, input);
+	return appLifecycleCoordinator.runCriticalOperation('save-outcome', () => saveTodayOutcome(appDatabase, input));
 }
