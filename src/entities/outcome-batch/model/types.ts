@@ -25,6 +25,8 @@ export interface OutcomeBatchItem {
 	quantityBaseValue: number;
 	baseUnit: string;
 	displayUnit: string;
+	basePerDisplayUnit: number;
+	maxDecimalPlaces: number;
 	longTermChange?: OutcomeGoalChange;
 	stageChange?: OutcomeGoalChange;
 }

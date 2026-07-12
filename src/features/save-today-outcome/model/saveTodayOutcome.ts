@@ -196,6 +196,8 @@ export async function saveTodayOutcome(
 				quantityBaseValue,
 				baseUnit: template.quantity.baseUnit,
 				displayUnit: template.quantity.displayUnit,
+				basePerDisplayUnit: template.quantity.basePerDisplayUnit,
+				maxDecimalPlaces: template.quantity.maxDecimalPlaces,
 				longTermChange: longTermGoal && longTermProgressBefore && longTermProgress
 					? goalChange(longTermGoal.id, longTermProgressBefore, longTermProgress, 'quantity')
 					: undefined,

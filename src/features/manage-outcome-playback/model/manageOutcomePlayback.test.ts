@@ -11,8 +11,8 @@ import { advanceOutcomePlayback, beginOutcomePlayback, completeOutcomePlayback }
 const NOW = '2026-07-12T08:00:00.000Z';
 const LATER = '2026-07-12T08:01:00.000Z';
 const LATEST = '2026-07-12T08:02:00.000Z';
-const itemA: OutcomeBatchItem = { slotIndex: 0, userCardId: 'card-a', cardTitle: '晨跑', quantityBaseValue: 5000, baseUnit: 'meter', displayUnit: 'km' };
-const itemB: OutcomeBatchItem = { slotIndex: 1, userCardId: 'card-b', cardTitle: '夜跑', quantityBaseValue: 3000, baseUnit: 'meter', displayUnit: 'km' };
+const itemA: OutcomeBatchItem = { slotIndex: 0, userCardId: 'card-a', cardTitle: '晨跑', quantityBaseValue: 5000, baseUnit: 'meter', displayUnit: 'km', basePerDisplayUnit: 1000, maxDecimalPlaces: 3 };
+const itemB: OutcomeBatchItem = { slotIndex: 1, userCardId: 'card-b', cardTitle: '夜跑', quantityBaseValue: 3000, baseUnit: 'meter', displayUnit: 'km', basePerDisplayUnit: 1000, maxDecimalPlaces: 3 };
 const originalRecords: ActionRecord[] = [{ id: 'card-a:2026-07-12', userCardId: 'card-a', localDate: '2026-07-12', quantityBaseValue: 5000, firstSavedAt: NOW, lastSavedAt: NOW, lastSubmissionId: 'batch-a' }];
 
 let database: RepeatOutcomeDatabase;

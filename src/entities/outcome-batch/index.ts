@@ -1,3 +1,4 @@
+export { formatOutcomeItem } from './lib/formatOutcomeItem';
 export type {
 	OutcomeBatch,
 	OutcomeBatchItem,
