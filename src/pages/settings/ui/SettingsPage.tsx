@@ -1,10 +1,12 @@
 import styles from './SettingsPage.module.css';
 import { useTranslation } from 'react-i18next';
 import { FiDownload, FiExternalLink, FiGithub, FiHardDrive, FiMoon, FiSun } from 'react-icons/fi';
+import { Link } from 'react-router';
 import pkg from '../../../../package.json';
 import { useSettingsStore } from '@entities/settings';
 import { usePwaInstall } from '@features/pwa-install';
 import { ShellSection } from '@shared/ui';
+import { APP_ROUTES } from '@shared/config';
 
 const UPSTREAM_SOURCE_URL = 'https://github.com/iNikAnn/DoHabit';
 
@@ -70,10 +72,10 @@ function SettingsPage() {
 				title={t('shell.settings.dataTitle')}
 				description={t('shell.settings.dataDescription')}
 			>
-				<div className={styles.notice}>
+				<Link className={styles.notice} to={APP_ROUTES.DATA_MANAGEMENT}>
 					<FiHardDrive aria-hidden='true' />
-					<span>{t('shell.settings.dataUnavailable')}</span>
-				</div>
+					<span>{t('shell.settings.dataAction')}</span>
+				</Link>
 			</ShellSection>
 
 			<ShellSection title={t('shell.settings.openSourceTitle')}>

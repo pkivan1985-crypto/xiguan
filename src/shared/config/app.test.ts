@@ -18,13 +18,14 @@ describe('M1 application contract', () => {
 	});
 
 	it('exposes five routes with four primary navigation destinations', () => {
-		expect(APP_ROUTES).toMatchObject({
+			expect(APP_ROUTES).toMatchObject({
 			HOME: '/',
 			TODAY: '/today',
 			DECK: '/deck',
 			DECK_NEW: '/deck/new',
 			HISTORY: '/history',
 			SETTINGS: '/settings',
+			DATA_MANAGEMENT: '/settings/data',
 		});
 		expect(APP_ROUTES.goalDetails('card 1')).toBe('/goals/card%201');
 		expect(PRIMARY_NAV_ROUTES).toEqual(['/', '/today', '/deck', '/history']);

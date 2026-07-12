@@ -1,7 +1,120 @@
-/* page */
 .page {
+	display: grid;
+	gap: 16px;
+}
+
+.notice {
 	display: flex;
-	flex-direction: column;
-	gap: 32px;
-	height: 100%;
+	gap: 10px;
+	align-items: flex-start;
+	padding: 12px;
+	font-size: .82rem;
+	line-height: 1.5;
+	color: var(--muted-color);
+	background: var(--page-bg);
+	border-radius: 14px;
+}
+
+.notice svg {
+	flex: 0 0 auto;
+	margin-top: 2px;
+	color: var(--accent-color);
+}
+
+.actions {
+	display: grid;
+	gap: 8px;
+}
+
+.actions button,
+.fileButton,
+.dangerButton {
+	display: flex;
+	gap: 9px;
+	align-items: center;
+	min-height: 46px;
+	padding: 9px 13px;
+	font-size: .86rem;
+	font-weight: 700;
+	color: var(--text-color);
+	background: var(--page-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 14px;
+}
+
+.actions .primary {
+	color: #fff;
+	background: var(--accent-color);
+	border-color: var(--accent-color);
+}
+
+.fileButton input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+.message {
+	font-size: .8rem;
+	color: var(--muted-color);
+}
+
+.danger { border-color: rgb(181 72 72 / 35%); }
+
+.dangerButton {
+	color: #b54848;
+	background: transparent;
+	border-color: rgb(181 72 72 / 40%);
+}
+
+.overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 40;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	padding: 16px;
+	background: rgb(12 20 28 / 54%);
+}
+
+.clearDialog {
+	display: grid;
+	gap: 14px;
+	width: min(100%, 430px);
+	padding: 20px;
+	background: var(--surface-color);
+	border-radius: 22px;
+	box-shadow: var(--shadow-lg);
+}
+
+.clearDialog h2 { font-size: 1.05rem; }
+
+.clearDialog p {
+	font-size: .84rem;
+	line-height: 1.5;
+	color: var(--muted-color);
+}
+
+.clearDialog input {
+	min-height: 44px;
+	padding: 9px 12px;
+	color: var(--text-color);
+	background: var(--page-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+}
+
+.split {
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+}
+
+.split button {
+	min-width: 112px;
+	min-height: 44px;
+	padding: 8px 12px;
+	border-radius: 14px;
 }

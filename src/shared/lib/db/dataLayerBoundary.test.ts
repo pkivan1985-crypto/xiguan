@@ -11,6 +11,7 @@ const UI_FILES = [
 	'src/pages/deck/ui/DeckPage.tsx',
 	'src/pages/history/ui/HistoryPage.tsx',
 	'src/pages/settings/ui/SettingsPage.tsx',
+	'src/pages/data-management/ui/DataManagementPage.tsx',
 	'src/pages/habit-statistics/ui/HabitStatisticsPage.tsx',
 	'src/widgets/app-shell/ui/AppShell.tsx',
 	'src/widgets/today-outcome-editor/ui/TodayOutcomeEditor.tsx',
@@ -21,6 +22,8 @@ const UI_FILES = [
 	'src/widgets/goal-summary/ui/GoalSummary.tsx',
 	'src/widgets/history-list/ui/HistoryList.tsx',
 	'src/widgets/action-record-editor/ui/ActionRecordEditor.tsx',
+	'src/widgets/backup-export-sheet/ui/BackupExportSheet.tsx',
+	'src/widgets/backup-restore-flow/ui/BackupRestoreFlow.tsx',
 ];
 
 describe('data layer boundary', () => {

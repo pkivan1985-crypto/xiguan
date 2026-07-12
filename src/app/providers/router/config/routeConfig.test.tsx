@@ -12,7 +12,7 @@ describe('M1 route configuration', () => {
 		const shellRoute = routeConfig.find((route) => route.path === '/');
 		const childPaths = shellRoute?.children?.map((route) => route.path ?? 'index');
 
-		expect(childPaths).toEqual(['index', 'today', 'deck', 'history', 'settings', 'goals/:userCardId']);
+		expect(childPaths).toEqual(['index', 'today', 'deck', 'history', 'settings', 'settings/data', 'goals/:userCardId']);
 	});
 
 	it('keeps legacy DoHabit routes out of the production route table', () => {

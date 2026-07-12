@@ -538,6 +538,7 @@
 			"appearanceTitle": "Appearance and motion",
 			"dataDescription": "The first stage has no account or cloud sync. Future business data stays in this browser.",
 			"dataTitle": "Local data",
+			"dataAction": "Back up, restore, or clear data in this browser",
 			"dataUnavailable": "3.0 import, export, and reset arrive after the data model is stable. Old test data is not touched.",
 			"installAction": "View installation options",
 			"installed": "Installed",
@@ -559,6 +560,24 @@
 			"themeLight": "Light",
 			"themeSystem": "System",
 			"version": "Current version: {{version}}"
+		},
+		"dataManagement": {
+			"localTitle": "Local data",
+			"localDescription": "Data stays in this browser. There is no account or cloud sync.",
+			"localNotice": "Clearing browser data or losing the device can erase your records. Export backups regularly.",
+			"backupTitle": "Backup and restore",
+			"backupDescription": "Plain backup is simplest. Use password encryption for private data.",
+			"exportPlain": "Export plain backup",
+			"exportEncrypted": "Export encrypted backup",
+			"exporting": "Creating backup…",
+			"exportSuccess": "The backup was sent to your browser downloads.",
+			"exportError": "The backup did not finish. Try again.",
+			"dangerTitle": "Danger zone",
+			"dangerDescription": "Cleared data can only be recovered from an earlier backup.",
+			"encryption": { "title": "Set backup password", "passwordWarning": "The password cannot be recovered and is never stored.", "password": "Password", "confirmPassword": "Confirm password", "passwordLength": "Use at least 8 characters.", "passwordMismatch": "The passwords do not match." },
+			"restore": { "action": "Restore backup", "passwordTitle": "Enter backup password", "unlock": "Unlock and inspect", "previewTitle": "Confirm restore", "replaceWarning": "Restore fully replaces current data. It does not merge.", "cards": "Loop cards", "goals": "Goals", "records": "Action records", "batches": "Outcome batches", "confirm": "Restore", "restoring": "Restoring…", "errorTitle": "Restore did not finish" },
+			"clear": { "action": "Clear all data", "title": "Clear current data", "offer": "Export a plain backup first, or continue without one.", "backupFirst": "Export backup first", "continue": "Continue", "typePhrase": "Type “delete all data” to confirm.", "phrase": "delete all data", "phraseError": "The confirmation text is incorrect. Nothing was cleared.", "confirm": "Clear data", "error": "Clear failed. Current data was not changed." },
+			"errors": { "FILE_TOO_LARGE": "The backup is larger than 50 MiB.", "UNSUPPORTED_FILE": "Choose a JSON backup file.", "INVALID_JSON": "The file is not valid JSON.", "UNSUPPORTED_FORMAT": "This is not a Visible Repetition 3.0 backup.", "PASSWORD_OR_DATA_INVALID": "The password is wrong or the file is damaged.", "BACKUP_VERSION_TOO_NEW": "This backup needs a newer app version.", "CHECKSUM_MISMATCH": "File verification failed. Current data was not changed.", "RELATIONSHIP_INVALID": "Backup relationships are damaged. Current data was not changed.", "TEMPLATE_INCOMPATIBLE": "The backup uses an unsupported card template.", "UNKNOWN": "The action did not finish. Current data was not changed." }
 		},
 		"today": {
 			"goalProgressLine": "{{goal}}: {{before}} → {{after}}",

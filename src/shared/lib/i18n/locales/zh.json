@@ -543,6 +543,7 @@
 			"appearanceTitle": "外观与动效",
 			"dataDescription": "第一阶段没有账号和云同步，未来业务数据只保存在当前浏览器。",
 			"dataTitle": "本地数据",
+			"dataAction": "备份、恢复或清除当前浏览器中的数据",
 			"dataUnavailable": "3.0 导入、导出和清除将在数据结构稳定后接通。当前不会操作旧测试数据。",
 			"installAction": "查看安装方式",
 			"installed": "已安装",
@@ -564,6 +565,24 @@
 			"themeLight": "浅色",
 			"themeSystem": "系统",
 			"version": "当前版本：{{version}}"
+		},
+		"dataManagement": {
+			"localTitle": "本地数据说明",
+			"localDescription": "数据只保存在当前浏览器，没有账号和云同步。",
+			"localNotice": "清除浏览器数据或设备损坏可能导致数据丢失，请定期导出备份。",
+			"backupTitle": "备份与恢复",
+			"backupDescription": "普通备份操作最简单；需要保护隐私时可使用密码加密。",
+			"exportPlain": "导出普通备份",
+			"exportEncrypted": "导出加密备份",
+			"exporting": "正在生成备份…",
+			"exportSuccess": "备份文件已交给浏览器下载。",
+			"exportError": "备份没有完成，请重试。",
+			"dangerTitle": "危险操作",
+			"dangerDescription": "清除后只能通过之前导出的备份恢复。",
+			"encryption": { "title": "设置备份密码", "passwordWarning": "密码无法找回，应用不会保存密码。", "password": "密码", "confirmPassword": "再次输入密码", "passwordLength": "密码至少需要 8 个字符。", "passwordMismatch": "两次输入的密码不一致。" },
+			"restore": { "action": "恢复备份", "passwordTitle": "输入备份密码", "unlock": "解锁并检查", "previewTitle": "确认恢复内容", "replaceWarning": "恢复会完整替换当前数据，不会与现有数据合并。", "cards": "循环卡", "goals": "目标", "records": "行动记录", "batches": "成果批次", "confirm": "确认恢复", "restoring": "正在恢复…", "errorTitle": "恢复未完成" },
+			"clear": { "action": "清除全部数据", "title": "清除当前数据", "offer": "建议先导出普通备份。也可以不备份并继续。", "backupFirst": "先导出备份", "continue": "继续清除", "typePhrase": "请输入“删除全部数据”确认。", "phrase": "删除全部数据", "phraseError": "确认文字不正确，数据没有清除。", "confirm": "确认清除", "error": "清除失败，当前数据没有改变。" },
+			"errors": { "FILE_TOO_LARGE": "备份文件超过 50 MiB。", "UNSUPPORTED_FILE": "请选择 JSON 备份文件。", "INVALID_JSON": "文件不是有效 JSON。", "UNSUPPORTED_FORMAT": "这不是重复成果显化 3.0 备份。", "PASSWORD_OR_DATA_INVALID": "密码错误或文件已损坏。", "BACKUP_VERSION_TOO_NEW": "备份来自更新版本，请先更新应用。", "CHECKSUM_MISMATCH": "文件校验失败，当前数据没有改变。", "RELATIONSHIP_INVALID": "备份对象关系损坏，当前数据没有改变。", "TEMPLATE_INCOMPATIBLE": "备份使用了当前版本不支持的卡片模板。", "UNKNOWN": "操作没有完成，当前数据没有改变。" }
 		},
 		"today": {
 			"goalProgressLine": "{{goal}}：{{before}} → {{after}}",

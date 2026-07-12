@@ -12,6 +12,9 @@ import {
 	type EncryptedBackupEnvelopeV1,
 	isEncryptedBackupEnvelope,
 } from '@shared/lib/crypto';
+import type { CardTemplate } from '@entities/card-template';
+import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
+import { readBackupFile, type BackupFileLike } from '../lib/readBackupFile';
 
 export type BackupInspectionErrorCode = 'INVALID_JSON' | 'UNSUPPORTED_FORMAT' | 'PASSWORD_OR_DATA_INVALID';
 
@@ -66,4 +69,19 @@ export async function inspectBackupText(
 	}
 	const backup = await validatePlainBackup(outer, definitions, digest);
 	return { kind: 'ready', backup, preview: backup.preview };
+}
+
+export async function inspectBackupFile(
+	database: RepeatOutcomeDatabase,
+	file: BackupFileLike,
+	password?: string,
+	digest: DigestText = defaultDigest,
+): Promise<InspectBackupResult> {
+	const text = await readBackupFile(file);
+	const definitions = (await database.tableFor<CardTemplate>('cardTemplates').toArray()).map(({ id, version }) => ({ id, version }));
+	return inspectBackupText(text, definitions, password, digest);
+}
+
+export function inspectBackupFileInApp(file: BackupFileLike, password?: string): Promise<InspectBackupResult> {
+	return inspectBackupFile(appDatabase, file, password);
 }

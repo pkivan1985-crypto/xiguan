@@ -1,8 +1,12 @@
+import 'fake-indexeddb/auto';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import { BACKUP_FORMAT, backupFingerprint, type BackupEnvelopeV1, type BackupPayloadV1 } from '@entities/backup';
 import { encryptBackupJson } from '@shared/lib/crypto';
-import { inspectBackupText } from './inspectBackup';
+import type { CardTemplate } from '@entities/card-template';
+import { RepeatOutcomeDatabase } from '@shared/lib/db';
+import { inspectBackupFile, inspectBackupText } from './inspectBackup';
 import { MAX_BACKUP_FILE_BYTES, readBackupFile } from '../lib/readBackupFile';
 
 const digest = async (value: string) => {
@@ -58,5 +62,14 @@ describe('backup inspection', () => {
 		const text = vi.fn(async () => '{"ok":true}');
 		expect(await readBackupFile({ name: 'backup.json', size: MAX_BACKUP_FILE_BYTES, type: '', text })).toBe('{"ok":true}');
 		await expect(readBackupFile({ name: 'backup.html', size: 10, type: 'text/html', text })).rejects.toMatchObject({ code: 'UNSUPPORTED_FILE' });
+	});
+
+	it('loads current template definitions through the feature boundary', async () => {
+		const database = new RepeatOutcomeDatabase(`inspect-${crypto.randomUUID()}`);
+		await database.tableFor<CardTemplate>('cardTemplates').put({ id: 'running', categoryId: 'sport', title: '跑步', sortOrder: 0, enabled: true, version: 1, defaultStageMode: 'quantity', quantity: { baseUnit: 'm', displayUnit: 'km', basePerDisplayUnit: 1000, maxDecimalPlaces: 2, confirmationThresholdDisplay: 100 } });
+		const source = await plainEnvelope({ definitionRefs: { cardTemplates: [] } });
+		const result = await inspectBackupFile(database, { name: 'backup.json', size: 10, type: 'application/json', text: async () => JSON.stringify(source) }, undefined, digest);
+		expect(result.kind).toBe('ready');
+		await database.delete();
 	});
 });
