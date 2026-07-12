@@ -45,7 +45,7 @@ export interface GoalRevision {
 	goalType: GoalType;
 	goalId: string;
 	createdAt: string;
-	reason: 'completed';
+	reason: 'completed' | 'correction';
 	beforeStatus: GoalStatus;
 	afterStatus: GoalStatus;
 	submissionId: string;
