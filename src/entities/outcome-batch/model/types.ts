@@ -35,5 +35,8 @@ export interface OutcomeBatch {
 	localDate: LocalDate;
 	status: OutcomeBatchStatus;
 	createdAt: string;
+	playbackIndex?: number;
+	playbackUpdatedAt?: string;
+	completedAt?: string;
 	items: OutcomeBatchItem[];
 }
