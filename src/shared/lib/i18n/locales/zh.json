@@ -463,11 +463,26 @@
 			"title": "页面暂时无法打开"
 		},
 		"history": {
+			"confirmDelete": "确认删除",
+			"confirmUpdate": "确认修改",
 			"correctRecord": "修改{{title}}",
+			"dateChanged": "日期已经变化，这条记录不能再按今天修改",
+			"deleteConfirmationTitle": "删除今天的这条成果？",
+			"deleteRecord": "删除记录",
+			"editorTitle": "修改今天的成果",
 			"emptyDescription": "成功保存每日成果后，行动记录会按本地日期出现在这里。",
 			"emptyTitle": "还没有真实成果记录",
+			"invalidValue": "请输入有效的正数成果值",
+			"loadError": "历史记录暂时无法读取",
+			"loading": "正在读取真实成果记录…",
 			"readOnly": "只读",
+			"recalculationImpact": "确认后会重新计算长期目标、阶段目标和成果月历。",
+			"recordToday": "记录今日成果",
+			"retry": "重新读取",
+			"saveChanges": "保存修改",
+			"saveError": "修改尚未保存，请保留当前输入后再试",
 			"today": "今天",
+			"updateConfirmationTitle": "确认修改今天的成果？",
 			"unavailable": "记录关系不可用"
 		},
 		"home": {

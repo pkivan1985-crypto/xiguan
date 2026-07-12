@@ -13,6 +13,9 @@ export interface HistoryRecordModel {
 	quantityBaseValue: number;
 	displayValue: string;
 	displayUnit: string;
+	basePerDisplayUnit: number;
+	maxDecimalPlaces: number;
+	confirmationThresholdDisplay: number;
 	lastSavedAt: string;
 	longTermGoalTitle?: string;
 	stageGoalTitle?: string;
@@ -67,6 +70,9 @@ export async function loadHistory(
 						? formatQuantityFromBase(record.quantityBaseValue, template.quantity)
 						: String(record.quantityBaseValue),
 					displayUnit: template?.quantity.displayUnit ?? '',
+					basePerDisplayUnit: template?.quantity.basePerDisplayUnit ?? 1,
+					maxDecimalPlaces: template?.quantity.maxDecimalPlaces ?? 0,
+					confirmationThresholdDisplay: template?.quantity.confirmationThresholdDisplay ?? Number.MAX_SAFE_INTEGER,
 					lastSavedAt: record.lastSavedAt,
 					longTermGoalTitle: record.longTermGoalId ? longGoalsById.get(record.longTermGoalId)?.title : undefined,
 					stageGoalTitle: record.stageGoalId ? stageGoalsById.get(record.stageGoalId)?.title : undefined,

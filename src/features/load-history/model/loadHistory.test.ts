@@ -65,6 +65,7 @@ describe('loadHistory', () => {
 
 		expect(item).toMatchObject({
 			id: 'today', cardTitle: '晨跑', displayValue: '7.50', displayUnit: 'km',
+			basePerDisplayUnit: 1000, maxDecimalPlaces: 3, confirmationThresholdDisplay: 100,
 			lastSavedAt: '2026-07-12T08:42:00.000Z', longTermGoalTitle: '累计 100 km',
 			stageGoalTitle: '阶段 20 km', canCorrect: true, relationAvailable: true,
 		});
@@ -98,7 +99,8 @@ describe('loadHistory', () => {
 
 		const item = (await loadHistory(database, '2026-07-12')).groups[0]?.records[0];
 		expect(item).toMatchObject({
-			cardTitle: '', displayValue: '7500', displayUnit: '', relationAvailable: false, canCorrect: false,
+			cardTitle: '', displayValue: '7500', displayUnit: '', basePerDisplayUnit: 1,
+			maxDecimalPlaces: 0, relationAvailable: false, canCorrect: false,
 		});
 	});
 });

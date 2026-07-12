@@ -458,11 +458,26 @@
 			"title": "This page cannot open right now"
 		},
 		"history": {
+			"confirmDelete": "Confirm deletion",
+			"confirmUpdate": "Confirm changes",
 			"correctRecord": "Edit {{title}}",
+			"dateChanged": "The local date has changed, so this record can no longer be edited as today",
+			"deleteConfirmationTitle": "Delete this outcome from today?",
+			"deleteRecord": "Delete record",
+			"editorTitle": "Edit today's outcome",
 			"emptyDescription": "After a daily outcome is saved, action records will appear here by local date.",
 			"emptyTitle": "No real outcome records yet",
+			"invalidValue": "Enter a valid positive outcome value",
+			"loadError": "History cannot be read right now",
+			"loading": "Reading real outcome records…",
 			"readOnly": "Read only",
+			"recalculationImpact": "Confirmation recalculates long-term goals, stage goals, and the outcome calendar.",
+			"recordToday": "Record today's outcomes",
+			"retry": "Read again",
+			"saveChanges": "Save changes",
+			"saveError": "Changes were not saved. Keep the current value and try again.",
 			"today": "Today",
+			"updateConfirmationTitle": "Confirm changes to today's outcome?",
 			"unavailable": "Record relationship unavailable"
 		},
 		"home": {
