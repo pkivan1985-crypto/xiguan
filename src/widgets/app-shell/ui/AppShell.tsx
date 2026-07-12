@@ -3,19 +3,12 @@ import { NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { FiCalendar, FiClock, FiHome, FiLayers, FiSettings } from 'react-icons/fi';
 import { APP_NAME, APP_ROUTES } from '@shared/config';
+import { appShellTitleKey } from '../model/appShellRoute';
 
 function AppShell() {
 	const { t } = useTranslation();
 	const { pathname } = useLocation();
-	const pageTitle = pathname === APP_ROUTES.TODAY
-		? t('shell.nav.today')
-		: pathname === APP_ROUTES.DECK
-			? t('shell.nav.deck')
-			: pathname === APP_ROUTES.HISTORY
-				? t('shell.nav.history')
-				: pathname === APP_ROUTES.SETTINGS
-					? t('shell.nav.settings')
-					: t('shell.nav.home');
+	const pageTitle = t(appShellTitleKey(pathname));
 
 	const navItems = [
 		{ to: APP_ROUTES.HOME, label: t('shell.nav.home'), icon: FiHome, end: true },
