@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ActionRecordEditor, EditorConfirmation } from './ActionRecordEditor';
@@ -14,6 +15,11 @@ const record: HistoryRecordModel = {
 };
 
 describe('ActionRecordEditor', () => {
+	it('keeps the modal layer above the fixed bottom navigation', () => {
+		const css = readFileSync(new URL('./ActionRecordEditor.module.css', import.meta.url), 'utf8');
+		expect(css).toContain('z-index: 40');
+	});
+
 	it('opens with current value, immutable unit, and no immediate destructive confirmation', () => {
 		const html = renderToStaticMarkup(<ActionRecordEditor record={record} saving={false} onSave={() => undefined} onDelete={() => undefined} onClose={() => undefined} />);
 		expect(html).toContain('value="7.50"');

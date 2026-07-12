@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string -- Goal modes and statuses are domain identifiers. */
 import { parseLocalDate } from '@shared/lib/date';
 
 import type {
