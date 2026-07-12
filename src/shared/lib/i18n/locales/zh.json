@@ -312,6 +312,10 @@
 			"gitHub": {
 				"desc": "查看代码或贡献项目",
 				"title": "GitHub 仓库"
+			},
+			"upstream": {
+				"desc": "查看 DoHabit 底座源代码与原始许可",
+				"title": "DoHabit 底座来源"
 			}
 		},
 		"title": "菜单"
@@ -565,10 +569,11 @@
 			"offlinePreparing": "首次在线打开后将准备离线应用壳。",
 			"offlineReady": "应用壳已缓存，可离线读取和记录本地成果。",
 			"offlineTitle": "离线能力",
+			"projectSourceCode": "项目源代码",
 			"projectSourcePending": "项目源代码仓库将在正式发布前公开。",
 			"reduceMotion": "减少动态效果",
 			"reduceMotionDescription": "关闭页面和组件的非必要运动。",
-			"sourceCode": "DoHabit 底座源代码",
+			"upstreamSourceCode": "DoHabit 底座源代码",
 			"themeDark": "深色",
 			"themeLabel": "外观主题",
 			"themeLight": "浅色",

@@ -3,7 +3,7 @@
 	"description": "把每天真实完成的重复行动，变成可累计、可回顾的可见成果。",
 	"private": true,
 	"license": "AGPL-3.0-only",
-	"version": "0.50.0",
+	"version": "3.0.0-rc.1",
 	"type": "module",
 	"packageManager": "npm@11.18.0",
 	"engines": {

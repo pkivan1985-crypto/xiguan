@@ -311,6 +311,10 @@
 			"gitHub": {
 				"desc": "View or contribute to the project",
 				"title": "GitHub Repository"
+			},
+			"upstream": {
+				"desc": "View the DoHabit upstream source and original license",
+				"title": "DoHabit upstream"
 			}
 		},
 		"title": "Menu"
@@ -560,10 +564,11 @@
 			"offlinePreparing": "The offline app shell is prepared after the first online visit.",
 			"offlineReady": "The app shell is cached for offline local reading and recording.",
 			"offlineTitle": "Offline capability",
+			"projectSourceCode": "Project source code",
 			"projectSourcePending": "The project repository will be public before release.",
 			"reduceMotion": "Reduce motion",
 			"reduceMotionDescription": "Disable non-essential page and component motion.",
-			"sourceCode": "DoHabit upstream source",
+			"upstreamSourceCode": "DoHabit upstream source",
 			"themeDark": "Dark",
 			"themeLabel": "Color theme",
 			"themeLight": "Light",

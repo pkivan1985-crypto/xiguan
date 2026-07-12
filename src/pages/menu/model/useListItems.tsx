@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { HiArchiveBox } from 'react-icons/hi2';
-import { FaAward, FaBug, FaGithub, FaPaintBrush } from 'react-icons/fa';
+import { FaAward, FaGithub, FaPaintBrush } from 'react-icons/fa';
 import { BsFillDatabaseFill } from 'react-icons/bs';
+import { UPSTREAM_SOURCE_URL } from '@shared/config';
 import { getNavigationTarget } from '@shared/lib/router';
 import type { ListItemProps } from '@shared/ui';
 
@@ -58,17 +59,9 @@ function useListItems() {
 		{
 			icon: FaGithub,
 			iconProps: { color: '#7fc7ff' },
-			title: t('menu.shared.gitHub.title'),
-			// description: t('menu.shared.gitHub.desc'),
-			onClick: () => window.open('https://github.com/iNikAnn/DoHabit', '_blank'),
-			indicator: { type: 'external' }
-		},
-		{
-			icon: FaBug,
-			iconProps: { color: '#EF4444' },
-			title: t('menu.shared.feedback.title'),
-			// description: t('menu.shared.feedback.desc'),
-			onClick: () => window.open('https://github.com/iNikAnn/DoHabit/issues/new', '_blank'),
+			title: t('menu.shared.upstream.title'),
+			description: t('menu.shared.upstream.desc'),
+			onClick: () => window.open(UPSTREAM_SOURCE_URL, '_blank'),
 			indicator: { type: 'external' }
 		}
 	];

@@ -5,6 +5,7 @@ import { FaLock, FaPlane, FaShieldAlt } from 'react-icons/fa';
 import { FaBoltLightning } from 'react-icons/fa6';
 import { usePwaInstall } from '@features/pwa-install';
 import { useSettingsStore } from '@entities/settings';
+import { APP_NAME } from '@shared/config';
 import { Button } from '@shared/ui';
 
 const BASE_URL = import.meta.env.BASE_URL;
@@ -69,8 +70,7 @@ function WelcomeView() {
 							className={styles.logoImg}
 						/>
 
-						{/* eslint-disable-next-line */}
-						<h2>DoHabit</h2>
+						<h2>{APP_NAME}</h2>
 					</div>
 
 					<h1 className={styles.title}>

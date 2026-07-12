@@ -6,9 +6,7 @@ import { useSettingsStore } from '@entities/settings';
 import { usePwaInstall } from '@features/pwa-install';
 import { usePwaUpdate } from '@features/pwa-update';
 import { ShellSection } from '@shared/ui';
-import { APP_ROUTES } from '@shared/config';
-
-const UPSTREAM_SOURCE_URL = 'https://github.com/iNikAnn/DoHabit';
+import { APP_ROUTES, PROJECT_SOURCE, UPSTREAM_SOURCE_URL } from '@shared/config';
 
 function SettingsPage() {
 	const { t } = useTranslation();
@@ -117,15 +115,23 @@ function SettingsPage() {
 			</ShellSection>
 
 			<ShellSection title={t('shell.settings.openSourceTitle')}>
+				{PROJECT_SOURCE.status === 'unavailable' && (
+					<div className={styles.linkRow}>
+						<FiGithub aria-hidden='true' />
+						<span>
+							<strong>{t('shell.settings.projectSourceCode')}</strong>
+							<small>{t('shell.settings.projectSourcePending')}</small>
+						</span>
+					</div>
+				)}
 				<a className={styles.linkRow} href={UPSTREAM_SOURCE_URL} target='_blank' rel='noreferrer'>
 					<FiGithub aria-hidden='true' />
 					<span>
-						<strong>{t('shell.settings.sourceCode')}</strong>
+						<strong>{t('shell.settings.upstreamSourceCode')}</strong>
 						<small>{t('shell.settings.license')}</small>
 					</span>
 					<FiExternalLink aria-hidden='true' />
 				</a>
-				<p className={styles.pending}>{t('shell.settings.projectSourcePending')}</p>
 			</ShellSection>
 		</div>
 	);
