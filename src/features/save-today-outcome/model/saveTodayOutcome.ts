@@ -2,20 +2,37 @@
 import type { ActionRecord } from '@entities/action-record';
 import { parseQuantityToBase } from '@entities/card-template';
 import type { CardTemplate } from '@entities/card-template';
+import type { StageCompletionMode } from '@entities/card-template';
 import { calculateGoalProgress } from '@entities/goal';
 import type { GoalCompletionSnapshot, GoalProgress, GoalRevision, LongTermGoal, StageGoal } from '@entities/goal';
-import type { OutcomeBatch, OutcomeBatchItem } from '@entities/outcome-batch';
+import type { OutcomeBatch, OutcomeBatchItem, OutcomeGoalChange, OutcomeProgressSnapshot } from '@entities/outcome-batch';
 import { filledSlotsInOrder, validateTodayDraft } from '@entities/today-draft';
 import type { TodayDraft } from '@entities/today-draft';
 import type { UserCard } from '@entities/user-card';
-import type { RepeatOutcomeDatabase } from '@shared/lib/db';
+import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 import { parseLocalDate } from '@shared/lib/date';
 
 export interface SaveTodayOutcomeInput {
 	localDate: string;
+	currentLocalDate: string;
 	nowIso: string;
 	submissionId: string;
 	confirmedOverLimit?: boolean;
+}
+
+function progressSnapshot(progress: GoalProgress, mode: StageCompletionMode): OutcomeProgressSnapshot {
+	return {
+		mode,
+		quantityBaseValue: progress.quantityBaseValue,
+		activeDays: progress.activeDays,
+		quantityRatio: progress.quantityRatio,
+		activeDaysRatio: progress.activeDaysRatio,
+		completed: progress.completed,
+	};
+}
+
+function goalChange(goalId: string, before: GoalProgress, after: GoalProgress, mode: StageCompletionMode): OutcomeGoalChange {
+	return { goalId, before: progressSnapshot(before, mode), after: progressSnapshot(after, mode) };
 }
 
 function completionSnapshot(
@@ -54,6 +71,8 @@ function completionRevision(
 
 function assertInput(input: SaveTodayOutcomeInput): void {
 	parseLocalDate(input.localDate);
+	parseLocalDate(input.currentLocalDate);
+	if (input.currentLocalDate !== input.localDate) throw new Error('TODAY_DRAFT_DATE_CHANGED');
 	if (!input.submissionId.trim()) throw new Error('SUBMISSION_ID_REQUIRED');
 	if (Number.isNaN(Date.parse(input.nowIso))) throw new Error('INVALID_NOW_ISO');
 }
@@ -116,6 +135,19 @@ export async function saveTodayOutcome(
 				: longTermGoal
 					? await tables.stageGoals.where('[longTermGoalId+status]').equals([longTermGoal.id, 'active']).first()
 					: undefined;
+			const cardRecordsBefore = await tables.actionRecords.where('userCardId').equals(userCard.id).toArray();
+			const longTermProgressBefore = longTermGoal
+				? calculateGoalProgress(
+					cardRecordsBefore.filter(({ longTermGoalId }) => longTermGoalId === longTermGoal?.id),
+					{ mode: 'quantity', targetQuantityBase: longTermGoal.targetQuantityBase },
+				)
+				: null;
+			const stageProgressBefore = stageGoal
+				? calculateGoalProgress(
+					cardRecordsBefore.filter(({ stageGoalId }) => stageGoalId === stageGoal?.id),
+					{ mode: stageGoal.mode, targetQuantityBase: stageGoal.targetQuantityBase, targetActiveDays: stageGoal.targetActiveDays },
+				)
+				: null;
 
 			const record: ActionRecord = {
 				id: existingRecord?.id ?? `${userCard.id}:${input.localDate}`,
@@ -163,10 +195,13 @@ export async function saveTodayOutcome(
 				cardTitle: userCard.title,
 				quantityBaseValue,
 				baseUnit: template.quantity.baseUnit,
-				longTermGoalId: longTermGoal?.id,
-				stageGoalId: stageGoal?.id,
-				longTermProgressRatio: longTermProgress?.ratio,
-				stageProgressRatio: stageProgress?.ratio,
+				displayUnit: template.quantity.displayUnit,
+				longTermChange: longTermGoal && longTermProgressBefore && longTermProgress
+					? goalChange(longTermGoal.id, longTermProgressBefore, longTermProgress, 'quantity')
+					: undefined,
+				stageChange: stageGoal && stageProgressBefore && stageProgress
+					? goalChange(stageGoal.id, stageProgressBefore, stageProgress, stageGoal.mode)
+					: undefined,
 			});
 		}
 
@@ -186,4 +221,8 @@ export async function saveTodayOutcome(
 	const batch = resultBatchId ? await tables.outcomeBatches.get(resultBatchId) : undefined;
 	if (!batch) throw new Error('OUTCOME_BATCH_READBACK_FAILED');
 	return batch;
+}
+
+export function saveTodayOutcomeInApp(input: SaveTodayOutcomeInput): Promise<OutcomeBatch> {
+	return saveTodayOutcome(appDatabase, input);
 }

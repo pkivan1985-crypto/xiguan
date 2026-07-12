@@ -1,1 +1,7 @@
-export type { OutcomeBatch, OutcomeBatchItem, OutcomeBatchStatus } from './model/types';
+export type {
+	OutcomeBatch,
+	OutcomeBatchItem,
+	OutcomeBatchStatus,
+	OutcomeGoalChange,
+	OutcomeProgressSnapshot,
+} from './model/types';

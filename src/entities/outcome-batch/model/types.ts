@@ -1,6 +1,22 @@
 import type { LocalDate } from '@shared/lib/date';
+import type { StageCompletionMode } from '@entities/card-template';
 
 export type OutcomeBatchStatus = 'ready' | 'playing' | 'completed';
+
+export interface OutcomeProgressSnapshot {
+	mode: StageCompletionMode;
+	quantityBaseValue: number;
+	activeDays: number;
+	quantityRatio?: number;
+	activeDaysRatio?: number;
+	completed: boolean;
+}
+
+export interface OutcomeGoalChange {
+	goalId: string;
+	before: OutcomeProgressSnapshot;
+	after: OutcomeProgressSnapshot;
+}
 
 export interface OutcomeBatchItem {
 	slotIndex: number;
@@ -8,10 +24,9 @@ export interface OutcomeBatchItem {
 	cardTitle: string;
 	quantityBaseValue: number;
 	baseUnit: string;
-	longTermGoalId?: string;
-	stageGoalId?: string;
-	longTermProgressRatio?: number;
-	stageProgressRatio?: number;
+	displayUnit: string;
+	longTermChange?: OutcomeGoalChange;
+	stageChange?: OutcomeGoalChange;
 }
 
 export interface OutcomeBatch {
