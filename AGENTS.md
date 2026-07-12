@@ -2,7 +2,7 @@
 
 > 草案日期：2026-07-11  
 > 最终路径：`web/AGENTS.md`  
-> 当前状态：已批准并落地；M8 实施基线已批准，`project/m8-release-transition` 只执行任务 1—6 本地发布准备；Gate A/B/C 全部关闭
+> 当前状态：已批准并落地；M8 任务 1—6 已完成，`project/m8-release-transition` 为 `LOCAL_READY / REMOTE_GATE_A_PENDING`；Gate A/B/C 全部关闭
 > 适用范围：`web/` 及其全部子目录
 
 ## 一、上级规则与冲突处理
