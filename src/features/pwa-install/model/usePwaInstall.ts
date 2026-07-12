@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePwaStatus } from '@shared/lib/dom';
 import { useDialogStore } from '@shared/ui';
+import { detectInstallState } from './installState';
+import { runInstallPrompt } from './promptLifecycle';
 import { usePwaStore } from './store';
 
 function usePwaInstall() {
@@ -9,7 +11,34 @@ function usePwaInstall() {
 
 	// PWA installation state
 	const deferredPrompt = usePwaStore((s) => s.deferredPrompt);
-	const status = usePwaStatus(deferredPrompt);
+	const installed = usePwaStore((s) => s.installed);
+	const setDeferredPrompt = usePwaStore((s) => s.setDeferredPrompt);
+	const setInstalled = usePwaStore((s) => s.setInstalled);
+	const [standalone, setStandalone] = useState(() => typeof window !== 'undefined'
+		&& window.matchMedia('(display-mode: standalone)').matches);
+
+	useEffect(() => {
+		const media = window.matchMedia('(display-mode: standalone)');
+		const handleModeChange = () => setStandalone(media.matches);
+		const handleInstalled = () => setInstalled(true);
+		media.addEventListener('change', handleModeChange);
+		window.addEventListener('appinstalled', handleInstalled);
+		return () => {
+			media.removeEventListener('change', handleModeChange);
+			window.removeEventListener('appinstalled', handleInstalled);
+		};
+	}, [setInstalled]);
+
+	const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
+	const state = detectInstallState({
+		standalone: installed || standalone,
+		iosStandalone: navigatorWithStandalone.standalone === true,
+		userAgent: navigator.userAgent,
+		platform: navigator.platform,
+		maxTouchPoints: navigator.maxTouchPoints,
+		hasPrompt: Boolean(deferredPrompt),
+		supportsServiceWorker: 'serviceWorker' in navigator,
+	});
 
 	// Global stores
 	const openDialog = useDialogStore((s) => s.open);
@@ -17,10 +46,10 @@ function usePwaInstall() {
 	/**
 	 * Process PWA installation flow or trigger platform-specific instructions.
 	 */
-	const handleInstall = async (): Promise<void> => {
-		if (status === 'INSTALLED') return;
+	const install = async (): Promise<void> => {
+		if (state === 'INSTALLED') return;
 
-		if (status === 'IOS_MANUAL') {
+		if (state === 'IOS_MANUAL') {
 			openDialog({
 				title: t('welcome.pwa.ios.title'),
 				text: t('welcome.pwa.ios.steps')
@@ -28,7 +57,7 @@ function usePwaInstall() {
 			return;
 		}
 
-		if (status === 'BROWSER_ONLY') {
+		if (state === 'BROWSER_MENU' || state === 'UNAVAILABLE') {
 			openDialog({
 				title: t('welcome.pwa.chromeNudge.title'),
 				text: t('welcome.pwa.chromeNudge.text')
@@ -36,19 +65,16 @@ function usePwaInstall() {
 			return;
 		}
 
-		if (status === 'CAN_INSTALL' && deferredPrompt) {
-			await deferredPrompt.prompt();
-			const { outcome } = await deferredPrompt.userChoice;
-
-			if (outcome === 'accepted') {
-				usePwaStore.getState().setDeferredPrompt(null);
-			}
+		if (state === 'CAN_PROMPT' && deferredPrompt) {
+			const outcome = await runInstallPrompt(deferredPrompt);
+			setDeferredPrompt(null);
+			if (outcome === 'accepted') setInstalled(true);
 		}
 	};
 
 	return {
-		status,
-		handleInstall
+		state,
+		install,
 	};
 }
 

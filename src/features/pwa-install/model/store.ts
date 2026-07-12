@@ -9,7 +9,9 @@ export interface BeforeInstallPromptEvent extends Event {
 
 interface PwaStoreState {
 	deferredPrompt: BeforeInstallPromptEvent | null;
+	installed: boolean;
 	setDeferredPrompt: (prompt: BeforeInstallPromptEvent | null) => void;
+	setInstalled: (installed: boolean) => void;
 }
 
 /**
@@ -19,7 +21,9 @@ interface PwaStoreState {
 export const usePwaStore = create<PwaStoreState>()(
 	(set) => ({
 		deferredPrompt: null,
-		setDeferredPrompt: (prompt) => set({ deferredPrompt: prompt })
+		installed: false,
+		setDeferredPrompt: (prompt) => set({ deferredPrompt: prompt }),
+		setInstalled: (installed) => set(installed ? { installed, deferredPrompt: null } : { installed }),
 	})
 );
 

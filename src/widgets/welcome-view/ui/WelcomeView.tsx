@@ -14,7 +14,7 @@ function WelcomeView() {
 	const { t } = useTranslation();
 
 	// Handle PWA installation trigger
-	const { status, handleInstall } = usePwaInstall();
+	const { state, install } = usePwaInstall();
 
 	// Global stores
 	const settingsDispatch = useSettingsStore((s) => s.settingsDispatch);
@@ -106,13 +106,13 @@ function WelcomeView() {
 					</ul>
 
 					<div className={styles.actions}>
-						<Button onClick={status === 'INSTALLED' ? handleContinue : handleInstall}>
-							{status === 'INSTALLED'
+						<Button onClick={state === 'INSTALLED' ? handleContinue : install}>
+							{state === 'INSTALLED'
 								? t('common.continue')
 								: t('welcome.actions.install')}
 						</Button>
 
-						{status !== 'INSTALLED' && (
+						{state !== 'INSTALLED' && (
 							<Button
 								variant='text'
 								style={{

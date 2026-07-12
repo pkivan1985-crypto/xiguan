@@ -14,12 +14,12 @@ function SettingsPage() {
 	const { t } = useTranslation();
 	const settings = useSettingsStore((state) => state.settings);
 	const settingsDispatch = useSettingsStore((state) => state.settingsDispatch);
-	const { status, handleInstall } = usePwaInstall();
-	const pwaStatusDescription = status === 'INSTALLED'
+	const { state, install } = usePwaInstall();
+	const pwaStatusDescription = state === 'INSTALLED'
 		? t('shell.settings.pwaStatus.INSTALLED')
-		: status === 'CAN_INSTALL'
+		: state === 'CAN_PROMPT'
 			? t('shell.settings.pwaStatus.CAN_INSTALL')
-			: status === 'IOS_MANUAL'
+			: state === 'IOS_MANUAL'
 				? t('shell.settings.pwaStatus.IOS_MANUAL')
 				: t('shell.settings.pwaStatus.BROWSER_ONLY');
 
@@ -62,9 +62,9 @@ function SettingsPage() {
 				title={t('shell.settings.installTitle')}
 				description={pwaStatusDescription}
 			>
-				<button className={styles.actionButton} onClick={handleInstall} disabled={status === 'INSTALLED'}>
+				<button className={styles.actionButton} onClick={install} disabled={state === 'INSTALLED'}>
 					<FiDownload aria-hidden='true' />
-					{status === 'INSTALLED' ? t('shell.settings.installed') : t('shell.settings.installAction')}
+					{state === 'INSTALLED' ? t('shell.settings.installed') : t('shell.settings.installAction')}
 				</button>
 			</ShellSection>
 

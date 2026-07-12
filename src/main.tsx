@@ -5,14 +5,14 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { App } from '@app/App';
 import '@app/providers/i18n';
 import ErrorFallback from '@app/components/error-fallback/ErrorFallback';
-import { pwaStore } from '@features/pwa-install';
+import { pwaStore, type BeforeInstallPromptEvent } from '@features/pwa-install';
 
 /**
  * Intercept native PWA install prompt to handle it via application UI.
  */
 window.addEventListener('beforeinstallprompt', (e) => {
 	e.preventDefault();
-	pwaStore.getState().setDeferredPrompt(e as any);
+	pwaStore.getState().setDeferredPrompt(e as BeforeInstallPromptEvent);
 });
 
 const root = createRoot(document.getElementById('root')!);

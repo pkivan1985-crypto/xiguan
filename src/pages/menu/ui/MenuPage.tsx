@@ -14,7 +14,7 @@ const isTest = import.meta.env.VITE_TEST_BUILD === 'true';
 function MenuPage() {
 	const { t } = useTranslation();
 	const { habitItems, settingsItems, supportItems } = useListItems();
-	const { status, handleInstall } = usePwaInstall();
+	const { state, install } = usePwaInstall();
 
 	return (
 		<section className={styles.page}>
@@ -34,12 +34,12 @@ function MenuPage() {
 			/>
 
 			<div className={styles.footer}>
-				{status !== 'INSTALLED' && (
+				{state !== 'INSTALLED' && (
 					<List
 						items={[{
 							icon: <MdInstallMobile color='#2db78b' />,
 							title: t('welcome.actions.install'),
-							onClick: handleInstall
+							onClick: install
 						}]}
 					/>
 				)}
