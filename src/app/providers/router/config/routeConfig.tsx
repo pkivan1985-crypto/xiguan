@@ -5,6 +5,7 @@ import { DeckPage } from '@pages/deck';
 import { HistoryPage } from '@pages/history';
 import { SettingsPage } from '@pages/settings';
 import { CreateRunningCardPage } from '@pages/create-running-card';
+import { GoalDetailsPage } from '@pages/habit-statistics';
 import { APP_ROUTES } from '@shared/config';
 import { AppShell } from '@widgets/app-shell';
 
@@ -26,6 +27,7 @@ export const routeConfig: RouteObject[] = [
 			{ path: APP_ROUTES.DECK.slice(1), element: <DeckPage /> },
 			{ path: APP_ROUTES.HISTORY.slice(1), element: <HistoryPage /> },
 			{ path: APP_ROUTES.SETTINGS.slice(1), element: <SettingsPage /> },
+			{ path: APP_ROUTES.GOAL_DETAILS_PATTERN.slice(1), element: <GoalDetailsPage /> },
 		],
 	},
 	{

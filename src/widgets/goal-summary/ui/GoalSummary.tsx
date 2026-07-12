@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { FiArrowUpRight, FiChevronRight } from 'react-icons/fi';
 import { formatQuantityFromBase } from '@entities/card-template';
 import type { HomeGoalSummary } from '@features/load-home-dashboard';
+import { APP_ROUTES } from '@shared/config';
 
 interface GoalSummaryProps { summaries: readonly HomeGoalSummary[]; }
 
@@ -19,7 +20,7 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 	return <div className={styles.list}>{summaries.map((summary) => {
 		const primary = summary.stageGoal ?? summary.longTermGoal;
 		const progress = primary?.progress;
-		return <Link className={styles.card} to={`/goals/${encodeURIComponent(summary.userCardId)}`} key={summary.userCardId}>
+		return <Link className={styles.card} to={APP_ROUTES.goalDetails(summary.userCardId)} key={summary.userCardId}>
 			<span className={styles.icon}><FiArrowUpRight aria-hidden='true' /></span>
 			<span className={styles.copy}>
 				<strong>{summary.cardTitle}</strong>

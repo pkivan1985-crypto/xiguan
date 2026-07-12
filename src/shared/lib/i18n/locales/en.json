@@ -506,6 +506,26 @@
 			"todayAction": "Record today's outcomes",
 			"todayActionDescription": "Continue entering today's accumulated values"
 		},
+		"goalDetails": {
+			"activeDays": "Outcome days",
+			"activeDaysFact": "Active days",
+			"allHistory": "All history",
+			"backHome": "Back home",
+			"backToDeck": "Back to my cards",
+			"completedAt": "Completed at {{date}}",
+			"currentStage": "Current stage",
+			"loading": "Reading goal facts…",
+			"longTerm": "Long-term goal",
+			"mode": { "activeDays": "By active days", "both": "Quantity and days together", "quantity": "By quantity" },
+			"noDeadline": "No deadline",
+			"noRecords": "No real outcome records yet",
+			"notFound": "This loop card or goal could not be read",
+			"quantityFact": "Accumulated outcome",
+			"recent": "Recent outcomes",
+			"status": { "abandoned": "Abandoned", "active": "Active", "completed": "Completed", "expired": "Expired", "planned": "Planned" },
+			"title": "Goal details",
+			"totalOutcome": "Long-term total"
+		},
 		"nav": {
 			"deck": "My cards",
 			"history": "History",

@@ -9,6 +9,8 @@ export const APP_ROUTES = {
 	DECK_NEW: '/deck/new',
 	HISTORY: '/history',
 	SETTINGS: '/settings',
+	GOAL_DETAILS_PATTERN: '/goals/:userCardId',
+	goalDetails: (userCardId: string) => `/goals/${encodeURIComponent(userCardId)}`,
 } as const;
 
 export const PRIMARY_NAV_ROUTES = [

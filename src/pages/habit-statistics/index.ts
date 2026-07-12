@@ -1,1 +1,1 @@
-export { HabitStatisticsPage } from './ui/HabitStatisticsPage';
+export { GoalDetailsPage } from './ui/HabitStatisticsPage';

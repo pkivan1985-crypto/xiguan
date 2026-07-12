@@ -11,6 +11,7 @@ const UI_FILES = [
 	'src/pages/deck/ui/DeckPage.tsx',
 	'src/pages/history/ui/HistoryPage.tsx',
 	'src/pages/settings/ui/SettingsPage.tsx',
+	'src/pages/habit-statistics/ui/HabitStatisticsPage.tsx',
 	'src/widgets/app-shell/ui/AppShell.tsx',
 	'src/widgets/today-outcome-editor/ui/TodayOutcomeEditor.tsx',
 	'src/widgets/today-card-picker/ui/TodayCardPicker.tsx',

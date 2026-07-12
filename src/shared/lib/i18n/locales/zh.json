@@ -511,6 +511,26 @@
 			"todayAction": "记录今日成果",
 			"todayActionDescription": "继续填写今天的累计值"
 		},
+		"goalDetails": {
+			"activeDays": "有效成果日",
+			"activeDaysFact": "有效天数",
+			"allHistory": "全部历史",
+			"backHome": "返回首页",
+			"backToDeck": "返回我的卡套",
+			"completedAt": "完成于 {{date}}",
+			"currentStage": "当前阶段",
+			"loading": "正在读取目标事实…",
+			"longTerm": "长期目标",
+			"mode": { "activeDays": "按有效天数", "both": "数量和天数同时达到", "quantity": "按累计数量" },
+			"noDeadline": "无截止日期",
+			"noRecords": "还没有真实成果记录",
+			"notFound": "这张循环卡或目标无法读取",
+			"quantityFact": "累计成果",
+			"recent": "最近成果",
+			"status": { "abandoned": "已放弃", "active": "进行中", "completed": "已完成", "expired": "已到期", "planned": "未开始" },
+			"title": "目标详情",
+			"totalOutcome": "长期累计"
+		},
 		"nav": {
 			"deck": "我的卡套",
 			"history": "历史",
