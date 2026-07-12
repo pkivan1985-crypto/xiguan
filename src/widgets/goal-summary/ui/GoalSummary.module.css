@@ -1,0 +1,76 @@
+.list {
+	display: grid;
+	gap: 8px;
+}
+
+.card {
+	display: grid;
+	grid-template-columns: 34px 1fr auto;
+	gap: 8px;
+	align-items: center;
+	min-height: 72px;
+	padding: 9px;
+	color: var(--color-text);
+	background: var(--color-bg-lighter);
+	border: 1px solid var(--color-border);
+	border-radius: 14px;
+}
+
+.icon {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	color: #65c95d;
+	background: #172f21;
+	border-radius: 11px;
+}
+
+.copy {
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+}
+
+.copy strong {
+	font-size: 0.78rem;
+}
+
+.copy small {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 0.64rem;
+	color: var(--color-text-secondary);
+	white-space: nowrap;
+}
+
+.copy .secondary {
+	color: var(--color-text-tertiary);
+}
+
+.value {
+	font-size: 0.68rem;
+	font-weight: 720;
+}
+
+.progress {
+	display: flex;
+	gap: 3px;
+	align-items: center;
+	font-size: 0.72rem;
+	color: var(--accent-color);
+}
+
+.bar {
+	grid-column: 2 / 4;
+	height: 3px;
+	overflow: hidden;
+	background: var(--color-border);
+	border-radius: 999px;
+}
+
+.bar i {
+	display: block;
+	height: 100%;
+	background: var(--accent-color);
+}

@@ -16,6 +16,8 @@ const UI_FILES = [
 	'src/widgets/today-card-picker/ui/TodayCardPicker.tsx',
 	'src/widgets/outcome-playback/ui/OutcomePlayback.tsx',
 	'src/widgets/outcome-summary/ui/OutcomeSummary.tsx',
+	'src/widgets/outcome-calendar/ui/OutcomeCalendar.tsx',
+	'src/widgets/goal-summary/ui/GoalSummary.tsx',
 ];
 
 describe('data layer boundary', () => {
