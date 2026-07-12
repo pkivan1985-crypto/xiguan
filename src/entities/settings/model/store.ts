@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { SettingsState } from './types';
 import { settingsReducer } from './reducer';
+import { createDexieSettingsStorage } from './dexieSettingsStorage';
 import { STORAGE_KEYS } from '@shared/const';
 
 /**
@@ -23,7 +24,7 @@ export const useSettingsStore = create<SettingsState>()(
 		}),
 		{
 			name: STORAGE_KEYS.SETTINGS,
-			storage: createJSONStorage(() => localStorage)
+			storage: createJSONStorage(() => createDexieSettingsStorage())
 		}
 	)
 );
