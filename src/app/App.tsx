@@ -2,7 +2,7 @@ import './styles/App.css';
 import { MotionConfig } from 'framer-motion';
 import { Toaster } from 'sonner'
 import { AppRouter } from './providers';
-import PWABadge from '../PWABadge';
+import { PwaUpdateProvider } from '@features/pwa-update';
 import { useSettingsStore, useTheme } from '@entities/settings';
 import { useSystemMotion } from '@shared/lib/react';
 import { Dialog, Drawer } from '@shared/ui';
@@ -17,20 +17,20 @@ function App() {
 
 	return (
 		<MotionConfig reducedMotion={reducedMotion}>
-			<main className='App'>
-				<AppRouter />
-				<Dialog />
-				<Drawer />
+			<PwaUpdateProvider>
+				<main className='App'>
+					<AppRouter />
+					<Dialog />
+					<Drawer />
 
-				<Toaster
-					position='top-center'
-					theme={theme ?? 'system'}
-					richColors
-					toastOptions={{ className: 'toast' }}
-				/>
-
-				<PWABadge />
-			</main>
+					<Toaster
+						position='top-center'
+						theme={theme ?? 'system'}
+						richColors
+						toastOptions={{ className: 'toast' }}
+					/>
+				</main>
+			</PwaUpdateProvider>
 		</MotionConfig>
 	);
 }
