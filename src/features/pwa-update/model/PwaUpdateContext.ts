@@ -6,11 +6,13 @@ export interface PwaUpdateContextValue {
 	online: boolean;
 	offlineReady: boolean;
 	dismissed: boolean;
+	offlineNoticeDismissed: boolean;
 	currentVersion: string;
 	buildId: string;
 	checkForUpdate(): Promise<void>;
 	applyUpdate(): Promise<void>;
 	dismiss(): void;
+	dismissOfflineNotice(): void;
 }
 
 export const PwaUpdateContext = createContext<PwaUpdateContextValue | null>(null);

@@ -9,7 +9,9 @@ const available: PwaStatusBarViewValue = {
 	state: { kind: 'available' },
 	online: true,
 	dismissed: false,
+	offlineNoticeDismissed: false,
 	onDismiss: () => undefined,
+	onDismissOfflineNotice: () => undefined,
 	onApply: async () => undefined,
 	onRetry: async () => undefined,
 };
@@ -32,7 +34,24 @@ describe('PwaStatusBarView', () => {
 		expect(html).toContain('shell.pwa.blocked.restore-backup');
 	});
 
-	it('shows retry only for an online failure and prioritizes offline status', () => {
+	it('shows a dismissible offline notice that stays hidden after dismissal', () => {
+		const offline = renderToStaticMarkup(<PwaStatusBarView value={{
+			...available,
+			online: false,
+		}} />);
+		expect(offline).toContain('shell.pwa.offlineTitle');
+		expect(offline).toContain('common.close');
+		expect(offline.match(/<button/g)).toHaveLength(1);
+
+		const dismissed = renderToStaticMarkup(<PwaStatusBarView value={{
+			...available,
+			online: false,
+			offlineNoticeDismissed: true,
+		}} />);
+		expect(dismissed).toBe('');
+	});
+
+	it('shows retry only for an online failure and prioritizes a visible offline status', () => {
 		const online = renderToStaticMarkup(<PwaStatusBarView value={{
 			...available,
 			state: { kind: 'failed', reason: 'apply' },

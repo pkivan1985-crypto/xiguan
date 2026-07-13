@@ -16,7 +16,9 @@ export interface PwaStatusBarViewValue {
 	state: UpdateState;
 	online: boolean;
 	dismissed: boolean;
+	offlineNoticeDismissed: boolean;
 	onDismiss(): void;
+	onDismissOfflineNotice(): void;
 	onApply(): Promise<void>;
 	onRetry(): Promise<void>;
 }
@@ -24,8 +26,10 @@ export interface PwaStatusBarViewValue {
 export function PwaStatusBarView({ value }: { value: PwaStatusBarViewValue }) {
 	const { t } = useTranslation();
 	if (!value.online) {
+		if (value.offlineNoticeDismissed) return null;
 		return <section className={styles.statusBar} role='status' aria-live='polite'>
 			<div><strong>{t('shell.pwa.offlineTitle')}</strong><small>{t('shell.pwa.offlineDescription')}</small></div>
+			<div className={styles.actions}><button type='button' onClick={value.onDismissOfflineNotice}>{t('common.close')}</button></div>
 		</section>;
 	}
 	if (value.dismissed && (value.state.kind === 'available' || value.state.kind === 'blocked')) return null;
@@ -68,7 +72,9 @@ export function PwaStatusBar() {
 		state: update.state,
 		online: update.online,
 		dismissed: update.dismissed,
+		offlineNoticeDismissed: update.offlineNoticeDismissed,
 		onDismiss: update.dismiss,
+		onDismissOfflineNotice: update.dismissOfflineNotice,
 		onApply: update.applyUpdate,
 		onRetry: update.checkForUpdate,
 	}} />;
