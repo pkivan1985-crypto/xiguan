@@ -31,6 +31,7 @@ class RuntimeUpdateAdapter implements UpdateAdapter {
 export function PwaUpdateProvider({ children }: { children: ReactNode }) {
 	const [online, setOnline] = useState(() => navigator.onLine);
 	const [dismissed, setDismissed] = useState(false);
+	const [offlineNoticeDismissed, setOfflineNoticeDismissed] = useState(false);
 	const [runtime] = useState(() => new RuntimeUpdateAdapter());
 	const [controller] = useState(() => createUpdateController({
 		adapter: runtime,
@@ -61,6 +62,7 @@ export function PwaUpdateProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		const handleOnline = () => {
 			setOnline(true);
+			setOfflineNoticeDismissed(false);
 			void controller.checkForUpdate();
 		};
 		const handleOffline = () => setOnline(false);
@@ -91,12 +93,14 @@ export function PwaUpdateProvider({ children }: { children: ReactNode }) {
 		online,
 		offlineReady,
 		dismissed,
+		offlineNoticeDismissed,
 		currentVersion: APP_VERSION,
 		buildId: APP_BUILD_ID,
 		checkForUpdate: () => controller.checkForUpdate(true),
 		applyUpdate: () => controller.applyUpdate(),
 		dismiss: () => setDismissed(true),
-	}), [controller, dismissed, offlineReady, online, state]);
+		dismissOfflineNotice: () => setOfflineNoticeDismissed(true),
+	}), [controller, dismissed, offlineNoticeDismissed, offlineReady, online, state]);
 
 	return <PwaUpdateContext value={value}>{children}</PwaUpdateContext>;
 }
