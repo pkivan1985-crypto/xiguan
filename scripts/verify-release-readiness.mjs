@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const REQUIRED_FILES = ['LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md', 'release-assets.json'];
 const UPSTREAM_SOURCE_URL = 'https://github.com/iNikAnn/DoHabit';
+const CANDIDATE_SITE_URL = 'https://repeat-outcome.pages.dev';
 const APPROVED_DEPENDENCY_HASH = 'c4da73f4ffff9543dd7959748b0348a8061ad8677af0080ab66f098d6d11a7ce';
 const APPROVED_DEV_DEPENDENCY_HASH = 'daf33c8579a95c6f1895f9681f4e20a144227d0fbd3b97ab3c8a4528d3e8042b';
 const APPROVED_OVERRIDE_HASH = '09bb6e858995285fd60256e97ceb93229d2d844bd9a2c4ab68ccece36b4d3ea5';
@@ -64,6 +65,8 @@ export function validateReleaseReadiness(snapshot, phase) {
 			addError(errors, snapshot.packageJson.repository?.url === source.url, 'package repository must match project source');
 			addError(errors, snapshot.packageJson.bugs?.url === `${source.url}/issues`, 'package bugs URL must match project Issues');
 			addError(errors, snapshot.packageJson.homepage === source.url, 'package homepage must match project source');
+			addError(errors, snapshot.releaseDocs.readme.includes(source.url) && snapshot.releaseDocs.readme.includes(CANDIDATE_SITE_URL) && !/尚未创建公开仓库|尚未.*部署.*网站/.test(snapshot.releaseDocs.readme), 'README 公开候选说明必须包含源码与候选站');
+			addError(errors, snapshot.releaseDocs.changelog.includes('3.0.0-rc.1') && snapshot.releaseDocs.changelog.includes(CANDIDATE_SITE_URL) && !/本地发布准备阶段|尚未.*部署.*网站/.test(snapshot.releaseDocs.changelog), 'CHANGELOG 公开候选说明必须包含版本与候选站');
 		}
 	}
 
@@ -114,6 +117,10 @@ export function loadCurrentReleaseSnapshot(root = process.cwd()) {
 			license: parseLink(linksSource, 'PROJECT_LICENSE'),
 		},
 		requiredFiles: Object.fromEntries(REQUIRED_FILES.map((name) => [name, existsSync(resolve(root, name))])),
+		releaseDocs: {
+			readme: readFileSync(resolve(root, 'README.md'), 'utf8'),
+			changelog: readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8'),
+		},
 		publicFiles: listFiles(root, resolve(root, 'public')),
 		releaseAssets: readJson(resolve(root, 'release-assets.json')),
 		distExists: existsSync(dist),
