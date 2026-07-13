@@ -8,11 +8,18 @@ const REQUIRED_FILES = ['LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', '
 const UPSTREAM_SOURCE_URL = 'https://github.com/iNikAnn/DoHabit';
 const APPROVED_DEPENDENCY_HASH = 'c4da73f4ffff9543dd7959748b0348a8061ad8677af0080ab66f098d6d11a7ce';
 const APPROVED_DEV_DEPENDENCY_HASH = 'daf33c8579a95c6f1895f9681f4e20a144227d0fbd3b97ab3c8a4528d3e8042b';
+const APPROVED_OVERRIDE_HASH = '09bb6e858995285fd60256e97ceb93229d2d844bd9a2c4ab68ccece36b4d3ea5';
+const APPROVED_TRANSITIVE_LOCK_HASH = 'e7b219a6f4a95d3112959373977b7766d77bf690cbef40e5a2d685eacb966fe9';
 const REQUIRED_DIST_FILES = ['dist/_headers', 'dist/_redirects', 'dist/favicon.svg', 'dist/index.html', 'dist/manifest.webmanifest', 'dist/robots.txt', 'dist/sw.js'];
 const ALLOWED_DIST_FILE = /^(?:dist\/(?:_headers|_redirects|apple-touch-icon-180x180\.png|favicon\.(?:ico|svg)|index\.html|manifest\.webmanifest|maskable-icon-512x512\.png|pwa-(?:64x64|192x192|512x512)\.png|robots\.txt|sw\.js|workbox-[A-Za-z0-9_-]+\.js)|dist\/assets\/(?:index|workbox-window\.prod\.es5)-[A-Za-z0-9_-]+\.(?:css|js))$/;
 
 const sortedJson = (value) => JSON.stringify(value, Object.keys(value ?? {}).sort());
-const hashJson = (value) => createHash('sha256').update(sortedJson(value)).digest('hex');
+const stableJson = (value) => value && typeof value === 'object'
+	? Array.isArray(value)
+		? `[${value.map(stableJson).join(',')}]`
+		: `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`
+	: JSON.stringify(value);
+const hashJson = (value) => createHash('sha256').update(stableJson(value)).digest('hex');
 const addError = (errors, condition, message) => { if (!condition) errors.push(message); };
 
 export function validateReleaseReadiness(snapshot, phase) {
@@ -28,6 +35,9 @@ export function validateReleaseReadiness(snapshot, phase) {
 	addError(errors, sortedJson(snapshot.packageJson.devDependencies) === sortedJson(rootLock.devDependencies), 'development dependency drift detected');
 	addError(errors, hashJson(snapshot.packageJson.dependencies) === APPROVED_DEPENDENCY_HASH, 'production dependencies differ from the approved dependency baseline');
 	addError(errors, hashJson(snapshot.packageJson.devDependencies) === APPROVED_DEV_DEPENDENCY_HASH, 'development dependencies differ from the approved dependency baseline');
+	addError(errors, hashJson(snapshot.packageJson.overrides ?? {}) === APPROVED_OVERRIDE_HASH, 'package overrides differ from the approved override baseline');
+	const transitiveLock = Object.fromEntries(Object.entries(snapshot.lockfile.packages ?? {}).filter(([path]) => path !== ''));
+	addError(errors, hashJson(transitiveLock) === APPROVED_TRANSITIVE_LOCK_HASH, 'lockfile graph differs from the approved transitive lockfile baseline');
 
 	for (const file of REQUIRED_FILES) addError(errors, snapshot.requiredFiles[file], `required release file missing: ${file}`);
 	const publicFiles = [...snapshot.publicFiles].sort();

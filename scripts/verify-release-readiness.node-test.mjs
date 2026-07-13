@@ -7,13 +7,14 @@ import test from 'node:test';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const verifierPath = join(root, 'scripts', 'verify-release-readiness.mjs');
 const approvedPackage = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+const approvedLockfile = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
 
 function validSnapshot() {
 	const dependencies = { ...approvedPackage.dependencies };
 	const devDependencies = { ...approvedPackage.devDependencies };
 	return {
-		packageJson: { version: '3.0.0-rc.1', private: true, license: 'AGPL-3.0-only', dependencies, devDependencies },
-		lockfile: { version: '3.0.0-rc.1', packages: { '': { version: '3.0.0-rc.1', dependencies: { ...dependencies }, devDependencies: { ...devDependencies } } } },
+		packageJson: { version: '3.0.0-rc.1', private: true, license: 'AGPL-3.0-only', dependencies, devDependencies, overrides: { ...approvedPackage.overrides } },
+		lockfile: { version: '3.0.0-rc.1', packages: structuredClone(approvedLockfile.packages) },
 		projectLinks: {
 			upstream: 'https://github.com/iNikAnn/DoHabit',
 			source: { status: 'unavailable' }, issues: { status: 'unavailable' }, license: { status: 'unavailable' },
@@ -94,6 +95,18 @@ test('synchronized dependency changes and incomplete or unexpected dist fail lou
 	unexpected.distFiles.push('dist/debug.txt');
 	errors = validateReleaseReadiness(unexpected, 'local').join('\n');
 	assert.match(errors, /unexpected dist file/i);
+});
+
+test('override and transitive lock graph drift fail against the approved baseline', async (context) => {
+	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
+	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
+	const snapshot = validSnapshot();
+	snapshot.packageJson.overrides.sharp = '^0.34.0';
+	const transitive = Object.keys(snapshot.lockfile.packages).find((path) => path !== '');
+	snapshot.lockfile.packages[transitive].version = '0.0.0-review-drift';
+	const errors = validateReleaseReadiness(snapshot, 'local').join('\n');
+	assert.match(errors, /approved override baseline/i);
+	assert.match(errors, /approved transitive lockfile baseline/i);
 });
 
 test('package scripts, pinned CI workflow, and static host rules match the release baseline', () => {
