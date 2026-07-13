@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { HiArchiveBox } from 'react-icons/hi2';
 import { FaAward, FaGithub, FaPaintBrush } from 'react-icons/fa';
 import { BsFillDatabaseFill } from 'react-icons/bs';
-import { UPSTREAM_SOURCE_URL } from '@shared/config';
+import { PROJECT_ISSUES, UPSTREAM_SOURCE_URL } from '@shared/config';
 import { getNavigationTarget } from '@shared/lib/router';
 import type { ListItemProps } from '@shared/ui';
 
@@ -56,6 +56,14 @@ function useListItems() {
 	];
 
 	const supportItems: ListItemProps[] = [
+		...(PROJECT_ISSUES.status === 'available' ? [{
+			icon: FaGithub,
+			iconProps: { color: '#77dd77' },
+			title: t('menu.shared.feedback.title'),
+			description: t('menu.shared.feedback.desc'),
+			onClick: () => window.open(PROJECT_ISSUES.url, '_blank'),
+			indicator: { type: 'external' as const }
+		}] : []),
 		{
 			icon: FaGithub,
 			iconProps: { color: '#7fc7ff' },

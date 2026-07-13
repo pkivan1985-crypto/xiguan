@@ -6,10 +6,11 @@ import test from 'node:test';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const verifierPath = join(root, 'scripts', 'verify-release-readiness.mjs');
+const approvedPackage = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 
 function validSnapshot() {
-	const dependencies = { react: '19.2.7' };
-	const devDependencies = { vitest: '4.1.10' };
+	const dependencies = { ...approvedPackage.dependencies };
+	const devDependencies = { ...approvedPackage.devDependencies };
 	return {
 		packageJson: { version: '3.0.0-rc.1', private: true, license: 'AGPL-3.0-only', dependencies, devDependencies },
 		lockfile: { version: '3.0.0-rc.1', packages: { '': { version: '3.0.0-rc.1', dependencies: { ...dependencies }, devDependencies: { ...devDependencies } } } },
@@ -20,7 +21,8 @@ function validSnapshot() {
 		requiredFiles: Object.fromEntries(['LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md', 'release-assets.json'].map((name) => [name, true])),
 		publicFiles: ['public/_headers', 'public/_redirects', 'public/favicon.svg', 'public/robots.txt'],
 		releaseAssets: { assets: ['public/_headers', 'public/_redirects', 'public/favicon.svg', 'public/robots.txt'].map((path) => ({ path, source: 'project', license: 'AGPL-3.0-only', releaseStatus: 'included' })) },
-		distFiles: ['dist/index.html', 'dist/manifest.webmanifest', 'dist/sw.js', 'dist/assets/index.js'],
+		distExists: true,
+		distFiles: ['dist/_headers', 'dist/_redirects', 'dist/favicon.svg', 'dist/index.html', 'dist/manifest.webmanifest', 'dist/robots.txt', 'dist/sw.js', 'dist/assets/index-test.js'],
 		distText: '<html>repeat outcome</html>',
 		pwaSource: "registerType: 'prompt'",
 		databaseSource: 'export const DATABASE_SCHEMA_VERSION = 1;',
@@ -76,6 +78,24 @@ test('dependency, data-format, PWA, asset, and dist drift fail loudly', async (c
 	}
 });
 
+test('synchronized dependency changes and incomplete or unexpected dist fail loudly', async (context) => {
+	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
+	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
+	const snapshot = validSnapshot();
+	snapshot.packageJson.dependencies['unapproved-package'] = '1.0.0';
+	snapshot.lockfile.packages[''].dependencies['unapproved-package'] = '1.0.0';
+	snapshot.distExists = false;
+	snapshot.distFiles = [];
+	let errors = validateReleaseReadiness(snapshot, 'local').join('\n');
+	assert.match(errors, /approved dependency baseline/i);
+	assert.match(errors, /dist directory/i);
+
+	const unexpected = validSnapshot();
+	unexpected.distFiles.push('dist/debug.txt');
+	errors = validateReleaseReadiness(unexpected, 'local').join('\n');
+	assert.match(errors, /unexpected dist file/i);
+});
+
 test('package scripts, pinned CI workflow, and static host rules match the release baseline', () => {
 	const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 	assert.equal(pkg.scripts['check:release'], 'node scripts/verify-release-readiness.mjs');
@@ -100,4 +120,7 @@ test('package scripts, pinned CI workflow, and static host rules match the relea
 	assert.match(headers, /Referrer-Policy: strict-origin-when-cross-origin/);
 	assert.match(headers, /Permissions-Policy: camera=\(\), microphone=\(\), geolocation=\(\)/);
 	assert.doesNotMatch(headers, /Content-Security-Policy/);
+	const security = readFileSync(join(root, 'SECURITY.md'), 'utf8');
+	assert.match(security, /https:\/\/github\.com\/pkivan1985-crypto\/xiguan\/issues/);
+	assert.doesNotMatch(security, /Issues 地址将在候选发布仓库建立后补充/);
 });

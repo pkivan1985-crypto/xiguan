@@ -1,12 +1,18 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, relative, resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const REQUIRED_FILES = ['LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md', 'release-assets.json'];
 const UPSTREAM_SOURCE_URL = 'https://github.com/iNikAnn/DoHabit';
+const APPROVED_DEPENDENCY_HASH = 'c4da73f4ffff9543dd7959748b0348a8061ad8677af0080ab66f098d6d11a7ce';
+const APPROVED_DEV_DEPENDENCY_HASH = 'daf33c8579a95c6f1895f9681f4e20a144227d0fbd3b97ab3c8a4528d3e8042b';
+const REQUIRED_DIST_FILES = ['dist/_headers', 'dist/_redirects', 'dist/favicon.svg', 'dist/index.html', 'dist/manifest.webmanifest', 'dist/robots.txt', 'dist/sw.js'];
+const ALLOWED_DIST_FILE = /^(?:dist\/(?:_headers|_redirects|apple-touch-icon-180x180\.png|favicon\.(?:ico|svg)|index\.html|manifest\.webmanifest|maskable-icon-512x512\.png|pwa-(?:64x64|192x192|512x512)\.png|robots\.txt|sw\.js|workbox-[A-Za-z0-9_-]+\.js)|dist\/assets\/(?:index|workbox-window\.prod\.es5)-[A-Za-z0-9_-]+\.(?:css|js))$/;
 
 const sortedJson = (value) => JSON.stringify(value, Object.keys(value ?? {}).sort());
+const hashJson = (value) => createHash('sha256').update(sortedJson(value)).digest('hex');
 const addError = (errors, condition, message) => { if (!condition) errors.push(message); };
 
 export function validateReleaseReadiness(snapshot, phase) {
@@ -20,6 +26,8 @@ export function validateReleaseReadiness(snapshot, phase) {
 	addError(errors, snapshot.packageJson.license === 'AGPL-3.0-only', 'package license must be AGPL-3.0-only');
 	addError(errors, sortedJson(snapshot.packageJson.dependencies) === sortedJson(rootLock.dependencies), 'production dependency drift detected');
 	addError(errors, sortedJson(snapshot.packageJson.devDependencies) === sortedJson(rootLock.devDependencies), 'development dependency drift detected');
+	addError(errors, hashJson(snapshot.packageJson.dependencies) === APPROVED_DEPENDENCY_HASH, 'production dependencies differ from the approved dependency baseline');
+	addError(errors, hashJson(snapshot.packageJson.devDependencies) === APPROVED_DEV_DEPENDENCY_HASH, 'development dependencies differ from the approved dependency baseline');
 
 	for (const file of REQUIRED_FILES) addError(errors, snapshot.requiredFiles[file], `required release file missing: ${file}`);
 	const publicFiles = [...snapshot.publicFiles].sort();
@@ -55,7 +63,10 @@ export function validateReleaseReadiness(snapshot, phase) {
 	addError(errors, /PBKDF2_ITERATIONS\s*=\s*600_000\b/.test(snapshot.cryptoSource), 'PBKDF2 iterations must remain 600000');
 	addError(errors, snapshot.cryptoSource.includes("'AES-GCM'") && /keyLength:\s*256/.test(snapshot.cryptoSource), 'backup encryption must remain AES-GCM 256');
 
+	addError(errors, snapshot.distExists, 'dist directory must exist before release verification');
+	for (const required of REQUIRED_DIST_FILES) addError(errors, snapshot.distFiles.includes(required), `required dist file missing: ${required}`);
 	for (const path of snapshot.distFiles) {
+		if (!ALLOWED_DIST_FILE.test(path)) errors.push(`unexpected dist file: ${path}`);
 		if (path.endsWith('.map')) errors.push(`source map found in dist: ${path}`);
 		if (/(?:^|\/)(?:\.env(?:\.|$)|logs?(?:\/|$)|old-app(?:\/|$))/.test(path.replace(/^dist\//, ''))) errors.push(`forbidden dist file: ${path}`);
 	}
@@ -95,6 +106,7 @@ export function loadCurrentReleaseSnapshot(root = process.cwd()) {
 		requiredFiles: Object.fromEntries(REQUIRED_FILES.map((name) => [name, existsSync(resolve(root, name))])),
 		publicFiles: listFiles(root, resolve(root, 'public')),
 		releaseAssets: readJson(resolve(root, 'release-assets.json')),
+		distExists: existsSync(dist),
 		distFiles,
 		distText,
 		pwaSource: readFileSync(resolve(root, 'vite.config.ts'), 'utf8'),
