@@ -36,10 +36,11 @@ describe('SettingsPage PWA controls', () => {
 		expect(html).toContain('shell.settings.installAction');
 	});
 
-	it('separates unavailable project source from upstream attribution and license facts', () => {
+	it('links the verified project source separately from upstream attribution', () => {
 		const html = renderToStaticMarkup(<SettingsPage />);
 		expect(html).toContain('shell.settings.projectSourceCode');
-		expect(html).toContain('shell.settings.projectSourcePending');
+		expect(html).toContain('href="https://github.com/pkivan1985-crypto/xiguan"');
+		expect(html).not.toContain('shell.settings.projectSourcePending');
 		expect(html).toContain('shell.settings.upstreamSourceCode');
 		expect(html).toContain('shell.settings.license');
 		expect(html).toContain('href="https://github.com/iNikAnn/DoHabit"');

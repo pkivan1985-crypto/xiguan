@@ -115,7 +115,13 @@ function SettingsPage() {
 			</ShellSection>
 
 			<ShellSection title={t('shell.settings.openSourceTitle')}>
-				{PROJECT_SOURCE.status === 'unavailable' && (
+				{PROJECT_SOURCE.status === 'available' ? (
+					<a className={styles.linkRow} href={PROJECT_SOURCE.url} target='_blank' rel='noreferrer'>
+						<FiGithub aria-hidden='true' />
+						<span><strong>{t('shell.settings.projectSourceCode')}</strong></span>
+						<FiExternalLink aria-hidden='true' />
+					</a>
+				) : (
 					<div className={styles.linkRow}>
 						<FiGithub aria-hidden='true' />
 						<span>
