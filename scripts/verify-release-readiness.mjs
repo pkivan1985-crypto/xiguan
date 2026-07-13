@@ -27,8 +27,9 @@ export function validateReleaseReadiness(snapshot, phase) {
 	if (!['local', 'public'].includes(phase)) return [`phase must be local or public; received ${phase}`];
 	const errors = [];
 	const rootLock = snapshot.lockfile.packages?.[''] ?? {};
+	const releaseVersion = snapshot.packageJson.version;
 
-	addError(errors, snapshot.packageJson.version === '3.0.0-rc.1', 'release version must be 3.0.0-rc.1');
+	addError(errors, /^3\.0\.0-rc\.[1-9]\d*$/.test(releaseVersion), 'release version must be an immutable 3.0.0-rc.N candidate');
 	addError(errors, snapshot.lockfile.version === snapshot.packageJson.version && rootLock.version === snapshot.packageJson.version, 'package and lockfile versions must match');
 	addError(errors, snapshot.packageJson.private === true, 'package private must remain true');
 	addError(errors, snapshot.packageJson.license === 'AGPL-3.0-only', 'package license must be AGPL-3.0-only');
@@ -66,7 +67,7 @@ export function validateReleaseReadiness(snapshot, phase) {
 			addError(errors, snapshot.packageJson.bugs?.url === `${source.url}/issues`, 'package bugs URL must match project Issues');
 			addError(errors, snapshot.packageJson.homepage === source.url, 'package homepage must match project source');
 			addError(errors, snapshot.releaseDocs.readme.includes(source.url) && snapshot.releaseDocs.readme.includes(CANDIDATE_SITE_URL) && !/尚未创建公开仓库|尚未.*部署.*网站/.test(snapshot.releaseDocs.readme), 'README 公开候选说明必须包含源码与候选站');
-			addError(errors, snapshot.releaseDocs.changelog.includes('3.0.0-rc.1') && snapshot.releaseDocs.changelog.includes(CANDIDATE_SITE_URL) && !/本地发布准备阶段|尚未.*部署.*网站/.test(snapshot.releaseDocs.changelog), 'CHANGELOG 公开候选说明必须包含版本与候选站');
+			addError(errors, snapshot.releaseDocs.changelog.includes(releaseVersion) && snapshot.releaseDocs.changelog.includes(CANDIDATE_SITE_URL) && !/本地发布准备阶段|尚未.*部署.*网站/.test(snapshot.releaseDocs.changelog), 'CHANGELOG 公开候选说明必须包含版本与候选站');
 		}
 	}
 

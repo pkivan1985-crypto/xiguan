@@ -13,8 +13,8 @@ function validSnapshot() {
 	const dependencies = { ...approvedPackage.dependencies };
 	const devDependencies = { ...approvedPackage.devDependencies };
 	return {
-		packageJson: { version: '3.0.0-rc.1', private: true, license: 'AGPL-3.0-only', dependencies, devDependencies, overrides: { ...approvedPackage.overrides } },
-		lockfile: { version: '3.0.0-rc.1', packages: structuredClone(approvedLockfile.packages) },
+		packageJson: { version: approvedPackage.version, private: true, license: 'AGPL-3.0-only', dependencies, devDependencies, overrides: { ...approvedPackage.overrides } },
+		lockfile: { version: approvedPackage.version, packages: structuredClone(approvedLockfile.packages) },
 		projectLinks: {
 			upstream: 'https://github.com/iNikAnn/DoHabit',
 			source: { status: 'unavailable' }, issues: { status: 'unavailable' }, license: { status: 'unavailable' },
@@ -22,7 +22,7 @@ function validSnapshot() {
 		requiredFiles: Object.fromEntries(['LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md', 'release-assets.json'].map((name) => [name, true])),
 		releaseDocs: {
 			readme: '公开候选站：https://repeat-outcome.pages.dev 项目源码：https://github.com/example-owner/repeat-outcome',
-			changelog: '3.0.0-rc.1 公开候选版本已部署到 https://repeat-outcome.pages.dev',
+			changelog: `${approvedPackage.version} 公开候选版本已部署到 https://repeat-outcome.pages.dev`,
 		},
 		publicFiles: ['public/_headers', 'public/_redirects', 'public/favicon.svg', 'public/robots.txt'],
 		releaseAssets: { assets: ['public/_headers', 'public/_redirects', 'public/favicon.svg', 'public/robots.txt'].map((path) => ({ path, source: 'project', license: 'AGPL-3.0-only', releaseStatus: 'included' })) },
@@ -44,6 +44,16 @@ test('local phase accepts an explicit unavailable project repository while prese
 	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
 	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
 	assert.deepEqual(validateReleaseReadiness(validSnapshot(), 'local'), []);
+});
+
+test('release candidates can advance immutably without weakening the 3.0.0 prerelease boundary', async (context) => {
+	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
+	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
+	const snapshot = validSnapshot();
+	snapshot.packageJson.version = '3.0.0-rc.3';
+	snapshot.lockfile.version = '3.0.0-rc.3';
+	snapshot.lockfile.packages[''].version = '3.0.0-rc.3';
+	assert.deepEqual(validateReleaseReadiness(snapshot, 'local'), []);
 });
 
 test('public phase requires real mutually consistent project URLs', async (context) => {

@@ -48,25 +48,26 @@ function ActionRecordEditor({ record, saving, error, onSave, onDelete, onClose }
 	};
 
 	return <div className={styles.overlay}>
-		<section className={styles.sheet} role='dialog' aria-modal='true' aria-labelledby='record-editor-title'>
-			<span className={styles.grab} aria-hidden='true' />
-			<header><h2 id='record-editor-title'>{t('shell.history.editorTitle')}</h2><button className={styles.closeButton} type='button' onClick={onClose} disabled={saving} aria-label={t('common.close')}><FiX aria-hidden='true' /></button></header>
-			<form onSubmit={submit}>
-				<label htmlFor='correct-record-value'>{record.cardTitle}</label>
-				<div className={styles.inputRow}><input id='correct-record-value' autoFocus inputMode='decimal' value={valueText} onChange={(event) => setValueText(event.target.value)} disabled={saving} /><span>{record.displayUnit}</span></div>
-				<p className={styles.impact}>{t('shell.history.recalculationImpact')}</p>
-				{error && <p className={styles.error} role='alert'>{error}</p>}
-				<div className={styles.actions}>
-					<button className={styles.delete} type='button' onClick={() => setConfirmation('delete')} disabled={saving}><FiTrash2 aria-hidden='true' />{t('shell.history.deleteRecord')}</button>
-					<button className={styles.primary} type='submit' disabled={saving || !valueText.trim()}>{t('shell.history.saveChanges')}</button>
-				</div>
-			</form>
-			{confirmation && <EditorConfirmation
+		<section className={styles.sheet} role={confirmation ? undefined : 'dialog'} aria-modal={confirmation ? undefined : 'true'} aria-labelledby={confirmation ? undefined : 'record-editor-title'}>
+			{confirmation ? <EditorConfirmation
 				kind={confirmation}
 				busy={saving}
 				onCancel={() => setConfirmation(null)}
 				onConfirm={() => confirmation === 'update' ? onSave(valueText) : onDelete()}
-			/>}
+			/> : <>
+				<span className={styles.grab} aria-hidden='true' />
+				<header><h2 id='record-editor-title'>{t('shell.history.editorTitle')}</h2><button className={styles.closeButton} type='button' onClick={onClose} disabled={saving} aria-label={t('common.close')}><FiX aria-hidden='true' /></button></header>
+				<form onSubmit={submit}>
+					<label htmlFor='correct-record-value'>{record.cardTitle}</label>
+					<div className={styles.inputRow}><input id='correct-record-value' autoFocus inputMode='decimal' value={valueText} onChange={(event) => setValueText(event.target.value)} disabled={saving} /><span>{record.displayUnit}</span></div>
+					<p className={styles.impact}>{t('shell.history.recalculationImpact')}</p>
+					{error && <p className={styles.error} role='alert'>{error}</p>}
+					<div className={styles.actions}>
+						<button className={styles.delete} type='button' onClick={() => setConfirmation('delete')} disabled={saving}><FiTrash2 aria-hidden='true' />{t('shell.history.deleteRecord')}</button>
+						<button className={styles.primary} type='submit' disabled={saving || !valueText.trim()}>{t('shell.history.saveChanges')}</button>
+					</div>
+				</form>
+			</>}
 		</section>
 	</div>;
 }

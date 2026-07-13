@@ -29,6 +29,16 @@ describe('ActionRecordEditor', () => {
 		expect(html).not.toContain('shell.history.confirmUpdate');
 	});
 
+	it('replaces the editor content with confirmation instead of stacking both layers', () => {
+		const source = readFileSync(new URL('./ActionRecordEditor.tsx', import.meta.url), 'utf8');
+		const css = readFileSync(new URL('./ActionRecordEditor.module.css', import.meta.url), 'utf8');
+		expect(source).toContain('{confirmation ? <EditorConfirmation');
+		expect(source).not.toContain('{confirmation && <EditorConfirmation');
+		expect(css).not.toMatch(/\.confirmation\s*{[^}]*position:\s*absolute/s);
+		expect(css).toContain('background: var(--surface-color)');
+		expect(css).not.toMatch(/--color-(?:bg(?:-lighter)?|border|text(?:-secondary)?)/);
+	});
+
 	it.each(['update', 'delete'] as const)('renders a second %s confirmation before its final action', (kind) => {
 		const html = renderToStaticMarkup(<EditorConfirmation kind={kind} busy={false} onConfirm={() => undefined} onCancel={() => undefined} />);
 		expect(html).toContain(kind === 'update' ? 'shell.history.confirmUpdate' : 'shell.history.confirmDelete');
