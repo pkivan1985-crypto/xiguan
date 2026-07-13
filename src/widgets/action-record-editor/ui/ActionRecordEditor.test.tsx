@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ActionRecordEditor, EditorConfirmation } from './ActionRecordEditor';
+import { keepFocusInsideConfirmation } from './keepFocusInsideConfirmation';
 import type { HistoryRecordModel } from '@features/load-history';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
@@ -43,5 +44,21 @@ describe('ActionRecordEditor', () => {
 		const html = renderToStaticMarkup(<EditorConfirmation kind={kind} busy={false} onConfirm={() => undefined} onCancel={() => undefined} />);
 		expect(html).toContain(kind === 'update' ? 'shell.history.confirmUpdate' : 'shell.history.confirmDelete');
 		expect(html).toContain('shell.history.recalculationImpact');
+		expect(html).toContain('autofocus=""');
+	});
+
+	it('keeps keyboard focus inside the confirmation actions', () => {
+		const first = { focus: vi.fn() };
+		const last = { focus: vi.fn() };
+		const backwards = { key: 'Tab', shiftKey: true, preventDefault: vi.fn() };
+		const forwards = { key: 'Tab', shiftKey: false, preventDefault: vi.fn() };
+
+		keepFocusInsideConfirmation(backwards, first, first, last);
+		expect(backwards.preventDefault).toHaveBeenCalledOnce();
+		expect(last.focus).toHaveBeenCalledOnce();
+
+		keepFocusInsideConfirmation(forwards, last, first, last);
+		expect(forwards.preventDefault).toHaveBeenCalledOnce();
+		expect(first.focus).toHaveBeenCalledOnce();
 	});
 });

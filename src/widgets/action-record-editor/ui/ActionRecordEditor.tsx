@@ -1,6 +1,7 @@
 /* eslint-disable i18next/no-literal-string -- update/delete are domain operation identifiers. */
 import styles from './ActionRecordEditor.module.css';
-import { type FormEvent, useState } from 'react';
+import { keepFocusInsideConfirmation, type FocusTarget } from './keepFocusInsideConfirmation';
+import { type FormEvent, type KeyboardEvent as ReactKeyboardEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiTrash2, FiX } from 'react-icons/fi';
 import type { HistoryRecordModel } from '@features/load-history';
@@ -26,12 +27,20 @@ interface ActionRecordEditorProps {
 function EditorConfirmation({ kind, busy, onConfirm, onCancel }: EditorConfirmationProps) {
 	const { t } = useTranslation();
 	const isDelete = kind === 'delete';
-	return <div className={styles.confirmation} role='alertdialog' aria-modal='true' aria-labelledby='record-confirmation-title'>
+	const cancelButtonRef = useRef<HTMLButtonElement>(null);
+	const confirmButtonRef = useRef<HTMLButtonElement>(null);
+	const trapFocus = (event: ReactKeyboardEvent<HTMLDivElement>) => keepFocusInsideConfirmation(
+		event,
+		document.activeElement as FocusTarget | null,
+		cancelButtonRef.current,
+		confirmButtonRef.current,
+	);
+	return <div className={styles.confirmation} role='alertdialog' aria-modal='true' aria-labelledby='record-confirmation-title' onKeyDown={trapFocus}>
 		<h3 id='record-confirmation-title'>{t(isDelete ? 'shell.history.deleteConfirmationTitle' : 'shell.history.updateConfirmationTitle')}</h3>
 		<p>{t('shell.history.recalculationImpact')}</p>
 		<div className={styles.confirmationActions}>
-			<button className={styles.secondary} type='button' onClick={onCancel} disabled={busy}>{t('common.cancel')}</button>
-			<button className={isDelete ? styles.danger : styles.primary} type='button' onClick={onConfirm} disabled={busy}>
+			<button ref={cancelButtonRef} className={styles.secondary} type='button' onClick={onCancel} disabled={busy} autoFocus>{t('common.cancel')}</button>
+			<button ref={confirmButtonRef} className={isDelete ? styles.danger : styles.primary} type='button' onClick={onConfirm} disabled={busy}>
 				{t(isDelete ? 'shell.history.confirmDelete' : 'shell.history.confirmUpdate')}
 			</button>
 		</div>

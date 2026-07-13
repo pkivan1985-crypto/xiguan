@@ -56,6 +56,16 @@ test('release candidates can advance immutably without weakening the 3.0.0 prere
 	assert.deepEqual(validateReleaseReadiness(snapshot, 'local'), []);
 });
 
+test('release readiness rejects the already published rc.1 candidate', async (context) => {
+	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
+	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
+	const snapshot = validSnapshot();
+	snapshot.packageJson.version = '3.0.0-rc.1';
+	snapshot.lockfile.version = '3.0.0-rc.1';
+	snapshot.lockfile.packages[''].version = '3.0.0-rc.1';
+	assert.ok(validateReleaseReadiness(snapshot, 'public').some((error) => error.includes('rc.2')));
+});
+
 test('public phase requires real mutually consistent project URLs', async (context) => {
 	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
 	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
@@ -145,6 +155,7 @@ test('package scripts, pinned CI workflow, and static host rules match the relea
 	const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 	assert.equal(pkg.scripts['check:release'], 'node scripts/verify-release-readiness.mjs');
 	assert.equal(pkg.scripts['test:release'], 'node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs');
+	assert.match(pkg.scripts.verify, /npm run test:release/);
 
 	const workflowPath = join(root, '.github', 'workflows', 'verify.yml');
 	assert.equal(existsSync(workflowPath), true, 'missing CI workflow');

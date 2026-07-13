@@ -29,7 +29,8 @@ export function validateReleaseReadiness(snapshot, phase) {
 	const rootLock = snapshot.lockfile.packages?.[''] ?? {};
 	const releaseVersion = snapshot.packageJson.version;
 
-	addError(errors, /^3\.0\.0-rc\.[1-9]\d*$/.test(releaseVersion), 'release version must be an immutable 3.0.0-rc.N candidate');
+	const candidateMatch = /^3\.0\.0-rc\.([1-9]\d*)$/.exec(releaseVersion);
+	addError(errors, candidateMatch && Number(candidateMatch[1]) >= 2, 'release version must be an immutable 3.0.0-rc.N candidate at or beyond 3.0.0-rc.2');
 	addError(errors, snapshot.lockfile.version === snapshot.packageJson.version && rootLock.version === snapshot.packageJson.version, 'package and lockfile versions must match');
 	addError(errors, snapshot.packageJson.private === true, 'package private must remain true');
 	addError(errors, snapshot.packageJson.license === 'AGPL-3.0-only', 'package license must be AGPL-3.0-only');
