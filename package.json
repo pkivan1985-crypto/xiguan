@@ -11,7 +11,7 @@
 		"url": "https://github.com/pkivan1985-crypto/xiguan/issues"
 	},
 	"homepage": "https://github.com/pkivan1985-crypto/xiguan",
-	"version": "3.0.0-rc.1",
+	"version": "3.0.0-rc.2",
 	"type": "module",
 	"packageManager": "npm@11.18.0",
 	"engines": {
@@ -33,7 +33,7 @@
 		"check:release": "node scripts/verify-release-readiness.mjs",
 		"audit:prod": "npm audit --omit=dev --audit-level=low",
 		"audit:all": "npm audit --audit-level=high",
-		"verify": "npm run test:toolchain && npm run check:config && npm run lint && npm run lint:css && npm run build && npm run audit:prod && npm run audit:all"
+		"verify": "npm run test:toolchain && npm run test:release && npm run check:config && npm run lint && npm run lint:css && npm run build && npm run audit:prod && npm run audit:all"
 	},
 	"dependencies": {
 		"@uidotdev/usehooks": "^2.4.1",

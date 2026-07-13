@@ -5,7 +5,7 @@ import { APP_BUILD_ID, APP_VERSION } from './version';
 
 describe('application version config', () => {
 	it('uses package version and always exposes a non-empty build ID', () => {
-		expect(APP_VERSION).toBe('3.0.0-rc.1');
+		expect(APP_VERSION).toBe('3.0.0-rc.2');
 		expect(APP_BUILD_ID.trim()).not.toBe('');
 	});
 

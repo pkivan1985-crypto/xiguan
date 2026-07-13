@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ActionRecordEditor, EditorConfirmation } from './ActionRecordEditor';
+import { keepFocusInsideConfirmation } from './keepFocusInsideConfirmation';
 import type { HistoryRecordModel } from '@features/load-history';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
@@ -29,9 +30,35 @@ describe('ActionRecordEditor', () => {
 		expect(html).not.toContain('shell.history.confirmUpdate');
 	});
 
+	it('replaces the editor content with confirmation instead of stacking both layers', () => {
+		const source = readFileSync(new URL('./ActionRecordEditor.tsx', import.meta.url), 'utf8');
+		const css = readFileSync(new URL('./ActionRecordEditor.module.css', import.meta.url), 'utf8');
+		expect(source).toContain('{confirmation ? <EditorConfirmation');
+		expect(source).not.toContain('{confirmation && <EditorConfirmation');
+		expect(css).not.toMatch(/\.confirmation\s*{[^}]*position:\s*absolute/s);
+		expect(css).toContain('background: var(--surface-color)');
+		expect(css).not.toMatch(/--color-(?:bg(?:-lighter)?|border|text(?:-secondary)?)/);
+	});
+
 	it.each(['update', 'delete'] as const)('renders a second %s confirmation before its final action', (kind) => {
 		const html = renderToStaticMarkup(<EditorConfirmation kind={kind} busy={false} onConfirm={() => undefined} onCancel={() => undefined} />);
 		expect(html).toContain(kind === 'update' ? 'shell.history.confirmUpdate' : 'shell.history.confirmDelete');
 		expect(html).toContain('shell.history.recalculationImpact');
+		expect(html).toContain('autofocus=""');
+	});
+
+	it('keeps keyboard focus inside the confirmation actions', () => {
+		const first = { focus: vi.fn() };
+		const last = { focus: vi.fn() };
+		const backwards = { key: 'Tab', shiftKey: true, preventDefault: vi.fn() };
+		const forwards = { key: 'Tab', shiftKey: false, preventDefault: vi.fn() };
+
+		keepFocusInsideConfirmation(backwards, first, first, last);
+		expect(backwards.preventDefault).toHaveBeenCalledOnce();
+		expect(last.focus).toHaveBeenCalledOnce();
+
+		keepFocusInsideConfirmation(forwards, last, first, last);
+		expect(forwards.preventDefault).toHaveBeenCalledOnce();
+		expect(first.focus).toHaveBeenCalledOnce();
 	});
 });

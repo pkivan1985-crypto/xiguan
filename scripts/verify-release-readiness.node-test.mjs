@@ -13,13 +13,17 @@ function validSnapshot() {
 	const dependencies = { ...approvedPackage.dependencies };
 	const devDependencies = { ...approvedPackage.devDependencies };
 	return {
-		packageJson: { version: '3.0.0-rc.1', private: true, license: 'AGPL-3.0-only', dependencies, devDependencies, overrides: { ...approvedPackage.overrides } },
-		lockfile: { version: '3.0.0-rc.1', packages: structuredClone(approvedLockfile.packages) },
+		packageJson: { version: approvedPackage.version, private: true, license: 'AGPL-3.0-only', dependencies, devDependencies, overrides: { ...approvedPackage.overrides } },
+		lockfile: { version: approvedPackage.version, packages: structuredClone(approvedLockfile.packages) },
 		projectLinks: {
 			upstream: 'https://github.com/iNikAnn/DoHabit',
 			source: { status: 'unavailable' }, issues: { status: 'unavailable' }, license: { status: 'unavailable' },
 		},
 		requiredFiles: Object.fromEntries(['LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md', 'release-assets.json'].map((name) => [name, true])),
+		releaseDocs: {
+			readme: '公开候选站：https://repeat-outcome.pages.dev 项目源码：https://github.com/example-owner/repeat-outcome',
+			changelog: `${approvedPackage.version} 公开候选版本已部署到 https://repeat-outcome.pages.dev`,
+		},
 		publicFiles: ['public/_headers', 'public/_redirects', 'public/favicon.svg', 'public/robots.txt'],
 		releaseAssets: { assets: ['public/_headers', 'public/_redirects', 'public/favicon.svg', 'public/robots.txt'].map((path) => ({ path, source: 'project', license: 'AGPL-3.0-only', releaseStatus: 'included' })) },
 		distExists: true,
@@ -42,6 +46,26 @@ test('local phase accepts an explicit unavailable project repository while prese
 	assert.deepEqual(validateReleaseReadiness(validSnapshot(), 'local'), []);
 });
 
+test('release candidates can advance immutably without weakening the 3.0.0 prerelease boundary', async (context) => {
+	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
+	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
+	const snapshot = validSnapshot();
+	snapshot.packageJson.version = '3.0.0-rc.3';
+	snapshot.lockfile.version = '3.0.0-rc.3';
+	snapshot.lockfile.packages[''].version = '3.0.0-rc.3';
+	assert.deepEqual(validateReleaseReadiness(snapshot, 'local'), []);
+});
+
+test('release readiness rejects the already published rc.1 candidate', async (context) => {
+	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
+	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
+	const snapshot = validSnapshot();
+	snapshot.packageJson.version = '3.0.0-rc.1';
+	snapshot.lockfile.version = '3.0.0-rc.1';
+	snapshot.lockfile.packages[''].version = '3.0.0-rc.1';
+	assert.ok(validateReleaseReadiness(snapshot, 'public').some((error) => error.includes('rc.2')));
+});
+
 test('public phase requires real mutually consistent project URLs', async (context) => {
 	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
 	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
@@ -59,6 +83,24 @@ test('public phase requires real mutually consistent project URLs', async (conte
 	assert.deepEqual(validateReleaseReadiness(ready, 'public'), []);
 	ready.projectLinks.issues.url = 'https://github.com/iNikAnn/DoHabit/issues';
 	assert.ok(validateReleaseReadiness(ready, 'public').some((error) => error.includes('project Issues')));
+});
+
+test('public phase rejects release docs that still claim the project is local-only', async (context) => {
+	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
+	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
+	const snapshot = validSnapshot();
+	const source = 'https://github.com/example-owner/repeat-outcome';
+	snapshot.projectLinks.source = { status: 'available', url: source };
+	snapshot.projectLinks.issues = { status: 'available', url: `${source}/issues` };
+	snapshot.projectLinks.license = { status: 'available', url: `${source}/blob/main/LICENSE` };
+	snapshot.packageJson.repository = { type: 'git', url: source };
+	snapshot.packageJson.bugs = { url: `${source}/issues` };
+	snapshot.packageJson.homepage = source;
+	snapshot.releaseDocs.readme = '当前版本为本地候选，项目尚未创建公开仓库或部署正式网站。';
+	snapshot.releaseDocs.changelog = '此版本仍处于本地发布准备阶段，尚未部署网站。';
+	const errors = validateReleaseReadiness(snapshot, 'public').join('\n');
+	assert.match(errors, /README.*公开候选/i);
+	assert.match(errors, /CHANGELOG.*公开候选/i);
 });
 
 test('dependency, data-format, PWA, asset, and dist drift fail loudly', async (context) => {
@@ -113,6 +155,7 @@ test('package scripts, pinned CI workflow, and static host rules match the relea
 	const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 	assert.equal(pkg.scripts['check:release'], 'node scripts/verify-release-readiness.mjs');
 	assert.equal(pkg.scripts['test:release'], 'node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs');
+	assert.match(pkg.scripts.verify, /npm run test:release/);
 
 	const workflowPath = join(root, '.github', 'workflows', 'verify.yml');
 	assert.equal(existsSync(workflowPath), true, 'missing CI workflow');
