@@ -2,7 +2,7 @@
 
 > 草案日期：2026-07-11  
 > 最终路径：`web/AGENTS.md`  
-> 当前状态：已批准并落地；M7 已 `DONE / USER_ACCEPTED_WITH_DEVICE_QA_CARRYOVER`，M8 只进入发布切换设计评审，尚未授权实现或远程发布
+> 当前状态：已批准并落地；M8 任务 1—7 已完成，`project/m8-release-transition` 为 `PRIVATE_CI_PASS / PUBLIC_GATE_B_PENDING`；Gate B/C 关闭
 > 适用范围：`web/` 及其全部子目录
 
 ## 一、上级规则与冲突处理

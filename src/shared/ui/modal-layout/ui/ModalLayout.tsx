@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import ModalHeader from './ModalHeader';
 import { modalMotionProps } from '../model/modal.animations';
+import { APP_NAME } from '@shared/config';
 import { DirectionContext, useInitialRouteState } from '@shared/lib/router';
 
 /**
@@ -24,7 +25,7 @@ function ModalLayout() {
 			{...modalMotionProps}
 		>
 			<ModalHeader
-				title={modalTitle ?? 'DoHabit'} // eslint-disable-line
+				title={modalTitle ?? APP_NAME}
 				onClose={handleClose}
 			/>
 

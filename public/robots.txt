@@ -1,2 +1,4 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap is added only after a stable public origin exists.

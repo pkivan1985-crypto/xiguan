@@ -5,6 +5,7 @@ import { FaLock, FaPlane, FaShieldAlt } from 'react-icons/fa';
 import { FaBoltLightning } from 'react-icons/fa6';
 import { usePwaInstall } from '@features/pwa-install';
 import { useSettingsStore } from '@entities/settings';
+import { APP_NAME } from '@shared/config';
 import { Button } from '@shared/ui';
 
 const BASE_URL = import.meta.env.BASE_URL;
@@ -64,13 +65,12 @@ function WelcomeView() {
 				<div className={styles.textColumn}>
 					<div className={styles.logoWrapper}>
 						<img
-							src={`${BASE_URL}assets/brand/logo192-alpha.png`}
+							src={`${BASE_URL}favicon.svg`}
 							alt={t('common.logo')}
 							className={styles.logoImg}
 						/>
 
-						{/* eslint-disable-next-line */}
-						<h2>DoHabit</h2>
+						<h2>{APP_NAME}</h2>
 					</div>
 
 					<h1 className={styles.title}>
@@ -125,15 +125,6 @@ function WelcomeView() {
 							</Button>
 						)}
 					</div>
-				</div>
-
-				{/* Right side */}
-				<div className={styles.imageColumn}>
-					<img
-						src={`${BASE_URL}assets/img/welcome-hero-screenshot.webp`}
-						alt={t('common.screenshot')}
-						className={styles.screenshot}
-					/>
 				</div>
 
 			</div>

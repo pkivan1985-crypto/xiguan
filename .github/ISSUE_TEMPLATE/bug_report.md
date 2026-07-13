@@ -1,38 +1,35 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: 错误报告
+about: 报告可重复出现的软件问题
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-## Describe the bug
-A clear and concise description of what the bug is.
+> 隐私提醒：不要上传备份文件、口令、真实记录或任何个人数据。请使用虚构测试数据复现。
 
-### To Reproduce
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+## 问题描述
 
-### Expected behavior
-A clear and concise description of what you expected to happen.
+请简要说明发生了什么。
 
-### Screenshots
-If applicable, add screenshots to help explain your problem.
+### 复现步骤
 
-### Desktop (please complete the following information):
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+1. 打开……
+2. 点击……
+3. 看到……
 
-### Smartphone (please complete the following information):
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+### 预期结果
 
-### Additional context
-Add any other context about the problem here.
+### 截图
+
+请先遮盖个人数据；能用文字说明时不必上传截图。
+
+### 环境
+
+- 应用版本：
+- 操作系统：
+- 浏览器及版本：
+- 是否以 PWA 独立窗口运行：
+
+### 补充信息

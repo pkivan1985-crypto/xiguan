@@ -25,6 +25,8 @@ export function validateProjectConfig({ packageJson, lockfile, nodeVersion, npmV
 	const npmrcLines = npmrc.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#'));
 	if (!npmrcLines.includes('engine-strict=true')) errors.push('.npmrc must contain engine-strict=true');
 	if (packageJson.scripts?.['lint:css'] !== 'stylelint "src/**/*.css"') errors.push('lint:css must be stylelint "src/**/*.css"');
+	checkEqual(errors, 'check:release', packageJson.scripts?.['check:release'], 'node scripts/verify-release-readiness.mjs');
+	checkEqual(errors, 'test:release', packageJson.scripts?.['test:release'], 'node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs');
 	for (const script of FORBIDDEN_SCRIPTS) if (Object.hasOwn(packageJson.scripts ?? {}, script)) errors.push(`Forbidden script: ${script}`);
 	for (const dependency of FORBIDDEN_DEPENDENCIES) if (Object.hasOwn(allDirect, dependency)) errors.push(`Forbidden direct dependency: ${dependency}`);
 	for (const [name, expected] of Object.entries(EXPECTED_DEPENDENCIES)) {

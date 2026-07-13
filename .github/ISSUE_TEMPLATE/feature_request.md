@@ -1,23 +1,22 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: 功能建议
+about: 建议符合本地优先边界的新功能
 title: ''
 labels: enhancement
 assignees: ''
 
 ---
 
-## Description of the feature
-Please describe the feature you would like to add. Be as specific as possible.
+> 隐私提醒：不要上传备份文件、口令、真实记录或任何个人数据。请用虚构例子描述需求。
 
-### Reason
-Why is this feature important? How will it improve your project or the user experience?
+## 功能描述
 
-### Additional Information
-Is there anything else you would like to add? For example, use cases, links to similar features in other projects, or any other details that may help in the implementation.
+请说明你希望解决的问题，而不只是界面形式。
 
-### Screenshots (if applicable)
-If you have screenshots or mockups that illustrate your idea, please add them here.
+### 使用场景
 
-### Potential Issues
-Are there any potential issues or limitations to consider when implementing this feature?
+谁会在什么情况下使用？期望得到什么结果？
+
+### 与产品边界的关系
+
+第一阶段保持本地单用户、无账号、无后端、无云同步。请说明建议是否会改变这些边界。

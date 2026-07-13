@@ -3,7 +3,15 @@
 	"description": "把每天真实完成的重复行动，变成可累计、可回顾的可见成果。",
 	"private": true,
 	"license": "AGPL-3.0-only",
-	"version": "0.50.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/pkivan1985-crypto/xiguan"
+	},
+	"bugs": {
+		"url": "https://github.com/pkivan1985-crypto/xiguan/issues"
+	},
+	"homepage": "https://github.com/pkivan1985-crypto/xiguan",
+	"version": "3.0.0-rc.1",
 	"type": "module",
 	"packageManager": "npm@11.18.0",
 	"engines": {
@@ -17,10 +25,12 @@
 		"lint:css": "stylelint \"src/**/*.css\"",
 		"test": "vitest",
 		"test:toolchain": "node --test scripts/verify-project-config.node-test.mjs",
+		"test:release": "node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs",
 		"coverage": "vitest run --coverage",
 		"build": "tsc -b && vitest run && vite build",
 		"preview": "vite preview",
 		"check:config": "node scripts/verify-project-config.mjs",
+		"check:release": "node scripts/verify-release-readiness.mjs",
 		"audit:prod": "npm audit --omit=dev --audit-level=low",
 		"audit:all": "npm audit --audit-level=high",
 		"verify": "npm run test:toolchain && npm run check:config && npm run lint && npm run lint:css && npm run build && npm run audit:prod && npm run audit:all"

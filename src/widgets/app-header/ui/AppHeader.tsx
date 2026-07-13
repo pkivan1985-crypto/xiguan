@@ -1,6 +1,7 @@
 import styles from './AppHeader.module.css';
 import clsx from 'clsx';
 import { getNavItems } from '../model/navigation';
+import { APP_SHORT_NAME } from '@shared/config';
 import { Button } from '@shared/ui';
 
 /**
@@ -16,7 +17,7 @@ function AppHeader() {
 			<header className={styles.header}>
 				<div className={styles.logoWrapper}>
 					<span className={styles.logo} />
-					<h1>DoHabit</h1> {/* eslint-disable-line */}
+					<h1>{APP_SHORT_NAME}</h1>
 				</div>
 
 				<nav className={clsx('bg-surface-bordered', styles.nav)}>
