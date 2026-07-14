@@ -6,7 +6,7 @@ import type { TodayOutcomeView } from '@features/load-today-outcome';
 import { TodayOutcomeEditor } from './TodayOutcomeEditor';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, values?: Record<string, unknown>) => ({
-	'shell.today.playbackPreview': '保存后按顺序播放', 'shell.today.playbackPreviewDescription': '每张卡都有成果反馈',
+	'shell.today.playbackPreview': '保存后自动播放', 'shell.today.playbackPreviewDescription': '保存成功后会自动开始，无需点击',
 	'shell.today.cumulativeHint': '不是本次增量', 'shell.today.valueLabel': `${values?.title}今天累计${values?.unit}数`,
 	'shell.today.valueCaption': '今天截至现在', 'shell.today.moveUp': `上移${values?.title}`, 'shell.today.moveDown': `下移${values?.title}`,
 	'shell.today.removeCard': `移除${values?.title}`, 'shell.today.addCard': '添加循环卡', 'shell.today.addCardHint': '从我的卡套选择',
@@ -36,6 +36,9 @@ describe('TodayOutcomeEditor', () => {
 		expect(html).toContain('value="5.20"');
 		expect(html).toContain('不是本次增量');
 		expect(html).toContain('aria-label="下移晨跑"');
+		expect(html).toContain('保存后自动播放');
+		expect(html).toContain('无需点击');
+		expect(html).not.toMatch(/<button[^>]*>.*保存后自动播放/);
 	});
 
 	it('disables save when any selected card is blank', () => {

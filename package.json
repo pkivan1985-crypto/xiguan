@@ -11,7 +11,7 @@
 		"url": "https://github.com/pkivan1985-crypto/xiguan/issues"
 	},
 	"homepage": "https://github.com/pkivan1985-crypto/xiguan",
-	"version": "3.0.0-rc.4",
+	"version": "3.0.0-rc.5",
 	"type": "module",
 	"packageManager": "npm@11.18.0",
 	"engines": {
