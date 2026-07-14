@@ -392,7 +392,7 @@
 				"title": "需要 Google Chrome"
 			},
 			"ios": {
-				"steps": "在 Safari 浏览器中打开此页面，点击浏览器菜单中的“分享”图标，然后选择“添加到主屏幕”。",
+				"steps": "如果 Safari 网页里已有数据，请先在设置 → 本地数据中导出备份。然后点击“分享”并选择“添加到主屏幕”；首次打开主屏幕版后，再从本地数据恢复该备份。",
 				"title": "在 iOS 上安装"
 			}
 		},
@@ -556,6 +556,8 @@
 			"installAction": "查看安装方式",
 			"installed": "已安装",
 			"installTitle": "PWA 安装",
+			"iosStorageAfterInstall": "iPhone 主屏幕版与 Safari 的本地数据互相隔离。若 Safari 已有记录，请点此恢复之前导出的备份。",
+			"iosStorageBeforeInstall": "iPhone 添加到主屏幕后不会自动带入 Safari 数据。若当前已有记录，请点此先导出备份，再安装并恢复。",
 			"license": "项目整体采用 AGPL-3.0；当前底座来源为 DoHabit。",
 			"openSourceTitle": "版本与开源",
 			"pwaStatus": {

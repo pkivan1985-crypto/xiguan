@@ -12,7 +12,7 @@ function SettingsPage() {
 	const { t } = useTranslation();
 	const settings = useSettingsStore((state) => state.settings);
 	const settingsDispatch = useSettingsStore((state) => state.settingsDispatch);
-	const { state, install } = usePwaInstall();
+	const { state, iosDevice, install } = usePwaInstall();
 	const update = usePwaUpdate();
 	const pwaStatusDescription = state === 'INSTALLED'
 		? t('shell.settings.pwaStatus.INSTALLED')
@@ -99,6 +99,14 @@ function SettingsPage() {
 						{update.state.kind === 'available' ? t('shell.pwa.updateNow') : update.state.kind === 'failed' ? t('shell.pwa.retry') : t('shell.settings.checkUpdate')}
 					</button>
 				</div>
+				{iosDevice && (state === 'IOS_MANUAL' || state === 'INSTALLED') && (
+					<Link className={styles.iosTransferNotice} to={APP_ROUTES.DATA_MANAGEMENT}>
+						<FiHardDrive aria-hidden='true' />
+						<span>{t(state === 'IOS_MANUAL'
+							? 'shell.settings.iosStorageBeforeInstall'
+							: 'shell.settings.iosStorageAfterInstall')}</span>
+					</Link>
+				)}
 				<p className={styles.version}>{update.buildId === update.currentVersion
 					? t('shell.settings.version', { version: update.currentVersion })
 					: t('shell.settings.buildVersion', { version: update.currentVersion, build: update.buildId })}</p>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDialogStore } from '@shared/ui';
-import { detectInstallState } from './installState';
+import { detectInstallState, isIosDevice } from './installState';
 import { runInstallPrompt } from './promptLifecycle';
 import { usePwaStore } from './store';
 
@@ -30,7 +30,7 @@ function usePwaInstall() {
 	}, [setInstalled]);
 
 	const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean };
-	const state = detectInstallState({
+	const environment = {
 		standalone: installed || standalone,
 		iosStandalone: navigatorWithStandalone.standalone === true,
 		userAgent: navigator.userAgent,
@@ -38,7 +38,9 @@ function usePwaInstall() {
 		maxTouchPoints: navigator.maxTouchPoints,
 		hasPrompt: Boolean(deferredPrompt),
 		supportsServiceWorker: 'serviceWorker' in navigator,
-	});
+	};
+	const state = detectInstallState(environment);
+	const iosDevice = isIosDevice(environment);
 
 	// Global stores
 	const openDialog = useDialogStore((s) => s.open);
@@ -74,6 +76,7 @@ function usePwaInstall() {
 
 	return {
 		state,
+		iosDevice,
 		install,
 	};
 }

@@ -169,6 +169,25 @@
 	color: var(--achievement-color);
 }
 
+.iosTransferNotice {
+	display: grid;
+	grid-template-columns: 22px 1fr;
+	gap: 9px;
+	align-items: start;
+	padding: 12px;
+	font-size: 0.76rem;
+	line-height: 1.5;
+	color: var(--color-text-secondary);
+	background: color-mix(in srgb, var(--accent-color) 8%, var(--page-bg));
+	border: 1px solid color-mix(in srgb, var(--accent-color) 26%, var(--border-color));
+	border-radius: 14px;
+}
+
+.iosTransferNotice svg {
+	margin-top: 2px;
+	color: var(--accent-color);
+}
+
 .appFacts p > svg {
 	margin-top: 2px;
 	font-size: 1.05rem;

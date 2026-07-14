@@ -88,6 +88,11 @@
 	height: 1px;
 }
 
+.actionStack {
+	display: grid;
+	gap: 7px;
+}
+
 .primaryAction {
 	display: flex;
 	align-items: center;
@@ -97,6 +102,22 @@
 	color: #fff;
 	background: var(--accent-color);
 	border-radius: 16px;
+}
+
+.secondaryAction {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: center;
+	justify-self: end;
+	min-height: 44px;
+	padding: 7px 12px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: var(--accent-color);
+	background: color-mix(in srgb, var(--accent-color) 10%, var(--color-bg-lighter));
+	border: 1px solid color-mix(in srgb, var(--accent-color) 32%, transparent);
+	border-radius: 12px;
 }
 
 .actionCopy {
