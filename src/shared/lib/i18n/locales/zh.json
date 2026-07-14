@@ -512,6 +512,7 @@
 			"retry": "重新读取",
 			"sceneDescription": "每一次真实行动，都会在这里留下可回顾的证据。",
 			"sceneTitle": "每一次重复，都在留下轨迹",
+			"quickActions": "首页快捷操作",
 			"todayAction": "记录今日成果",
 			"todayActionDescription": "继续填写今天的累计值"
 		},
@@ -672,8 +673,8 @@
 			"noAvailableCards": "没有更多可添加的循环卡",
 			"pickerNote": "只显示可以记录成果的循环卡。",
 			"pickerTitle": "添加到今日成果",
-			"playbackPreview": "保存后按顺序播放",
-			"playbackPreviewDescription": "每张卡都有一段成果反馈，也可以直接查看汇总。",
+			"playbackPreview": "保存后自动播放",
+			"playbackPreviewDescription": "保存成功后会自动开始，无需点击；也可以直接查看汇总。",
 			"removeCard": "移除{{title}}",
 			"save": "保存今日成果",
 			"selectCard": "添加",

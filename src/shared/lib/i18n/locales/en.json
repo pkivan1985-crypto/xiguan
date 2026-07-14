@@ -507,6 +507,7 @@
 			"retry": "Read again",
 			"sceneDescription": "Every real action leaves evidence you can revisit here.",
 			"sceneTitle": "Every repetition leaves a trace",
+			"quickActions": "Home quick actions",
 			"todayAction": "Record today's outcomes",
 			"todayActionDescription": "Continue entering today's accumulated values"
 		},
@@ -667,8 +668,8 @@
 			"noAvailableCards": "No more loop cards to add",
 			"pickerNote": "Only loop cards that can record outcomes are shown.",
 			"pickerTitle": "Add to today's outcomes",
-			"playbackPreview": "Play in order after saving",
-			"playbackPreviewDescription": "Each card gets an outcome response, or you can jump to the summary.",
+			"playbackPreview": "Playback starts after saving",
+			"playbackPreviewDescription": "It starts automatically after a successful save—no tap needed. You can also jump to the summary.",
 			"removeCard": "Remove {{title}}",
 			"save": "Save today's outcomes",
 			"selectCard": "Add",

@@ -54,6 +54,8 @@ describe('HomePage', () => {
 		expect(html).toContain('shell.home.todayAction');
 		expect(html).toContain('href="/deck/new"');
 		expect(html).toContain('shell.createCard.create');
+		expect(html).toContain('<nav');
+		expect(html).toContain('aria-label="shell.home.quickActions"');
 	});
 
 	it('maps relationship failures to a specific retry message', () => {
