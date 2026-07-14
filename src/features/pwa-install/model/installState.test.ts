@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectInstallState, type InstallEnvironment } from './installState';
+import { detectInstallState, isIosDevice, type InstallEnvironment } from './installState';
 
 const base: InstallEnvironment = {
 	standalone: false,
@@ -24,6 +24,9 @@ describe('detectInstallState', () => {
 	it('recognizes iPhone and desktop-UA iPadOS', () => {
 		expect(detectInstallState({ ...base, userAgent: 'Mozilla/5.0 (iPhone)' })).toBe('IOS_MANUAL');
 		expect(detectInstallState({ ...base, platform: 'MacIntel', maxTouchPoints: 5 })).toBe('IOS_MANUAL');
+		expect(isIosDevice({ ...base, userAgent: 'Mozilla/5.0 (iPhone)' })).toBe(true);
+		expect(isIosDevice({ ...base, platform: 'MacIntel', maxTouchPoints: 5 })).toBe(true);
+		expect(isIosDevice(base)).toBe(false);
 	});
 
 	it('falls back to browser-menu or unavailable without overstating support', () => {

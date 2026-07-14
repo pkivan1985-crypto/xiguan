@@ -3,7 +3,7 @@ import styles from './HomePage.module.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { FiArrowRight, FiRefreshCw } from 'react-icons/fi';
+import { FiArrowRight, FiPlus, FiRefreshCw } from 'react-icons/fi';
 import { loadHomeDashboardInApp, type HomeDashboardModel } from '@features/load-home-dashboard';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
@@ -25,9 +25,14 @@ function HomeDashboardContent({ model, todayLocalDate, onPreviousMonth, onNextMo
 			<p className={styles.eyebrow}>{t('shell.home.eyebrow')}</p><h2>{t('shell.home.sceneTitle')}</h2><p>{t('shell.home.sceneDescription')}</p>
 			{model.outcomeDayCount > 0 && <strong>{t('shell.home.monthEvidence', { count: model.outcomeDayCount })}</strong>}
 		</section>
-		<Link className={styles.primaryAction} to={model.hasCards ? APP_ROUTES.TODAY : APP_ROUTES.DECK_NEW}>
-			<span className={styles.actionCopy}><strong>{t(actionKey)}</strong><small>{t(actionDescriptionKey)}</small></span><FiArrowRight aria-hidden='true' />
-		</Link>
+		<div className={styles.actionStack}>
+			<Link className={styles.primaryAction} to={model.hasCards ? APP_ROUTES.TODAY : APP_ROUTES.DECK_NEW}>
+				<span className={styles.actionCopy}><strong>{t(actionKey)}</strong><small>{t(actionDescriptionKey)}</small></span><FiArrowRight aria-hidden='true' />
+			</Link>
+			{model.hasCards && <Link className={styles.secondaryAction} to={APP_ROUTES.DECK_NEW}>
+				<FiPlus aria-hidden='true' /><span>{t('shell.createCard.create')}</span>
+			</Link>}
+		</div>
 		<header className={styles.sectionTitle}><h2>{t('shell.home.goalsTitle')}</h2><span>{model.goalSummaries.length}</span></header>
 		{model.goalSummaries.length > 0 ? <GoalSummary summaries={model.goalSummaries} /> : <div className={styles.empty}><b>{t('shell.home.noCardsTitle')}</b><small>{t('shell.home.noCardsDescription')}</small></div>}
 		<header className={styles.sectionTitle}><h2>{t('shell.home.calendarTitle')}</h2><span>{t('shell.home.outcomeDayCount', { count: model.outcomeDayCount })}</span></header>

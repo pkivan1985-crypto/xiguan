@@ -391,7 +391,7 @@
 				"title": "Google Chrome Required"
 			},
 			"ios": {
-				"steps": "Open this page in Safari, tap the 'Share' icon in your browser menu, and select 'Add to Home Screen'.",
+				"steps": "If this Safari page already has data, first export a backup from Settings → Local data. Then tap Share → Add to Home Screen, open the installed app, and restore that backup there.",
 				"title": "Install on iOS"
 			}
 		},
@@ -551,6 +551,8 @@
 			"installAction": "View installation options",
 			"installed": "Installed",
 			"installTitle": "PWA installation",
+			"iosStorageAfterInstall": "The iPhone Home Screen app and Safari use separate local data. If Safari has records, open this page to restore the backup you exported there.",
+			"iosStorageBeforeInstall": "Adding this app to the iPhone Home Screen will not copy Safari data. If records exist here, open this page to export a backup before installing, then restore it in the app.",
 			"license": "The project uses AGPL-3.0 and is based on DoHabit.",
 			"openSourceTitle": "Version and open source",
 			"pwaStatus": {

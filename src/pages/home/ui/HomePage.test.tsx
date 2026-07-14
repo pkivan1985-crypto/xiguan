@@ -41,6 +41,21 @@ describe('HomePage', () => {
 		expect(html).not.toMatch(/\d+%/);
 	});
 
+	it('keeps card creation available after cards exist', () => {
+		const html = renderToStaticMarkup(<MemoryRouter><HomeDashboardContent
+			model={{ ...freshModel, hasCards: true }}
+			todayLocalDate='2026-07-14'
+			onPreviousMonth={() => undefined}
+			onNextMonth={() => undefined}
+			canGoNext={false}
+		/></MemoryRouter>);
+
+		expect(html).toContain('href="/today"');
+		expect(html).toContain('shell.home.todayAction');
+		expect(html).toContain('href="/deck/new"');
+		expect(html).toContain('shell.createCard.create');
+	});
+
 	it('maps relationship failures to a specific retry message', () => {
 		expect(homeErrorKey(new Error('HOME_RELATIONSHIP_INVALID'))).toBe('shell.home.relationshipError');
 		expect(homeErrorKey(new Error('unexpected'))).toBe('shell.home.loadError');
