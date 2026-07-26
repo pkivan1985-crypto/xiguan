@@ -97,7 +97,7 @@
 	display: grid;
 	grid-template-columns: repeat(2, minmax(66px, 1fr));
 	gap: 7px;
-	width: 148px;
+	width: 176px;
 }
 
 .quantityActions > button {

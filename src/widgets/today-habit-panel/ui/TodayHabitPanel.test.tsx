@@ -13,9 +13,9 @@ import {
 const translations: Record<string, string> = {
 	'shell.today.activeDayCount': '累计 {{count}} 天',
 	'shell.today.completeHabit': '完成{{title}}',
-	'shell.today.completeAction': '已完成',
-	'shell.today.completedAction': '已记录',
-	'shell.today.enterActual': '填实际',
+	'shell.today.completeAction': '打卡',
+	'shell.today.completedAction': '完成',
+	'shell.today.enterActual': '记录进度',
 	'shell.today.completedFold': '已完成 {{count}} 项',
 	'shell.today.dailyProgress': '今日 {{current}} / {{target}} {{unit}}',
 	'shell.today.decreaseHabit': '减少{{title}}',
@@ -202,8 +202,8 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('data-tracking-type="duration"');
 		expect(html).toContain('data-tracking-type="check"');
 		expect(html).toContain('data-tracking-type="avoid"');
-		expect(html).toContain('>已记录</span>');
-		expect(html).toContain('>填实际</span>');
+		expect(html).toContain('>完成</span>');
+		expect(html).toContain('>记录进度</span>');
 		expect(html).toContain('aria-label="增加喝水"');
 		expect(html).toContain('aria-label="记录阅读"');
 		expect(html).toContain('aria-label="撤销早睡"');
@@ -212,13 +212,23 @@ describe('TodayHabitPanel', () => {
 		expect(html).not.toContain('role="img"');
 	});
 
-	it('turns a recorded quantity action into a disabled status while keeping actual editing available', () => {
+	it('uses check-in before saving and a completed status afterward while keeping progress editing available', () => {
+		const pendingHtml = renderPanel({
+			renderedHabits: [{
+				...habits[0]!,
+				quantityBaseValue: 0,
+				displayValue: '0.00',
+				recordedToday: false,
+			}],
+		});
 		const html = renderPanel({ renderedHabits: [habits[0]!] });
 
+		expect(pendingHtml).toContain('>打卡</span>');
+		expect(pendingHtml).toContain('>记录进度</span>');
 		expect(html).toContain('data-recorded="true"');
 		expect(html).toMatch(/class="[^"]*completeAction[^"]*" disabled="" data-recorded="true"/);
-		expect(html).toContain('>已记录</span>');
-		expect(html).toContain('>填实际</span>');
+		expect(html).toContain('>完成</span>');
+		expect(html).toContain('>记录进度</span>');
 	});
 
 	it('keeps a rest-day habit visible without exposing recording controls', () => {
@@ -237,8 +247,8 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('data-scheduled="false"');
 		expect(html).toContain('>今日休息</small>');
 		expect(html).toContain('aria-label="今日休息"');
-		expect(html).not.toContain('>已完成</span>');
-		expect(html).not.toContain('>填实际</span>');
+		expect(html).not.toContain('>打卡</span>');
+		expect(html).not.toContain('>记录进度</span>');
 		expect(html).not.toContain('<button');
 	});
 
