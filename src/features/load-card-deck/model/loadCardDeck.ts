@@ -35,6 +35,7 @@ export interface DeckCategoryView {
 export interface DeckView {
 	slots: Array<DeckSlotView | null>;
 	categories: DeckCategoryView[];
+	archivedCount: number;
 }
 
 export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: LocalDate): Promise<DeckView> {
@@ -52,7 +53,7 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 	], async () => ({
 		categories: await categoriesTable.toArray(),
 		templates: await templatesTable.toArray(),
-		cards: await cardsTable.where('status').equals('active').toArray(),
+		cards: await cardsTable.toArray(),
 		longTermGoals: await longTermGoalsTable.where('status').equals('active').toArray(),
 		stageGoals: await stageGoalsTable.where('status').equals('active').toArray(),
 		records: await recordsTable.toArray(),
@@ -60,10 +61,11 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 	}));
 
 	const templatesById = new Map(data.templates.map((template) => [template.id, template]));
-	const cardsById = new Map(data.cards.map((card) => [card.id, card]));
+	const activeCards = data.cards.filter((card) => card.status === 'active');
+	const cardsById = new Map(activeCards.map((card) => [card.id, card]));
 	const longTermByCard = new Map(data.longTermGoals.map((goal) => [goal.userCardId, goal]));
 	const stageByLongTerm = new Map(data.stageGoals.map((goal) => [goal.longTermGoalId, goal]));
-	const cardViews = data.cards
+	const cardViews = activeCards
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DeckCardView[] => {
 			const template = templatesById.get(card.officialCardId);
@@ -102,7 +104,11 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 		return card ? { slotIndex, userCardId: card.id, title: card.title } : null;
 	});
 
-	return { slots, categories };
+	return {
+		slots,
+		categories,
+		archivedCount: data.cards.filter((card) => card.status === 'archived').length,
+	};
 }
 
 export function loadCardDeckForDate(localDate: LocalDate): Promise<DeckView> {

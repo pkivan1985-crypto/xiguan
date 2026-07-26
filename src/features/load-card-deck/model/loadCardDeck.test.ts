@@ -76,5 +76,31 @@ describe('loadCardDeck', () => {
 
 		expect(view.categories[0]?.cards).toEqual([]);
 		expect(view.slots).toEqual([null, null, null, null, null, null]);
+		expect(view.archivedCount).toBe(1);
+	});
+
+	it('returns active cards by category and sort order while keeping progress scoped to the current goal', async () => {
+		await database.table('userCards').bulkAdd([
+			{ id: 'run-later', officialCardId: 'running', title: '夜跑', status: 'active', sortOrder: 2, createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' },
+			{ id: 'run-first', officialCardId: 'running', title: '晨跑', status: 'active', sortOrder: 1, createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' },
+			{ id: 'reading', officialCardId: 'reading-time', title: '读书', status: 'active', sortOrder: 0, createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' },
+			{ id: 'archived', officialCardId: 'sleep', title: '已归档', status: 'archived', sortOrder: 0, createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' },
+		]);
+		await database.table('longTermGoals').add({ id: 'current-long', userCardId: 'run-first', title: '累计十公里', targetQuantityBase: 10_000, status: 'active', startDate: '2026-07-01', createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' });
+		await database.table('actionRecords').bulkAdd([
+			{ id: 'current-record', userCardId: 'run-first', localDate: '2026-07-11', quantityBaseValue: 2_500, longTermGoalId: 'current-long', firstSavedAt: '2026-07-11T08:00:00.000Z', lastSavedAt: '2026-07-11T08:00:00.000Z', lastSubmissionId: 'submission-a' },
+			{ id: 'old-record', userCardId: 'run-first', localDate: '2026-07-10', quantityBaseValue: 7_500, longTermGoalId: 'old-long', firstSavedAt: '2026-07-10T08:00:00.000Z', lastSavedAt: '2026-07-10T08:00:00.000Z', lastSubmissionId: 'submission-b' },
+		]);
+
+		const view = await loadCardDeck(database, '2026-07-11');
+
+		expect(view.categories.map((category) => ({ id: category.id, cards: category.cards.map((card) => card.title) }))).toEqual([
+			{ id: 'sport', cards: ['晨跑', '夜跑'] },
+			{ id: 'reading', cards: ['读书'] },
+			{ id: 'life', cards: [] },
+			{ id: 'output', cards: [] },
+		]);
+		expect(view.archivedCount).toBe(1);
+		expect(view.categories[0]?.cards[0]?.longTermProgress).toMatchObject({ quantityBaseValue: 2_500, ratio: 0.25 });
 	});
 });

@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- Table names and statuses are stable domain identifiers. */
-import type { ActionRecord } from '@entities/action-record';
+import { effectiveActionRecords, type ActionRecord } from '@entities/action-record';
 import {
 	calculateGoalProgress,
 	type LongTermGoal,
@@ -27,12 +27,15 @@ export interface DailyHabitView {
 	displayUnit: string;
 	stepBase: number;
 	dailyTargetBase: number;
+	totalQuantityBaseValue: number;
+	activeDays: number;
 	goalTitle?: string;
 	goalProgressRatio?: number;
 }
 
 export interface DailyHabitsModel {
 	localDate: LocalDate;
+	outcomeDates: LocalDate[];
 	habits: DailyHabitView[];
 	completedCount: number;
 }
@@ -77,23 +80,31 @@ export async function loadDailyHabits(
 	}));
 
 	const templatesById = new Map(data.templates.map((template) => [template.id, template]));
+	const effectiveRecords = effectiveActionRecords(data.records);
 	const todayRecords = new Map(
-		data.records
+		effectiveRecords
 			.filter((record) => record.localDate === localDate)
 			.map((record) => [record.userCardId, record]),
 	);
+	const recordsByCard = new Map<string, ActionRecord[]>();
+	for (const record of effectiveRecords) {
+		const cardRecords = recordsByCard.get(record.userCardId) ?? [];
+		cardRecords.push(record);
+		recordsByCard.set(record.userCardId, cardRecords);
+	}
 	const habits = data.cards
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DailyHabitView[] => {
 			const template = templatesById.get(card.officialCardId);
 			if (!template?.enabled) return [];
+			const cardRecords = recordsByCard.get(card.id) ?? [];
 			const quantityBaseValue = todayRecords.get(card.id)?.quantityBaseValue ?? 0;
 			const trackingType = template.trackingType ?? 'quantity';
 			const longTermGoal = currentLongTermGoal(data.longTermGoals, card.id);
 			const stageGoal = longTermGoal ? currentStageGoal(data.stageGoals, longTermGoal.id) : undefined;
 			const primaryGoal = stageGoal ?? longTermGoal;
 			const goalRecords = primaryGoal
-				? data.records.filter((record) => (
+				? effectiveRecords.filter((record) => (
 					stageGoal ? record.stageGoalId === stageGoal.id : record.longTermGoalId === longTermGoal?.id
 				))
 				: [];
@@ -122,6 +133,8 @@ export async function loadDailyHabits(
 				displayUnit: template.quantity.displayUnit,
 				stepBase: template.stepBase ?? template.quantity.basePerDisplayUnit,
 				dailyTargetBase: template.defaultDailyTargetBase ?? template.quantity.basePerDisplayUnit,
+				totalQuantityBaseValue: cardRecords.reduce((total, record) => total + record.quantityBaseValue, 0),
+				activeDays: new Set(cardRecords.map((record) => record.localDate)).size,
 				goalTitle: primaryGoal?.title,
 				goalProgressRatio: progress?.ratio,
 			}];
@@ -129,6 +142,7 @@ export async function loadDailyHabits(
 
 	return {
 		localDate,
+		outcomeDates: [...new Set(effectiveRecords.map((record) => record.localDate))].sort(),
 		habits,
 		completedCount: habits.filter((habit) => habit.quantityBaseValue >= habit.dailyTargetBase).length,
 	};
