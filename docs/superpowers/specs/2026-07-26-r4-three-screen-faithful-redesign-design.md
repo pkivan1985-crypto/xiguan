@@ -1,6 +1,6 @@
 # R4 三屏高保真忠实重做设计
 
-> 状态：PROPOSED / REFERENCE_SELECTED  
+> 状态：APPROVED / IMPLEMENTATION_AUTHORIZED
 > 日期：2026-07-26  
 > Figma：<https://www.figma.com/design/yJruZylPTz7gfKnrK5Mm32?node-id=2-2>  
 > 实施边界：只重做“今天 / 进展 / 习惯”三屏及其共用视觉组件，不改变现有 IndexedDB、备份恢复、目标计算和 PWA 数据规则。
@@ -185,4 +185,3 @@
 - 不改变数据库 schema 或备份格式。
 - 不增加账号、后端、云同步。
 - 不增加大幅图片、品牌动画或 Lottie。
-
