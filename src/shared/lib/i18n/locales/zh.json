@@ -433,6 +433,7 @@
 				"reading": "阅读",
 				"sport": "运动"
 			},
+			"filtersLabel": "习惯分类",
 			"loading": "正在读取卡套…",
 			"loadError": "暂时无法读取卡套。",
 			"longTerm": "长期目标",

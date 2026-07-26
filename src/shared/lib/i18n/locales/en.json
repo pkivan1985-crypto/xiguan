@@ -428,6 +428,7 @@
 				"reading": "Reading",
 				"sport": "Movement"
 			},
+			"filtersLabel": "Habit categories",
 			"loading": "Loading your cards…",
 			"loadError": "Your cards could not be loaded.",
 			"longTerm": "Long-term goal",

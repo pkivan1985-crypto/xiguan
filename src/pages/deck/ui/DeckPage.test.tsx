@@ -18,6 +18,7 @@ const translations: Record<string, string> = {
 	'shell.deck.details': '查看详情',
 	'shell.deck.emptyCards': '这个分类还没有习惯',
 	'shell.deck.filters.all': '全部',
+	'shell.deck.filtersLabel': '习惯分类',
 	'shell.deck.filters.life': '生活',
 	'shell.deck.filters.reading': '阅读',
 	'shell.deck.filters.sport': '运动',
@@ -91,7 +92,7 @@ describe('DeckPage', () => {
 		expect(html).toContain('0 个进行中 · 1 个已归档');
 		expect(html).toContain('href="/settings"');
 		expect(html).toContain('新建习惯');
-		expect(html).toContain('data-testid="habit-filter-tabs"');
+		expect(html).toContain('data-testid="habit-filter-group"');
 		expect(html).toContain('data-testid="habit-archive-summary"');
 		expect(html).not.toContain('管理卡套');
 	});

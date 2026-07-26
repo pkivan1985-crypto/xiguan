@@ -15,9 +15,9 @@ import type { DeckCardView, DeckCategoryView } from '@features/load-card-deck';
 import { HabitGlyph } from '@widgets/habit-glyph';
 
 import {
+	createCardDeckState,
 	filterDeckCards,
-	resolveDefaultExpandedItemId,
-	toggleExpandedItemId,
+	transitionCardDeckState,
 	type DeckFilterId,
 	type FilteredDeckCard,
 } from '../model/toggleExpandedItemId';
@@ -32,6 +32,7 @@ interface CardDeckCopy {
 	details: string;
 	empty: string;
 	filters: Record<DeckFilterId, string>;
+	filtersLabel: string;
 	longTerm: string;
 	noGoal: string;
 	plan: string;
@@ -283,38 +284,40 @@ function CardDeck({
 	copy,
 	onOpenGoalDetails,
 }: CardDeckProps) {
-	const allCards = filterDeckCards(categories, 'all');
-	const [activeFilter, setActiveFilter] = useState<DeckFilterId>('all');
-	const [expandedCardId, setExpandedCardId] = useState<string | null>(
-		() => resolveDefaultExpandedItemId(allCards),
+	const [state, setState] = useState(() => createCardDeckState(categories));
+	const visibleCards = filterDeckCards(categories, state.filter);
+	const expandedItem = visibleCards.find(
+		({ card }) => card.id === state.expandedItemId,
 	);
-	const visibleCards = filterDeckCards(categories, activeFilter);
-	const expandedItem = visibleCards.find(({ card }) => card.id === expandedCardId);
-	const compactItems = visibleCards.filter(({ card }) => card.id !== expandedCardId);
+	const compactItems = visibleCards.filter(
+		({ card }) => card.id !== state.expandedItemId,
+	);
 
 	const changeFilter = (filter: DeckFilterId) => {
-		const filteredCards = filterDeckCards(categories, filter);
-		setActiveFilter(filter);
-		setExpandedCardId(resolveDefaultExpandedItemId(filteredCards));
+		setState((current) => transitionCardDeckState(
+			current,
+			{ type: 'selectFilter', filter },
+			categories,
+		));
 	};
 
 	return (
 		<div className={styles.deck}>
 			<div
 				className={styles.filters}
-				data-testid='habit-filter-tabs'
-				role='tablist'
-				aria-label={copy.filters.all}
+				data-testid='habit-filter-group'
+				role='group'
+				aria-label={copy.filtersLabel}
 			>
 				{FILTERS.map((filter) => (
 					<button
 						type='button'
-						role='tab'
-						aria-selected={activeFilter === filter}
+						aria-pressed={state.filter === filter}
+						data-filter={filter}
 						onClick={() => changeFilter(filter)}
 						key={filter}
 					>
-						{copy.filters[filter]}
+						<span className={styles.filterLabel}>{copy.filters[filter]}</span>
 					</button>
 				))}
 			</div>
@@ -324,7 +327,6 @@ function CardDeck({
 			<section
 				className={styles.activeSection}
 				id='habit-card-grid'
-				role='tabpanel'
 			>
 				{visibleCards.length === 0 ? (
 					<p className={styles.empty}>{copy.empty}</p>
@@ -335,8 +337,10 @@ function CardDeck({
 								copy={copy}
 								item={expandedItem}
 								onOpenGoalDetails={onOpenGoalDetails}
-								onToggle={() => setExpandedCardId((current) => (
-									toggleExpandedItemId(current, expandedItem.card.id)
+								onToggle={() => setState((current) => transitionCardDeckState(
+									current,
+									{ type: 'toggleCard', cardId: expandedItem.card.id },
+									categories,
 								))}
 							/>
 						)}
@@ -345,8 +349,10 @@ function CardDeck({
 								copy={copy}
 								item={item}
 								onOpenGoalDetails={onOpenGoalDetails}
-								onToggle={() => setExpandedCardId((current) => (
-									toggleExpandedItemId(current, item.card.id)
+								onToggle={() => setState((current) => transitionCardDeckState(
+									current,
+									{ type: 'toggleCard', cardId: item.card.id },
+									categories,
 								))}
 								key={item.card.id}
 							/>

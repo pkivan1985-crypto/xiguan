@@ -76,6 +76,7 @@ function DeckPageContent({
 						reading: t('shell.deck.filters.reading'),
 						life: t('shell.deck.filters.life'),
 					},
+					filtersLabel: t('shell.deck.filtersLabel'),
 					longTerm: t('shell.deck.longTerm'),
 					noGoal: t('shell.deck.noGoal'),
 					plan: t('shell.deck.plan'),

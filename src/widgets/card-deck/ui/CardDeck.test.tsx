@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -5,8 +6,10 @@ import type { CardTemplate } from '@entities/card-template';
 import type { DeckCategoryView } from '@features/load-card-deck';
 
 import {
+	createCardDeckState,
 	filterDeckCards,
 	resolveDefaultExpandedItemId,
+	transitionCardDeckState,
 	toggleExpandedItemId,
 } from '../model/toggleExpandedItemId';
 import { CardDeck, type CardDeckCopy } from './CardDeck';
@@ -168,6 +171,7 @@ const copy: CardDeckCopy = {
 		reading: '阅读',
 		life: '生活',
 	},
+	filtersLabel: '习惯分类',
 	longTerm: '长期目标',
 	noGoal: '未设置目标',
 	plan: '计划',
@@ -201,6 +205,34 @@ describe('card deck state', () => {
 		expect(toggleExpandedItemId('read', 'read')).toBeNull();
 		expect(resolveDefaultExpandedItemId(filterDeckCards(categories, 'life'))).toBeNull();
 	});
+
+	it('runs filter and single-expansion interactions through one production state transition', () => {
+		let state = createCardDeckState(categories);
+		expect(state).toEqual({ filter: 'all', expandedItemId: 'run' });
+
+		state = transitionCardDeckState(state, {
+			type: 'selectFilter',
+			filter: 'reading',
+		}, categories);
+		expect(state).toEqual({ filter: 'reading', expandedItemId: 'read' });
+		expect(filterDeckCards(categories, state.filter).map(({ card }) => card.id)).toEqual(['read']);
+
+		state = transitionCardDeckState(state, {
+			type: 'selectFilter',
+			filter: 'all',
+		}, categories);
+		state = transitionCardDeckState(state, {
+			type: 'toggleCard',
+			cardId: 'water',
+		}, categories);
+		expect(state).toEqual({ filter: 'all', expandedItemId: 'water' });
+
+		state = transitionCardDeckState(state, {
+			type: 'toggleCard',
+			cardId: 'water',
+		}, categories);
+		expect(state).toEqual({ filter: 'all', expandedItemId: null });
+	});
 });
 
 describe('CardDeck', () => {
@@ -214,11 +246,15 @@ describe('CardDeck', () => {
 			/>,
 		);
 
-		expect(html).toContain('role="tablist"');
-		expect(html).toContain('aria-selected="true">全部</button>');
-		expect(html).toContain('>运动</button>');
-		expect(html).toContain('>阅读</button>');
-		expect(html).toContain('>生活</button>');
+		expect(html).toContain('role="group"');
+		expect(html).toContain('aria-label="习惯分类"');
+		expect(html).toContain('aria-pressed="true"');
+		expect(html).toContain('>全部</span></button>');
+		expect(html).toContain('>运动</span></button>');
+		expect(html).toContain('>阅读</span></button>');
+		expect(html).toContain('>生活</span></button>');
+		expect(html).not.toContain('role="tablist"');
+		expect(html).not.toContain('role="tab"');
 		expect(html).toContain('<h2');
 		expect(html).toContain('正在进行</h2>');
 		expect(html).toContain('data-layout="expanded"');
@@ -249,5 +285,16 @@ describe('CardDeck', () => {
 		expect(html).toContain('每天 8 杯');
 		expect(html).toContain('未设置目标');
 		expect(html).not.toContain('data-card-id="water" data-progress="0%"');
+	});
+
+	it('keeps the visible filter pill near 29px while preserving a 44px button target', () => {
+		const css = readFileSync(new URL('./CardDeck.module.css', import.meta.url), 'utf8');
+
+		expect(css).toMatch(
+			/\.filters button\s*\{[^}]*min-height:\s*44px;/s,
+		);
+		expect(css).toMatch(
+			/\.filters button::before\s*\{[^}]*inset:\s*7\.5px 0;/s,
+		);
 	});
 });
