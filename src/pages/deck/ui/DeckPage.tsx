@@ -66,6 +66,7 @@ function DeckPageContent({
 					active: t('shell.deck.active'),
 					archive: t('shell.deck.archive'),
 					collapse: t('shell.deck.collapse'),
+					customDaily: t('shell.deck.customDaily'),
 					daily: t('shell.deck.daily'),
 					days: t('shell.deck.days'),
 					details: t('shell.deck.details'),
@@ -81,6 +82,15 @@ function DeckPageContent({
 					noGoal: t('shell.deck.noGoal'),
 					plan: t('shell.deck.plan'),
 					stage: t('shell.deck.stage'),
+					weekdays: {
+						1: t('shell.createCard.weekdays.1'),
+						2: t('shell.createCard.weekdays.2'),
+						3: t('shell.createCard.weekdays.3'),
+						4: t('shell.createCard.weekdays.4'),
+						5: t('shell.createCard.weekdays.5'),
+						6: t('shell.createCard.weekdays.6'),
+						7: t('shell.createCard.weekdays.7'),
+					},
 					trackingTypes: {
 						check: t('shell.deck.trackingTypes.check'),
 						count: t('shell.deck.trackingTypes.count'),

@@ -6,14 +6,23 @@ import {
 	type CardTemplate,
 } from '@entities/card-template';
 import type { LongTermGoal, StageGoal } from '@entities/goal';
-import type { UserCard } from '@entities/user-card';
+import type { HabitDailyPlan, IsoWeekday, UserCard } from '@entities/user-card';
 import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 import { parseLocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 
 interface OptionalPlanInput {
-	title: string;
+	title?: string;
 	targetDisplay: string;
+	startDate?: string;
+	endDate?: string;
+	dailyTargetDisplay?: string;
+}
+
+interface DailyPlanInput {
+	mode: HabitDailyPlan['mode'];
+	weekdays: readonly IsoWeekday[];
+	customTargetsDisplayByWeekday?: Partial<Record<IsoWeekday, string>>;
 }
 
 export interface CreateHabitInput {
@@ -23,6 +32,7 @@ export interface CreateHabitInput {
 	longTerm?: OptionalPlanInput;
 	stage?: OptionalPlanInput;
 	stages?: readonly OptionalPlanInput[];
+	dailyPlan?: DailyPlanInput;
 	nowIso: string;
 	ids: {
 		userCardId: string;
@@ -62,23 +72,41 @@ export async function createHabit(
 	const userCards = database.tableFor<UserCard>('userCards');
 	const longTermGoals = database.tableFor<LongTermGoal>('longTermGoals');
 	const stageGoalsTable = database.tableFor<StageGoal>('stageGoals');
+	const targetOptions = { confirmedOverLimit: true };
+	const dailyPlan = input.dailyPlan ? {
+		mode: input.dailyPlan.mode,
+		weekdays: [...new Set(input.dailyPlan.weekdays)],
+		customTargetsBaseByWeekday: input.dailyPlan.mode === 'custom'
+			? Object.fromEntries(Object.entries(input.dailyPlan.customTargetsDisplayByWeekday ?? {}).map(([weekday, value]) => [
+				weekday,
+				parseQuantityToBase(required(value ?? '', 'DAILY_TARGET_REQUIRED'), template.quantity, targetOptions),
+			]))
+			: undefined,
+	} satisfies HabitDailyPlan : undefined;
+	if (dailyPlan && (dailyPlan.weekdays.length === 0 || dailyPlan.weekdays.some((day) => day < 1 || day > 7))) {
+		throw new Error('INVALID_DAILY_PLAN');
+	}
+	if (dailyPlan?.mode === 'custom' && dailyPlan.weekdays.some((day) => !dailyPlan.customTargetsBaseByWeekday?.[day])) {
+		throw new Error('DAILY_TARGET_REQUIRED');
+	}
 	const userCard: UserCard = {
 		id: input.ids.userCardId,
 		officialCardId: template.id,
 		title: cardTitle,
+		dailyPlan,
 		status: 'active',
 		sortOrder: await userCards.count(),
 		createdAt: input.nowIso,
 		updatedAt: input.nowIso,
 	};
-	const targetOptions = { confirmedOverLimit: true };
 	const longTermGoal = input.longTerm ? {
 		id: input.ids.longTermGoalId,
 		userCardId: userCard.id,
-		title: required(input.longTerm.title, 'GOAL_TITLE_REQUIRED'),
+		title: cardTitle,
 		targetQuantityBase: parseQuantityToBase(input.longTerm.targetDisplay, template.quantity, targetOptions),
 		status: 'active' as const,
 		startDate,
+		endDate: input.longTerm.endDate ? parseLocalDate(input.longTerm.endDate) : undefined,
 		createdAt: input.nowIso,
 		updatedAt: input.nowIso,
 	} satisfies LongTermGoal : undefined;
@@ -96,12 +124,16 @@ export async function createHabit(
 			id: required(stageGoalIds[index] ?? '', 'STAGE_GOAL_ID_REQUIRED'),
 			longTermGoalId: longTermGoal.id,
 			sequence: index,
-			title: required(stage.title, 'GOAL_TITLE_REQUIRED'),
+			title: stage.title?.trim() || `阶段 ${index + 1}`,
 			mode: template.defaultStageMode,
+			dailyTargetBase: stage.dailyTargetDisplay
+				? parseQuantityToBase(stage.dailyTargetDisplay, template.quantity, targetOptions)
+				: undefined,
 			targetQuantityBase: template.defaultStageMode === 'activeDays' ? undefined : stageTarget,
 			targetActiveDays: template.defaultStageMode === 'activeDays' ? stageTarget : undefined,
 			status: index === 0 ? 'active' : 'planned',
-			startDate,
+			startDate: stage.startDate ? parseLocalDate(stage.startDate) : startDate,
+			endDate: stage.endDate ? parseLocalDate(stage.endDate) : undefined,
 			createdAt: timestamp,
 			updatedAt: timestamp,
 		};

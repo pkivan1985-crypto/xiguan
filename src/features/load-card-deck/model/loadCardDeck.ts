@@ -12,7 +12,7 @@ import {
 	type StageGoal,
 } from '@entities/goal';
 import type { TodayDraft } from '@entities/today-draft';
-import type { UserCard } from '@entities/user-card';
+import type { HabitDailyPlan, UserCard } from '@entities/user-card';
 import type { LocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 
@@ -31,6 +31,8 @@ export interface DeckCardView {
 	stagePosition?: { current: number; total: number };
 	longTermProgress?: GoalProgress;
 	stageProgress?: GoalProgress;
+	dailyTargetBase?: number;
+	dailyPlan?: HabitDailyPlan;
 }
 
 export interface DeckCategoryView {
@@ -104,6 +106,8 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 				stagePosition: stageGoal && stageIndex >= 0 ? { current: stageIndex + 1, total: relatedStageGoals.length } : undefined,
 				longTermProgress,
 				stageProgress,
+				dailyTargetBase: stageGoal?.dailyTargetBase,
+				dailyPlan: card.dailyPlan,
 			}];
 		});
 

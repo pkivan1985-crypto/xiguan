@@ -11,6 +11,7 @@ import {
 
 import { formatQuantityFromBase, type HabitTrackingType } from '@entities/card-template';
 import type { GoalProgress, LongTermGoal, StageGoal } from '@entities/goal';
+import type { IsoWeekday } from '@entities/user-card';
 import type { DeckCardView, DeckCategoryView } from '@features/load-card-deck';
 import { HabitGlyph } from '@widgets/habit-glyph';
 
@@ -27,6 +28,7 @@ interface CardDeckCopy {
 	active: string;
 	archive: string;
 	collapse: string;
+	customDaily?: string;
 	daily: string;
 	days: string;
 	details: string;
@@ -38,6 +40,7 @@ interface CardDeckCopy {
 	plan: string;
 	stage: string;
 	trackingTypes: Record<HabitTrackingType, string>;
+	weekdays?: Partial<Record<IsoWeekday, string>>;
 }
 
 interface CardDeckProps {
@@ -58,9 +61,16 @@ function formatCardQuantity(card: DeckCardView, baseValue: number): string {
 }
 
 function dailyReference(card: DeckCardView, copy: CardDeckCopy): string {
-	const target = card.template.defaultDailyTargetBase;
+	const target = card.dailyTargetBase ?? card.template.defaultDailyTargetBase;
+	if (card.dailyPlan?.mode === 'custom') {
+		const days = card.dailyPlan.weekdays.map((day) => copy.weekdays?.[day]).filter(Boolean).join('、');
+		return `${days || copy.daily} · ${copy.customDaily ?? copy.daily}`;
+	}
+	const schedule = card.dailyPlan && card.dailyPlan.weekdays.length < 7
+		? card.dailyPlan.weekdays.map((day) => copy.weekdays?.[day]).filter(Boolean).join('、')
+		: copy.daily;
 	if (target === undefined) return copy.daily;
-	return `${copy.daily} ${formatCardQuantity(card, target)} ${card.template.quantity.displayUnit}`;
+	return `${schedule || copy.daily} ${formatCardQuantity(card, target)} ${card.template.quantity.displayUnit}`;
 }
 
 function progressPercent(card: DeckCardView): number | null {

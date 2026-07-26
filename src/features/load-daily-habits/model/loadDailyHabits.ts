@@ -13,7 +13,7 @@ import {
 	type CardTemplate,
 	type HabitTrackingType,
 } from '@entities/card-template';
-import type { UserCard } from '@entities/user-card';
+import type { IsoWeekday, UserCard } from '@entities/user-card';
 import type { LocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 
@@ -49,6 +49,12 @@ function currentLongTermGoal(goals: readonly LongTermGoal[], userCardId: string)
 			const rightActive = right.status === 'active' ? 0 : 1;
 			return leftActive - rightActive || right.updatedAt.localeCompare(left.updatedAt);
 		})[0];
+}
+
+function weekday(localDate: LocalDate): IsoWeekday {
+	const [year, month, day] = localDate.split('-').map(Number);
+	const value = new Date(Date.UTC(year!, month! - 1, day!)).getUTCDay();
+	return (value === 0 ? 7 : value) as IsoWeekday;
 }
 
 export async function loadDailyHabits(
@@ -88,6 +94,8 @@ export async function loadDailyHabits(
 		.flatMap((card): DailyHabitView[] => {
 			const template = templatesById.get(card.officialCardId);
 			if (!template?.enabled) return [];
+			const todayWeekday = weekday(localDate);
+			if (card.dailyPlan && !card.dailyPlan.weekdays.includes(todayWeekday)) return [];
 			const cardRecords = recordsByCard.get(card.id) ?? [];
 			const quantityBaseValue = todayRecords.get(card.id)?.quantityBaseValue ?? 0;
 			const trackingType = template.trackingType ?? 'quantity';
@@ -113,6 +121,9 @@ export async function loadDailyHabits(
 						targetQuantityBase: longTermGoal.targetQuantityBase,
 					})
 					: null;
+			const dailyTargetBase = card.dailyPlan?.mode === 'custom'
+				? card.dailyPlan.customTargetsBaseByWeekday?.[todayWeekday]
+				: stageGoal?.dailyTargetBase;
 			return [{
 				id: card.id,
 				title: card.title,
@@ -125,7 +136,10 @@ export async function loadDailyHabits(
 					: String(quantityBaseValue / template.quantity.basePerDisplayUnit),
 				displayUnit: template.quantity.displayUnit,
 				stepBase: template.stepBase ?? template.quantity.basePerDisplayUnit,
-				dailyTargetBase: template.defaultDailyTargetBase ?? template.quantity.basePerDisplayUnit,
+				dailyTargetBase: dailyTargetBase
+					?? stageGoal?.dailyTargetBase
+					?? template.defaultDailyTargetBase
+					?? template.quantity.basePerDisplayUnit,
 				totalQuantityBaseValue: cardRecords.reduce((total, record) => total + record.quantityBaseValue, 0),
 				activeDays: new Set(cardRecords.map((record) => record.localDate)).size,
 				goalTitle: primaryGoal?.title,

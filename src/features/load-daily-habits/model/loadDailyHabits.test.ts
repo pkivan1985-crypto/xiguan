@@ -71,6 +71,28 @@ describe('loadDailyHabits', () => {
 		});
 	});
 
+	it('uses the planned weekday target and omits a habit on a rest day', async () => {
+		await database.table('userCards').add({
+			id: 'run',
+			officialCardId: 'running',
+			title: '晨跑',
+			dailyPlan: {
+				mode: 'custom',
+				weekdays: [1, 3, 5],
+				customTargetsBaseByWeekday: { 1: 2_000, 3: 3_000, 5: 4_000 },
+			},
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-07-27T00:00:00.000Z',
+			updatedAt: '2026-07-27T00:00:00.000Z',
+		});
+		await database.table('longTermGoals').add({ id: 'long', userCardId: 'run', title: '晨跑', targetQuantityBase: 100_000, status: 'active', startDate: '2026-07-27', endDate: '2026-10-24', createdAt: '2026-07-27T00:00:00.000Z', updatedAt: '2026-07-27T00:00:00.000Z' });
+		await database.table('stageGoals').add({ id: 'stage', longTermGoalId: 'long', title: '阶段 1', mode: 'quantity', dailyTargetBase: 1_250, targetQuantityBase: 100_000, status: 'active', startDate: '2026-07-27', endDate: '2026-10-24', createdAt: '2026-07-27T00:00:00.000Z', updatedAt: '2026-07-27T00:00:00.000Z' });
+
+		expect((await loadDailyHabits(database, '2026-07-27')).habits[0]).toMatchObject({ dailyTargetBase: 2_000 });
+		expect((await loadDailyHabits(database, '2026-07-28')).habits).toHaveLength(0);
+	});
+
 	it('derives outcome dates and each active habit display total from effective action records', async () => {
 		await database.table('userCards').bulkAdd([
 			{ id: 'run', officialCardId: 'running', title: '晨跑', status: 'active', sortOrder: 0, createdAt: '2026-07-20T00:00:00.000Z', updatedAt: '2026-07-20T00:00:00.000Z' },

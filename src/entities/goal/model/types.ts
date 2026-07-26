@@ -31,6 +31,7 @@ export interface StageGoal {
 	sequence?: number;
 	title: string;
 	mode: StageCompletionMode;
+	dailyTargetBase?: number;
 	targetQuantityBase?: number;
 	targetActiveDays?: number;
 	status: GoalStatus;

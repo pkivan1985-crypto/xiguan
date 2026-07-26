@@ -92,6 +92,22 @@ describe('backup V1 validation', () => {
 		await expect(validatePlainBackup(invalid, definitions, digest)).rejects.toMatchObject({ code: 'RELATIONSHIP_INVALID' });
 	});
 
+	it('accepts a compatible daily plan and rejects an invalid weekday', async () => {
+		const planned = await envelope();
+		planned.data.userCards[0].dailyPlan = {
+			mode: 'average',
+			weekdays: [1, 3, 5],
+		};
+		planned.data.stageGoals[0].dailyTargetBase = 2_000;
+		planned.checksum.value = await backupFingerprint(planned.data, digest);
+		await expect(validatePlainBackup(planned, definitions, digest)).resolves.toBeDefined();
+
+		const broken = structuredClone(planned);
+		broken.data.userCards[0].dailyPlan!.weekdays = [0 as never];
+		broken.checksum.value = await backupFingerprint(broken.data, digest);
+		await expect(validatePlainBackup(broken, definitions, digest)).rejects.toMatchObject({ code: 'INVALID_BACKUP' });
+	});
+
 	it('uses stable error objects instead of translated entity messages', () => {
 		const error = new BackupValidationError('INVALID_BACKUP');
 		expect(error.code).toBe('INVALID_BACKUP');

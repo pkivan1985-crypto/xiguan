@@ -1,12 +1,14 @@
-/* eslint-disable i18next/no-literal-string -- Preset IDs are stable domain identifiers. */
-import { useState } from 'react';
+/* eslint-disable i18next/no-literal-string -- Preset IDs and ISO weekday numbers are stable domain identifiers. */
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	FiActivity,
 	FiBookOpen,
+	FiCalendar,
 	FiCheck,
 	FiChevronLeft,
 	FiDroplet,
+	FiEdit3,
 	FiFlag,
 	FiMoon,
 	FiPlus,
@@ -18,50 +20,245 @@ import {
 import type { IconType } from 'react-icons';
 import { useNavigate } from 'react-router';
 
-import { createHabitInApp } from '@features/create-habit';
+import {
+	createHabitInApp,
+	distributeEvenStages,
+	projectedCustomTotal,
+} from '@features/create-habit';
+import type { IsoWeekday } from '@entities/user-card';
 import { APP_ROUTES } from '@shared/config';
-import { formatLocalDate } from '@shared/lib/date';
+import { formatLocalDate, parseLocalDate } from '@shared/lib/date';
 
 import styles from './CreateRunningCardPage.module.css';
 
 const PRESETS = [
-	{ id: 'running', icon: FiActivity, labelKey: 'shell.createCard.presets.running', unitKey: 'shell.createCard.units.distance', accent: 'green' },
-	{ id: 'water', icon: FiDroplet, labelKey: 'shell.createCard.presets.water', unitKey: 'shell.createCard.units.count', accent: 'cyan' },
-	{ id: 'reading-time', icon: FiBookOpen, labelKey: 'shell.createCard.presets.reading', unitKey: 'shell.createCard.units.duration', accent: 'amber' },
-	{ id: 'sleep', icon: FiMoon, labelKey: 'shell.createCard.presets.sleep', unitKey: 'shell.createCard.units.check', accent: 'violet' },
-	{ id: 'screen-free', icon: FiShield, labelKey: 'shell.createCard.presets.screenFree', unitKey: 'shell.createCard.units.avoid', accent: 'blue' },
+	{ id: 'running', icon: FiActivity, labelKey: 'shell.createCard.presets.running', unitKey: 'shell.createCard.units.distance', displayUnitKey: 'shell.createCard.displayUnits.distance', accent: 'green', decimals: 3 },
+	{ id: 'water', icon: FiDroplet, labelKey: 'shell.createCard.presets.water', unitKey: 'shell.createCard.units.count', displayUnitKey: 'shell.createCard.displayUnits.count', accent: 'cyan', decimals: 0 },
+	{ id: 'reading-time', icon: FiBookOpen, labelKey: 'shell.createCard.presets.reading', unitKey: 'shell.createCard.units.duration', displayUnitKey: 'shell.createCard.displayUnits.duration', accent: 'amber', decimals: 0 },
+	{ id: 'sleep', icon: FiMoon, labelKey: 'shell.createCard.presets.sleep', unitKey: 'shell.createCard.units.check', displayUnitKey: 'shell.createCard.displayUnits.check', accent: 'violet', decimals: 0 },
+	{ id: 'screen-free', icon: FiShield, labelKey: 'shell.createCard.presets.screenFree', unitKey: 'shell.createCard.units.avoid', displayUnitKey: 'shell.createCard.displayUnits.avoid', accent: 'blue', decimals: 0 },
 ] as const satisfies readonly {
 	id: string;
 	icon: IconType;
 	labelKey: string;
 	unitKey: string;
+	displayUnitKey: string;
 	accent: string;
+	decimals: number;
 }[];
+
+const WEEKDAYS: readonly IsoWeekday[] = [1, 2, 3, 4, 5, 6, 7];
+
+interface StageDraft {
+	key: string;
+	title: string;
+	target: string;
+	startDate: string;
+	endDate: string;
+	dailyTarget: string;
+	activeDays: number;
+}
+
+function addCalendarDays(localDate: string, days: number): string {
+	const [year, month, day] = parseLocalDate(localDate).split('-').map(Number);
+	const date = new Date(year!, month! - 1, day! + days);
+	return formatLocalDate(date);
+}
+
+function numeric(value: string): number | null {
+	const parsed = Number(value);
+	return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function sumTargets(stages: readonly StageDraft[]): number {
+	return stages.reduce((sum, stage) => sum + (numeric(stage.target) ?? 0), 0);
+}
 
 function CreateRunningCardPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const today = useMemo(() => formatLocalDate(new Date()), []);
 	const [templateId, setTemplateId] = useState('running');
-	const [cardTitle, setCardTitle] = useState('');
-	const [longTitle, setLongTitle] = useState('');
+	const [cardTitle, setCardTitle] = useState(() => t('shell.createCard.presets.running'));
+	const [titleCustomized, setTitleCustomized] = useState(false);
 	const [longTarget, setLongTarget] = useState('');
-	const [stages, setStages] = useState([{ key: crypto.randomUUID(), title: '', target: '' }]);
+	const [longEndDate, setLongEndDate] = useState(() => addCalendarDays(today, 89));
+	const [weekdays, setWeekdays] = useState<IsoWeekday[]>([1, 2, 3, 4, 5, 6, 7]);
+	const [planMode, setPlanMode] = useState<'average' | 'custom'>('average');
+	const [customTargets, setCustomTargets] = useState<Partial<Record<IsoWeekday, string>>>({});
+	const [autoDistribution, setAutoDistribution] = useState(true);
+	const [stages, setStages] = useState<StageDraft[]>([{
+		key: crypto.randomUUID(),
+		title: t('shell.createCard.stageNumber', { number: 1 }),
+		target: '',
+		startDate: today,
+		endDate: longEndDate,
+		dailyTarget: '',
+		activeDays: 0,
+	}]);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string>();
 	const selected = PRESETS.find((preset) => preset.id === templateId)!;
+	const selectedUnit = t(selected.displayUnitKey);
 
-	async function submit(): Promise<void> {
-		if (!cardTitle.trim() || submitting) {
-			if (!cardTitle.trim()) setError(t('shell.createCard.nameRequired'));
+	function evenStages(count: number, current: readonly StageDraft[]): StageDraft[] | null {
+		const total = numeric(longTarget);
+		if (!total || !longEndDate || weekdays.length === 0) return null;
+		try {
+			const plans = distributeEvenStages({
+				totalDisplay: total,
+				startDate: today,
+				endDate: longEndDate,
+				stageCount: count,
+				weekdays,
+				maxDecimalPlaces: selected.decimals,
+			});
+			return plans.map((plan, index) => ({
+				key: current[index]?.key ?? crypto.randomUUID(),
+				title: current[index]?.title.trim() || t('shell.createCard.stageNumber', { number: index + 1 }),
+				target: plan.targetDisplay,
+				startDate: plan.startDate,
+				endDate: plan.endDate,
+				dailyTarget: plan.dailyTargetDisplay,
+				activeDays: plan.activeDays,
+			}));
+		} catch {
+			return null;
+		}
+	}
+
+	useEffect(() => {
+		if (!autoDistribution) return;
+		const next = evenStages(stages.length, stages);
+		// The generated stage plan is local form state derived from the planning controls.
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		if (next) setStages(next);
+		// `stages` is intentionally represented by its count here; recalculating from
+		// the full array would loop after every generated plan.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [autoDistribution, longTarget, longEndDate, selected.decimals, stages.length, today, weekdays.join(',')]);
+
+	const allocatedTarget = sumTargets(stages);
+	const targetTotal = numeric(longTarget) ?? 0;
+	const allocationDifference = targetTotal - allocatedTarget;
+	const customProjection = useMemo(() => {
+		if (planMode !== 'custom' || !longEndDate) return null;
+		const values = Object.fromEntries(
+			WEEKDAYS.flatMap((weekday) => {
+				const value = numeric(customTargets[weekday] ?? '');
+				return value === null ? [] : [[weekday, value]];
+			}),
+		) as Partial<Record<IsoWeekday, number>>;
+		try {
+			return projectedCustomTotal({ startDate: today, endDate: longEndDate, targetsByWeekday: values });
+		} catch {
+			return null;
+		}
+	}, [customTargets, longEndDate, planMode, today]);
+
+	function selectPreset(id: string): void {
+		const next = PRESETS.find((preset) => preset.id === id)!;
+		setTemplateId(id);
+		if (!titleCustomized) setCardTitle(t(next.labelKey));
+		setAutoDistribution(true);
+		setError(undefined);
+	}
+
+	function toggleWeekday(day: IsoWeekday): void {
+		setWeekdays((current) => {
+			if (current.includes(day)) {
+				return current.length === 1 ? current : current.filter((item) => item !== day);
+			}
+			return [...current, day].sort((left, right) => left - right);
+		});
+		setAutoDistribution(true);
+		setError(undefined);
+	}
+
+	function addStage(): void {
+		const draft = [...stages, {
+			key: crypto.randomUUID(),
+			title: t('shell.createCard.stageNumber', { number: stages.length + 1 }),
+			target: '',
+			startDate: today,
+			endDate: longEndDate,
+			dailyTarget: '',
+			activeDays: 0,
+		}];
+		setAutoDistribution(true);
+		setStages(evenStages(draft.length, draft) ?? draft);
+	}
+
+	function removeStage(key: string): void {
+		const remaining = stages.filter((stage) => stage.key !== key);
+		setAutoDistribution(true);
+		setStages(evenStages(remaining.length, remaining) ?? remaining);
+	}
+
+	function updateStagePlan(key: string, patch: Partial<Pick<StageDraft, 'target' | 'endDate'>>): void {
+		setAutoDistribution(false);
+		setStages((current) => current.map((item) => {
+			if (item.key !== key) return item;
+			const changed = { ...item, ...patch };
+			const target = numeric(changed.target);
+			if (!target || !changed.endDate) return changed;
+			try {
+				const recalculated = distributeEvenStages({
+					totalDisplay: target,
+					startDate: changed.startDate,
+					endDate: changed.endDate,
+					stageCount: 1,
+					weekdays,
+					maxDecimalPlaces: selected.decimals,
+				})[0]!;
+				return {
+					...changed,
+					dailyTarget: recalculated.dailyTargetDisplay,
+					activeDays: recalculated.activeDays,
+				};
+			} catch {
+				return { ...changed, dailyTarget: '', activeDays: 0 };
+			}
+		}));
+	}
+
+	function useAveragePlan(): void {
+		const next = evenStages(stages.length, stages);
+		if (!next) {
+			setError(t('shell.createCard.planNeedsTargetAndDate'));
 			return;
 		}
-		const longStarted = Boolean(longTitle.trim() || longTarget.trim());
-		const hasLong = Boolean(longTitle.trim() && longTarget.trim());
-		const stageStarted = stages.some(({ title, target }) => title.trim() || target.trim());
-		const completeStages = stages.filter(({ title, target }) => title.trim() && target.trim());
-		const hasIncompleteStage = stages.some(({ title, target }) => Boolean(title.trim()) !== Boolean(target.trim()));
-		if ((longStarted && !hasLong) || hasIncompleteStage || (stageStarted && !hasLong)) {
-			setError(t(stageStarted && !hasLong ? 'shell.createCard.stageNeedsLongTerm' : 'shell.createCard.incompletePlan'));
+		setAutoDistribution(true);
+		setStages(next);
+		setPlanMode('average');
+		setError(undefined);
+	}
+
+	function useCustomPlan(): void {
+		const fallback = stages[0]?.dailyTarget ?? '';
+		setCustomTargets(Object.fromEntries(weekdays.map((day) => [day, customTargets[day] ?? fallback])));
+		setPlanMode('custom');
+		setError(undefined);
+	}
+
+	async function submit(): Promise<void> {
+		if (submitting) return;
+		const hasName = Boolean(cardTitle.trim());
+		const hasLongTarget = numeric(longTarget) !== null;
+		const hasValidStages = stages.length > 0 && stages.every((stage) => (
+			Boolean(stage.title.trim())
+			&& numeric(stage.target) !== null
+			&& numeric(stage.dailyTarget) !== null
+			&& Boolean(stage.endDate)
+		));
+		const allocationMatches = Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1);
+		const customComplete = planMode === 'average' || weekdays.every((day) => numeric(customTargets[day] ?? '') !== null);
+		if (!hasName || !hasLongTarget || !longEndDate || !hasValidStages || !allocationMatches || !customComplete) {
+			setError(t(!hasName
+				? 'shell.createCard.nameRequired'
+				: !allocationMatches
+					? 'shell.createCard.allocationMismatch'
+					: 'shell.createCard.completePlan'));
 			return;
 		}
 		setSubmitting(true);
@@ -70,15 +267,26 @@ function CreateRunningCardPage() {
 			await createHabitInApp({
 				templateId,
 				cardTitle,
-				startDate: formatLocalDate(new Date()),
-				longTerm: hasLong ? { title: longTitle, targetDisplay: longTarget } : undefined,
-				stages: completeStages.map(({ title, target }) => ({ title, targetDisplay: target })),
+				startDate: today,
+				longTerm: { targetDisplay: longTarget, endDate: longEndDate },
+				stages: stages.map((stage) => ({
+					title: stage.title,
+					targetDisplay: stage.target,
+					startDate: stage.startDate,
+					endDate: stage.endDate,
+					dailyTargetDisplay: stage.dailyTarget,
+				})),
+				dailyPlan: {
+					mode: planMode,
+					weekdays,
+					customTargetsDisplayByWeekday: planMode === 'custom' ? customTargets : undefined,
+				},
 				nowIso: new Date().toISOString(),
 				ids: {
 					userCardId: crypto.randomUUID(),
 					longTermGoalId: crypto.randomUUID(),
 					stageGoalId: crypto.randomUUID(),
-					stageGoalIds: completeStages.map(() => crypto.randomUUID()),
+					stageGoalIds: stages.map(() => crypto.randomUUID()),
 				},
 			});
 			navigate(APP_ROUTES.DECK, { replace: true, state: { created: true } });
@@ -106,7 +314,7 @@ function CreateRunningCardPage() {
 							key={id}
 							className={`${styles.preset} ${styles[accent]} ${id === templateId ? styles.selected : ''}`}
 							aria-pressed={id === templateId}
-							onClick={() => { setTemplateId(id); setError(undefined); }}
+							onClick={() => selectPreset(id)}
 						>
 							<span><Icon aria-hidden='true' /></span>
 							<strong>{t(labelKey)}</strong>
@@ -115,51 +323,99 @@ function CreateRunningCardPage() {
 					))}
 				</div>
 
-				<label className={styles.nameField}>
-					<span><FiFlag aria-hidden='true' />{t('shell.createCard.habitName')}</span>
-					<input
-						value={cardTitle}
-						maxLength={40}
-						placeholder={t(`shell.createCard.placeholders.${selected.id}`)}
-						onChange={(event) => { setCardTitle(event.target.value); setError(undefined); }}
-					/>
-				</label>
+				<section className={styles.planningCanvas} aria-label={t('shell.createCard.planCanvas')}>
+					<label className={styles.identityField}>
+						<span className={`${styles.identityIcon} ${styles[selected.accent]}`}><selected.icon aria-hidden='true' /></span>
+						<span className={styles.identityCopy}>
+							<small>{t('shell.createCard.habitName')}</small>
+							<input
+								value={cardTitle}
+								maxLength={40}
+								placeholder={t(`shell.createCard.placeholders.${selected.id}`)}
+								onChange={(event) => { setCardTitle(event.target.value); setTitleCustomized(true); setError(undefined); }}
+							/>
+						</span>
+					</label>
 
-				<section className={styles.planSection}>
-					<header><span><FiFlag aria-hidden='true' /></span><div><strong>{t('shell.createCard.stage')}</strong><small>{t('shell.createCard.stageHint')}</small></div></header>
-					<div className={styles.stageList}>
-						{stages.map((stage, index) => (
-							<div className={styles.stageFields} key={stage.key}>
-								<span className={styles.stageMeta}>
-									<b>{t('shell.createCard.stageNumber', { number: index + 1 })}</b>
-									<small>{t(index === 0 ? 'shell.goalDetails.status.active' : 'shell.goalDetails.status.planned')}</small>
-								</span>
-								<input
-									value={stage.title}
-									placeholder={t('shell.createCard.planName')}
-									onChange={(event) => setStages((current) => current.map((item) => item.key === stage.key ? { ...item, title: event.target.value } : item))}
-								/>
-								<input
-									type='number'
-									min='1'
-									inputMode='decimal'
-									value={stage.target}
-									placeholder={t('shell.createCard.planTarget')}
-									onChange={(event) => setStages((current) => current.map((item) => item.key === stage.key ? { ...item, target: event.target.value } : item))}
-								/>
-								{stages.length > 1 && <button type='button' className={styles.removeStage} aria-label={t('shell.createCard.removeStage', { number: index + 1 })} onClick={() => setStages((current) => current.filter((item) => item.key !== stage.key))}><FiTrash2 aria-hidden='true' /></button>}
+					<section className={styles.planBlock}>
+						<header className={styles.blockHeader}>
+							<span><FiTarget aria-hidden='true' /></span>
+							<div><strong>{t('shell.createCard.longTerm')}</strong><small>{t('shell.createCard.longTermInherited', { title: cardTitle || t(selected.labelKey) })}</small></div>
+						</header>
+						<div className={styles.longFields}>
+							<label><span>{t('shell.createCard.totalTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={longTarget} placeholder='100' onChange={(event) => { setLongTarget(event.target.value); setAutoDistribution(true); setError(undefined); }} /><small>{selectedUnit}</small></span></label>
+							<label><span>{t('shell.createCard.targetDate')}</span><span className={styles.inputWithIcon}><FiCalendar aria-hidden='true' /><input type='date' min={today} value={longEndDate} onChange={(event) => { setLongEndDate(event.target.value); setAutoDistribution(true); setError(undefined); }} /></span></label>
+						</div>
+					</section>
+
+					<section className={styles.planBlock}>
+						<header className={styles.blockHeader}>
+							<span><FiFlag aria-hidden='true' /></span>
+							<div><strong>{t('shell.createCard.stage')}</strong><small>{t('shell.createCard.stageInlineHint')}</small></div>
+							<button type='button' className={styles.averageAction} onClick={useAveragePlan}><FiCheck aria-hidden='true' />{t('shell.createCard.splitEvenly')}</button>
+						</header>
+						<div className={styles.stageList}>
+							{stages.map((stage, index) => (
+								<div className={styles.stageRow} key={stage.key}>
+									<span className={styles.stageNumber}>{index + 1}</span>
+									<div className={styles.stageMain}>
+										<label className={styles.editableTitle}>
+											<FiEdit3 aria-hidden='true' />
+											<input
+												value={stage.title}
+												aria-label={t('shell.createCard.editStageName', { number: index + 1 })}
+												onChange={(event) => setStages((current) => current.map((item) => item.key === stage.key ? { ...item, title: event.target.value } : item))}
+											/>
+										</label>
+										<div className={styles.stageInputs}>
+											<label><span>{t('shell.createCard.stageTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={stage.target} onChange={(event) => updateStagePlan(stage.key, { target: event.target.value })} /><small>{selectedUnit}</small></span></label>
+											<label><span>{t('shell.createCard.stageDate')}</span><input type='date' min={stage.startDate} max={longEndDate} value={stage.endDate} onChange={(event) => updateStagePlan(stage.key, { endDate: event.target.value })} /></label>
+										</div>
+										<small className={styles.stageDaily}>{t('shell.createCard.stageDailyReference', { value: stage.dailyTarget || '—', unit: selectedUnit, days: stage.activeDays })}</small>
+									</div>
+									{stages.length > 1 && <button type='button' className={styles.removeStage} aria-label={t('shell.createCard.removeStage', { number: index + 1 })} onClick={() => removeStage(stage.key)}><FiTrash2 aria-hidden='true' /></button>}
+								</div>
+							))}
+						</div>
+						<div className={styles.stageFooter}>
+							<button type='button' className={styles.addStage} onClick={addStage}><FiPlus aria-hidden='true' />{t('shell.createCard.addStage')}</button>
+							<small data-balanced={Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1)}>{Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1) ? t('shell.createCard.fullyAllocated') : t('shell.createCard.remainingAllocation', { value: allocationDifference.toFixed(selected.decimals).replace(/\.?0+$/, ''), unit: selectedUnit })}</small>
+						</div>
+					</section>
+
+					<section className={styles.planBlock}>
+						<header className={styles.blockHeader}>
+							<span><FiCalendar aria-hidden='true' /></span>
+							<div><strong>{t('shell.createCard.dailyPlan')}</strong><small>{t('shell.createCard.dailyPlanHint')}</small></div>
+						</header>
+						<div className={styles.weekdays} role='group' aria-label={t('shell.createCard.executionDays')}>
+							{WEEKDAYS.map((day) => <button type='button' key={day} aria-pressed={weekdays.includes(day)} onClick={() => toggleWeekday(day)}>{t(`shell.createCard.weekdays.${day}`)}</button>)}
+						</div>
+						<div className={styles.planModes}>
+							<button type='button' aria-pressed={planMode === 'average'} onClick={useAveragePlan}>{t('shell.createCard.averageMode')}</button>
+							<button type='button' aria-pressed={planMode === 'custom'} onClick={useCustomPlan}>{t('shell.createCard.customMode')}</button>
+						</div>
+						{planMode === 'average' ? (
+							<div className={styles.averageSummary}>
+								<strong>{stages[0]?.dailyTarget || '—'} <small>{selectedUnit}</small></strong>
+								<span>{t('shell.createCard.averageSummary', { days: weekdays.length })}</span>
 							</div>
-						))}
-					</div>
-					<button type='button' className={styles.addStage} onClick={() => setStages((current) => [...current, { key: crypto.randomUUID(), title: '', target: '' }])}><FiPlus aria-hidden='true' />{t('shell.createCard.addStage')}</button>
-				</section>
-
-				<section className={styles.planSection}>
-					<header><span><FiTarget aria-hidden='true' /></span><div><strong>{t('shell.createCard.longTerm')}</strong><small>{t('shell.createCard.longTermHint')}</small></div></header>
-					<div className={styles.longFields}>
-						<input value={longTitle} placeholder={t('shell.createCard.planName')} onChange={(event) => setLongTitle(event.target.value)} />
-						<input type='number' min='1' inputMode='decimal' value={longTarget} placeholder={t('shell.createCard.planTarget')} onChange={(event) => setLongTarget(event.target.value)} />
-					</div>
+						) : (
+							<div className={styles.customDailyGrid}>
+								{weekdays.map((day) => (
+									<label key={day}>
+										<span>{t(`shell.createCard.weekdaysLong.${day}`)}</span>
+										<span className={styles.inputWithUnit}><input type='number' min='0' inputMode='decimal' value={customTargets[day] ?? ''} onChange={(event) => setCustomTargets((current) => ({ ...current, [day]: event.target.value }))} /><small>{selectedUnit}</small></span>
+									</label>
+								))}
+							</div>
+						)}
+						{planMode === 'custom' && customProjection !== null && targetTotal > 0 && (
+							<p className={styles.projection} data-on-target={Math.abs(customProjection - targetTotal) <= 10 ** -selected.decimals}>
+								{t('shell.createCard.customProjection', { value: customProjection.toFixed(selected.decimals).replace(/\.?0+$/, ''), unit: selectedUnit, difference: (customProjection - targetTotal).toFixed(selected.decimals).replace(/\.?0+$/, '') })}
+							</p>
+						)}
+					</section>
 				</section>
 				{error && <p className={styles.error} role='alert'>{error}</p>}
 			</section>

@@ -62,6 +62,20 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 		if (!isRecord(card) || !isText(card.id) || !isText(card.officialCardId) || !isText(card.title)
 			|| !['active', 'archived'].includes(String(card.status)) || !isSafeNonNegative(card.sortOrder)
 			|| !isIso(card.createdAt) || !isIso(card.updatedAt)) fail('INVALID_BACKUP');
+		if (card.dailyPlan !== undefined) {
+			if (!isRecord(card.dailyPlan)
+				|| !['average', 'custom'].includes(String(card.dailyPlan.mode))
+				|| !Array.isArray(card.dailyPlan.weekdays)
+				|| card.dailyPlan.weekdays.length === 0
+				|| card.dailyPlan.weekdays.some((day) => !Number.isSafeInteger(day) || day < 1 || day > 7)
+				|| new Set(card.dailyPlan.weekdays).size !== card.dailyPlan.weekdays.length) fail('INVALID_BACKUP');
+			if (card.dailyPlan.mode === 'custom') {
+				if (!isRecord(card.dailyPlan.customTargetsBaseByWeekday)) fail('INVALID_BACKUP');
+				for (const day of card.dailyPlan.weekdays) {
+					if (!isSafePositive(card.dailyPlan.customTargetsBaseByWeekday[day])) fail('INVALID_BACKUP');
+				}
+			}
+		}
 	}
 	for (const goal of candidate.longTermGoals) {
 		if (!isRecord(goal) || !isText(goal.id) || !isText(goal.userCardId) || !isText(goal.title)
@@ -73,6 +87,7 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 			|| !['quantity', 'activeDays', 'both'].includes(String(goal.mode)) || !isLocalDate(goal.startDate)
 			|| !isIso(goal.createdAt) || !isIso(goal.updatedAt)) fail('INVALID_BACKUP');
 		if (goal.sequence !== undefined && !isSafeNonNegative(goal.sequence)) fail('INVALID_BACKUP');
+		if (goal.dailyTargetBase !== undefined && !isSafePositive(goal.dailyTargetBase)) fail('INVALID_BACKUP');
 		if (goal.mode !== 'activeDays' && !isSafePositive(goal.targetQuantityBase)) fail('INVALID_BACKUP');
 		if (goal.mode !== 'quantity' && !isSafePositive(goal.targetActiveDays)) fail('INVALID_BACKUP');
 	}

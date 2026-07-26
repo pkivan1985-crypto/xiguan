@@ -44,8 +44,44 @@ describe('createHabit', () => {
 			ids: { userCardId: 'card-read', longTermGoalId: 'long-read', stageGoalId: 'stage-read' },
 		});
 
-		expect(result.longTermGoal).toMatchObject({ targetQuantityBase: 1000 });
+		expect(result.longTermGoal).toMatchObject({ title: '晚间阅读', targetQuantityBase: 1000 });
 		expect(result.stageGoal).toMatchObject({ targetQuantityBase: 100 });
+	});
+
+	it('stores a derived daily plan and defaults an empty stage name', async () => {
+		const result = await createHabit(database, {
+			templateId: 'running',
+			cardTitle: '晨跑',
+			startDate: '2026-07-27',
+			longTerm: { targetDisplay: '100', endDate: '2026-10-24' },
+			stage: {
+				targetDisplay: '100',
+				endDate: '2026-10-24',
+				dailyTargetDisplay: '1.25',
+			},
+			dailyPlan: {
+				mode: 'custom',
+				weekdays: [1, 3, 5],
+				customTargetsDisplayByWeekday: { 1: '2', 3: '3', 5: '4' },
+			},
+			nowIso: '2026-07-27T01:00:00.000Z',
+			ids: { userCardId: 'card-run', longTermGoalId: 'long-run', stageGoalId: 'stage-run' },
+		});
+
+		expect(result.userCard).toMatchObject({
+			title: '晨跑',
+			dailyPlan: {
+				mode: 'custom',
+				weekdays: [1, 3, 5],
+				customTargetsBaseByWeekday: { 1: 2_000, 3: 3_000, 5: 4_000 },
+			},
+		});
+		expect(result.longTermGoal).toMatchObject({ title: '晨跑', endDate: '2026-10-24' });
+		expect(result.stageGoal).toMatchObject({
+			title: '阶段 1',
+			dailyTargetBase: 1_250,
+			endDate: '2026-10-24',
+		});
 	});
 
 	it('creates ordered stages with only the first stage active', async () => {

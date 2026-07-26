@@ -28,8 +28,8 @@ function quantity(model: GoalDetailsModel, baseValue: number): string {
 	});
 }
 
-function stageTarget(model: GoalDetailsModel, stage: GoalDetailsStageGoal, t: ReturnType<typeof useTranslation>['t']): string {
-	if (stage.mode === 'activeDays') return t('shell.progress.activeDaysProgress', { current: stage.progress.activeDays, target: stage.targetActiveDays });
+function stageTarget(model: GoalDetailsModel, stage: GoalDetailsStageGoal, activeDaysText: string): string {
+	if (stage.mode === 'activeDays') return activeDaysText;
 	return `${quantity(model, stage.progress.quantityBaseValue)} / ${quantity(model, stage.targetQuantityBase ?? 0)} ${model.card.displayUnit}`;
 }
 
@@ -100,7 +100,7 @@ function GoalDetailsPage() {
 			<div className={styles.stageRouteList}>{model.stageGoals.map((stage, index) => <article data-status={stage.status} key={stage.id}>
 				<span className={styles.stageRouteIcon}>{stage.status === 'completed' ? <FiCheckCircle aria-hidden='true' /> : stage.status === 'active' ? <FiFlag aria-hidden='true' /> : <FiClock aria-hidden='true' />}</span>
 				<span><small>{t('shell.createCard.stageNumber', { number: index + 1 })}</small><strong>{stage.title}</strong></span>
-				<span className={styles.stageRouteValue}><b>{stageTarget(model, stage, t)}</b><small>{t(STATUS_KEYS[stage.status])}</small></span>
+				<span className={styles.stageRouteValue}><b>{stageTarget(model, stage, String(t('shell.progress.activeDaysProgress', { current: stage.progress.activeDays, target: stage.targetActiveDays })))}</b><small>{t(STATUS_KEYS[stage.status])}</small></span>
 			</article>)}</div>
 		</section>}
 		{model.longTermGoal && <section className={styles.goalCard}>
