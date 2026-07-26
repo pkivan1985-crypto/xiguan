@@ -14,9 +14,13 @@ import { saveDailyHabitInApp } from '@features/save-daily-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
 import { MobilePageHeader } from '@widgets/mobile-page-header';
-import { TodayHabitPanel } from '@widgets/today-habit-panel';
+import {
+	TodayHabitPanel,
+	toggleCompletedVisibility,
+} from '@widgets/today-habit-panel';
 import { WeekStrip } from '@widgets/week-strip';
 
+import { createTodaySaveQueue } from '../model/todayPage';
 import styles from './TodayPage.module.css';
 
 interface TodayPageContentProps {
@@ -94,9 +98,14 @@ function TodayPageContent({
 				<span
 					className={styles.overviewProgress}
 					role='progressbar'
+					aria-label={t('shell.today.overviewProgressLabel')}
 					aria-valuemin={0}
 					aria-valuemax={Math.max(model.habits.length, 1)}
 					aria-valuenow={model.completedCount}
+					aria-valuetext={t('shell.today.overviewProgressValue', {
+						completed: model.completedCount,
+						total: model.habits.length,
+					})}
 				>
 					<i style={{ width: `${completedRatio * 100}%` }} />
 				</span>
@@ -133,9 +142,15 @@ function TodayPage() {
 	const todayLocalDate = useMemo(() => formatLocalDate(new Date()), []);
 	const [model, setModel] = useState<DailyHabitsModel | null>(null);
 	const [loadError, setLoadError] = useState(false);
-	const pendingIdsRef = useRef(new Set<string>());
 	const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
 	const [saveErrorIds, setSaveErrorIds] = useState<ReadonlySet<string>>(new Set());
+	const saveQueueRef = useRef<ReturnType<typeof createTodaySaveQueue> | null>(null);
+	if (saveQueueRef.current === null) {
+		saveQueueRef.current = createTodaySaveQueue((state) => {
+			setPendingIds(state.pendingIds);
+			setSaveErrorIds(state.saveErrorIds);
+		});
+	}
 	const [completedExpanded, setCompletedExpanded] = useState(true);
 	const [reloadNonce, setReloadNonce] = useState(0);
 
@@ -154,15 +169,7 @@ function TodayPage() {
 	}, [load, reloadNonce]);
 
 	async function changeHabit(habit: DailyHabitView, quantityBaseValue: number): Promise<void> {
-		if (pendingIdsRef.current.has(habit.id)) return;
-		pendingIdsRef.current.add(habit.id);
-		setPendingIds(new Set(pendingIdsRef.current));
-		setSaveErrorIds((current) => {
-			const next = new Set(current);
-			next.delete(habit.id);
-			return next;
-		});
-		try {
+		const queuedSave = saveQueueRef.current!.enqueue(habit.id, async () => {
 			await saveDailyHabitInApp({
 				userCardId: habit.id,
 				localDate: todayLocalDate,
@@ -171,12 +178,14 @@ function TodayPage() {
 				nowIso: new Date().toISOString(),
 				submissionId: crypto.randomUUID(),
 			});
-			setModel(await load());
+			return load();
+		});
+		if (!queuedSave) return;
+
+		try {
+			setModel(await queuedSave);
 		} catch {
-			setSaveErrorIds((current) => new Set(current).add(habit.id));
-		} finally {
-			pendingIdsRef.current.delete(habit.id);
-			setPendingIds(new Set(pendingIdsRef.current));
+			// The queue owns row-level error state and continues with the next row.
 		}
 	}
 
@@ -217,7 +226,7 @@ function TodayPage() {
 				}
 			}}
 			onToggleCompleted={() => {
-				setCompletedExpanded((current) => !current);
+				setCompletedExpanded(toggleCompletedVisibility);
 			}}
 		/>
 	);

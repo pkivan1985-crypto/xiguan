@@ -27,4 +27,19 @@ describe('HabitGlyph', () => {
 		expect(html).toContain(`data-phosphor-icon="${phosphorIcon}"`);
 		expect(html).not.toMatch(/🏃|💧|📚|🌙|🛡️/u);
 	});
+
+	it('renders as decorative when adjacent text already names the habit', () => {
+		const html = renderToStaticMarkup(
+			<HabitGlyph
+				iconKey='activity'
+				accent='green'
+				label='跑步'
+				decorative
+			/>,
+		);
+
+		expect(html).toContain('aria-hidden="true"');
+		expect(html).not.toContain('role="img"');
+		expect(html).not.toContain('aria-label="跑步"');
+	});
 });

@@ -696,6 +696,8 @@
 			"outcomeDate": "已有成果",
 			"overview": "已完成 {{completed}} / {{total}}",
 			"overviewLabel": "今日完成概览",
+			"overviewProgressLabel": "今日完成进度",
+			"overviewProgressValue": "{{completed}} / {{total}}",
 			"primaryActions": "今天页面操作",
 			"recordHabit": "记录{{title}}",
 			"savedOnDate": "{{date}} · 已保存",

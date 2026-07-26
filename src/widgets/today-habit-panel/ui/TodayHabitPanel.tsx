@@ -216,6 +216,7 @@ function HabitRow({
 				iconKey={habit.iconKey}
 				accent={habit.accent}
 				label={habit.title}
+				decorative
 			/>
 			<div className={styles.habitCopy}>
 				<strong>{habit.title}</strong>

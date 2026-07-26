@@ -112,17 +112,19 @@ const habits: DailyHabitView[] = [
 ];
 
 function renderPanel({
+	renderedHabits = habits,
 	completedExpanded = true,
 	pendingIds = new Set<string>(),
 	saveErrorIds = new Set<string>(),
 }: {
+	renderedHabits?: readonly DailyHabitView[];
 	completedExpanded?: boolean;
 	pendingIds?: ReadonlySet<string>;
 	saveErrorIds?: ReadonlySet<string>;
 } = {}): string {
 	return renderToStaticMarkup(
 		<TodayHabitPanel
-			habits={habits}
+			habits={renderedHabits}
 			completedExpanded={completedExpanded}
 			pendingIds={pendingIds}
 			saveErrorIds={saveErrorIds}
@@ -157,6 +159,32 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('aria-label="记录阅读"');
 		expect(html).toContain('aria-label="撤销早睡"');
 		expect(html).toContain('aria-label="撤销不刷短视频"');
+		expect(html.match(/aria-hidden="true"/g)?.length).toBeGreaterThanOrEqual(5);
+		expect(html).not.toContain('role="img"');
+	});
+
+	it('keeps the unified panel and empty-state copy when there are no habits', () => {
+		const html = renderPanel({ renderedHabits: [] });
+
+		expect(html.match(/data-testid="today-habit-panel"/g)).toHaveLength(1);
+		expect(html).toContain('shell.today.emptyTitle');
+		expect(html).toContain('shell.today.emptyDescription');
+		expect(html).not.toContain('role="list"');
+		expect(html).not.toContain('aria-expanded=');
+	});
+
+	it('omits only the unavailable goal line for quantity habits without a goal', () => {
+		const quantityWithoutGoal: DailyHabitView = {
+			...habits[0]!,
+			goalTitle: undefined,
+			goalProgressRatio: undefined,
+		};
+		const html = renderPanel({ renderedHabits: [quantityWithoutGoal] });
+
+		expect(html).toContain('今日 3.20 / 5 km');
+		expect(html).not.toContain('累计 18.4 km');
+		expect(html).not.toContain('goalProgress');
+		expect(html).toContain('data-tracking-type="quantity"');
 	});
 
 	it('collapses only completed rows and exposes a deterministic toggle state', () => {
