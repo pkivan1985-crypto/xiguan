@@ -62,6 +62,23 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 		if (!isRecord(card) || !isText(card.id) || !isText(card.officialCardId) || !isText(card.title)
 			|| !['active', 'archived'].includes(String(card.status)) || !isSafeNonNegative(card.sortOrder)
 			|| !isIso(card.createdAt) || !isIso(card.updatedAt)) fail('INVALID_BACKUP');
+		if (card.dailyPlan !== undefined) {
+			if (!isRecord(card.dailyPlan)
+				|| !['average', 'custom'].includes(String(card.dailyPlan.mode))
+				|| !Array.isArray(card.dailyPlan.weekdays)
+				|| card.dailyPlan.weekdays.length === 0
+				|| card.dailyPlan.weekdays.some((day) => !Number.isSafeInteger(day) || day < 1 || day > 7)
+				|| new Set(card.dailyPlan.weekdays).size !== card.dailyPlan.weekdays.length) fail('INVALID_BACKUP');
+			if (card.dailyPlan.averageTargetBase !== undefined && !isSafePositive(card.dailyPlan.averageTargetBase)) {
+				fail('INVALID_BACKUP');
+			}
+			if (card.dailyPlan.mode === 'custom') {
+				if (!isRecord(card.dailyPlan.customTargetsBaseByWeekday)) fail('INVALID_BACKUP');
+				for (const day of card.dailyPlan.weekdays) {
+					if (!isSafePositive(card.dailyPlan.customTargetsBaseByWeekday[day])) fail('INVALID_BACKUP');
+				}
+			}
+		}
 	}
 	for (const goal of candidate.longTermGoals) {
 		if (!isRecord(goal) || !isText(goal.id) || !isText(goal.userCardId) || !isText(goal.title)
@@ -72,6 +89,8 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 		if (!isRecord(goal) || !isText(goal.id) || !isText(goal.longTermGoalId) || !isText(goal.title)
 			|| !['quantity', 'activeDays', 'both'].includes(String(goal.mode)) || !isLocalDate(goal.startDate)
 			|| !isIso(goal.createdAt) || !isIso(goal.updatedAt)) fail('INVALID_BACKUP');
+		if (goal.sequence !== undefined && !isSafeNonNegative(goal.sequence)) fail('INVALID_BACKUP');
+		if (goal.dailyTargetBase !== undefined && !isSafePositive(goal.dailyTargetBase)) fail('INVALID_BACKUP');
 		if (goal.mode !== 'activeDays' && !isSafePositive(goal.targetQuantityBase)) fail('INVALID_BACKUP');
 		if (goal.mode !== 'quantity' && !isSafePositive(goal.targetActiveDays)) fail('INVALID_BACKUP');
 	}
@@ -87,6 +106,16 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 		if (!isRecord(record) || !isText(record.id) || !isText(record.userCardId) || !isLocalDate(record.localDate)
 			|| !isSafePositive(record.quantityBaseValue) || !isIso(record.firstSavedAt) || !isIso(record.lastSavedAt)
 			|| !isText(record.lastSubmissionId)) fail('INVALID_BACKUP');
+		if (record.entryMethod !== undefined
+			&& !['completed', 'actual', 'adjustment'].includes(String(record.entryMethod))) fail('INVALID_BACKUP');
+		if (record.plannedQuantityBaseValue !== undefined && !isSafePositive(record.plannedQuantityBaseValue)) fail('INVALID_BACKUP');
+		if (record.carryInBaseValue !== undefined && !isSafeNonNegative(record.carryInBaseValue)) fail('INVALID_BACKUP');
+		if (record.carryOutBaseValue !== undefined && !isSafeNonNegative(record.carryOutBaseValue)) fail('INVALID_BACKUP');
+		if (record.durationSeconds !== undefined && !isSafePositive(record.durationSeconds)) fail('INVALID_BACKUP');
+		if (record.averagePaceSecondsPerKm !== undefined && !isSafePositive(record.averagePaceSecondsPerKm)) fail('INVALID_BACKUP');
+		if (record.averageHeartRateBpm !== undefined
+			&& (!Number.isSafeInteger(record.averageHeartRateBpm) || record.averageHeartRateBpm < 30 || record.averageHeartRateBpm > 240)) fail('INVALID_BACKUP');
+		if (record.note !== undefined && (typeof record.note !== 'string' || record.note.length > 280)) fail('INVALID_BACKUP');
 	}
 	for (const batch of candidate.outcomeBatches) {
 		if (!isRecord(batch) || !isText(batch.id) || !isText(batch.submissionId) || !isLocalDate(batch.localDate)
@@ -121,6 +150,12 @@ function assertRelationships(payload: BackupPayloadV1, refs: TemplateDefinitionR
 	const stageGoals = new Map(payload.stageGoals.map((item) => [item.id, item]));
 	if (payload.longTermGoals.some((goal) => !cards.has(goal.userCardId))) fail('RELATIONSHIP_INVALID');
 	if (payload.stageGoals.some((goal) => !longGoals.has(goal.longTermGoalId))) fail('RELATIONSHIP_INVALID');
+	const activeStageCounts = new Map<string, number>();
+	for (const goal of payload.stageGoals.filter(({ status }) => status === 'active')) {
+		const count = (activeStageCounts.get(goal.longTermGoalId) ?? 0) + 1;
+		if (count > 1) fail('RELATIONSHIP_INVALID');
+		activeStageCounts.set(goal.longTermGoalId, count);
+	}
 	for (const revision of payload.goalRevisions) {
 		if (revision.goalType === 'longTerm' ? !longGoals.has(revision.goalId) : !stageGoals.has(revision.goalId)) fail('RELATIONSHIP_INVALID');
 	}

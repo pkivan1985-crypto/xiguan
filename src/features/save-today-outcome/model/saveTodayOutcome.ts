@@ -3,7 +3,7 @@ import type { ActionRecord } from '@entities/action-record';
 import { parseQuantityToBase } from '@entities/card-template';
 import type { CardTemplate } from '@entities/card-template';
 import type { StageCompletionMode } from '@entities/card-template';
-import { calculateGoalProgress } from '@entities/goal';
+import { calculateGoalProgress, selectNextPlannedStageGoal } from '@entities/goal';
 import type { GoalCompletionSnapshot, GoalProgress, GoalRevision, LongTermGoal, StageGoal } from '@entities/goal';
 import type { OutcomeBatch, OutcomeBatchItem, OutcomeGoalChange, OutcomeProgressSnapshot } from '@entities/outcome-batch';
 import { filledSlotsInOrder, validateTodayDraft } from '@entities/today-draft';
@@ -19,6 +19,16 @@ export interface SaveTodayOutcomeInput {
 	nowIso: string;
 	submissionId: string;
 	confirmedOverLimit?: boolean;
+	actionRecordDetails?: Readonly<Record<string, {
+		entryMethod?: ActionRecord['entryMethod'];
+		plannedQuantityBaseValue?: number;
+		carryInBaseValue?: number;
+		carryOutBaseValue?: number;
+		durationSeconds?: number;
+		averagePaceSecondsPerKm?: number;
+		averageHeartRateBpm?: number;
+		note?: string;
+	}>>;
 }
 
 function progressSnapshot(progress: GoalProgress, mode: StageCompletionMode): OutcomeProgressSnapshot {
@@ -81,6 +91,7 @@ function assertInput(input: SaveTodayOutcomeInput): void {
 export async function saveTodayOutcome(
 	database: RepeatOutcomeDatabase,
 	input: SaveTodayOutcomeInput,
+	transientDraft?: TodayDraft,
 ): Promise<OutcomeBatch> {
 	assertInput(input);
 	let resultBatchId: string | undefined;
@@ -111,7 +122,7 @@ export async function saveTodayOutcome(
 			return;
 		}
 
-		const draft = await tables.todayDrafts.get(input.localDate);
+		const draft = transientDraft ?? await tables.todayDrafts.get(input.localDate);
 		if (!draft) throw new Error('TODAY_DRAFT_NOT_FOUND');
 		validateTodayDraft(draft, input.localDate);
 		const filledSlots = filledSlotsInOrder(draft);
@@ -149,12 +160,27 @@ export async function saveTodayOutcome(
 					{ mode: stageGoal.mode, targetQuantityBase: stageGoal.targetQuantityBase, targetActiveDays: stageGoal.targetActiveDays },
 				)
 				: null;
+			const recordDetails = input.actionRecordDetails?.[userCard.id];
 
 			const record: ActionRecord = {
 				id: existingRecord?.id ?? `${userCard.id}:${input.localDate}`,
 				userCardId: userCard.id,
 				localDate: input.localDate,
 				quantityBaseValue,
+				entryMethod: recordDetails ? recordDetails.entryMethod : existingRecord?.entryMethod,
+				plannedQuantityBaseValue: recordDetails
+					? recordDetails.plannedQuantityBaseValue
+					: existingRecord?.plannedQuantityBaseValue,
+				carryInBaseValue: recordDetails ? recordDetails.carryInBaseValue : existingRecord?.carryInBaseValue,
+				carryOutBaseValue: recordDetails ? recordDetails.carryOutBaseValue : existingRecord?.carryOutBaseValue,
+				durationSeconds: recordDetails ? recordDetails.durationSeconds : existingRecord?.durationSeconds,
+				averagePaceSecondsPerKm: recordDetails
+					? recordDetails.averagePaceSecondsPerKm
+					: existingRecord?.averagePaceSecondsPerKm,
+				averageHeartRateBpm: recordDetails
+					? recordDetails.averageHeartRateBpm
+					: existingRecord?.averageHeartRateBpm,
+				note: recordDetails ? recordDetails.note : existingRecord?.note,
 				longTermGoalId: longTermGoal?.id,
 				stageGoalId: stageGoal?.id,
 				firstSavedAt: existingRecord?.firstSavedAt ?? input.nowIso,
@@ -187,6 +213,17 @@ export async function saveTodayOutcome(
 					await tables.goalRevisions.add(completionRevision('stage', stageGoal.id, stageGoal.status, input));
 					stageGoal = { ...stageGoal, status: 'completed', updatedAt: input.nowIso, completionSnapshot: completionSnapshot(stageProgress, stageGoal, input.nowIso) };
 					await tables.stageGoals.put(stageGoal);
+					if (longTermGoal?.status === 'active') {
+						const siblings = await tables.stageGoals.where('longTermGoalId').equals(longTermGoal.id).toArray();
+						const nextStageGoal = selectNextPlannedStageGoal(siblings);
+						if (nextStageGoal) {
+							await tables.stageGoals.put({
+								...nextStageGoal,
+								status: 'active',
+								updatedAt: input.nowIso,
+							});
+						}
+					}
 				}
 			}
 
@@ -217,7 +254,14 @@ export async function saveTodayOutcome(
 			items,
 		};
 		await tables.outcomeBatches.add(batch);
-		await tables.todayDrafts.put({ ...draft, status: 'submitted', updatedAt: input.nowIso, lastSubmissionId: input.submissionId });
+		if (!transientDraft) {
+			await tables.todayDrafts.put({
+				...draft,
+				status: 'submitted',
+				updatedAt: input.nowIso,
+				lastSubmissionId: input.submissionId,
+			});
+		}
 		resultBatchId = batch.id;
 	});
 

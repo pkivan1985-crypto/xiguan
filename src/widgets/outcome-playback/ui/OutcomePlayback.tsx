@@ -29,6 +29,7 @@ function OutcomePlayback({ batch, reducedMotion, onNext, onSummary }: OutcomePla
 			<span className={styles.resultIcon}><FiActivity aria-hidden='true' /></span>
 			<p>{t('shell.today.resultRecorded')}</p><h2>{item.cardTitle}</h2>
 			<strong>{formatOutcomeItem(item)} <small>{item.displayUnit}</small></strong>
+			{item.stageChange && <div className={styles.goal}><span>{t('shell.today.stageChange')}</span><b>{t('shell.today.goalChange', { before: formatOutcomeItem({ ...item, quantityBaseValue: item.stageChange.before.quantityBaseValue }), after: formatOutcomeItem({ ...item, quantityBaseValue: item.stageChange.after.quantityBaseValue }) })}</b></div>}
 			{item.longTermChange && <div className={styles.goal}><span>{t('shell.today.longTermChange')}</span><b>{t('shell.today.goalChange', { before: formatOutcomeItem({ ...item, quantityBaseValue: item.longTermChange.before.quantityBaseValue }), after: formatOutcomeItem({ ...item, quantityBaseValue: item.longTermChange.after.quantityBaseValue }) })}</b></div>}
 		</Scene>
 		<p className={styles.saved}><FiCheck aria-hidden='true' />{reducedMotion ? t('shell.today.staticFallback') : t('shell.today.playbackSaved')}</p>

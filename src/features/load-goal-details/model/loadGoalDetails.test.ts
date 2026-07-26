@@ -32,8 +32,34 @@ describe('loadGoalDetails', () => {
 		expect(model.card).toMatchObject({ id: 'card-a', title: '晨跑', displayUnit: 'km' });
 		expect(model.longTermGoal).toMatchObject({ id: 'long-a', progress: { quantityBaseValue: 12_500, activeDays: 2, ratio: 0.125 } });
 		expect(model.stageGoal).toMatchObject({ id: 'stage-a', mode: 'quantity', progress: { quantityBaseValue: 12_500, activeDays: 2, ratio: 0.625 } });
+		expect(model.stageGoals.map(({ id }) => id)).toEqual(['stage-a']);
 		expect(model.activeDays).toBe(2);
 		expect(model.recentRecords.map(({ id }) => id)).toEqual(['record-new', 'record-old']);
+	});
+
+	it('returns every stage in route order while keeping the active stage current', async () => {
+		await seedCard();
+		await database.table('stageGoals').update('stage-a', { sequence: 0 });
+		await database.table('stageGoals').add({
+			id: 'stage-b',
+			longTermGoalId: 'long-a',
+			sequence: 1,
+			title: '阶段 30 km',
+			mode: 'quantity',
+			targetQuantityBase: 30_000,
+			status: 'planned',
+			startDate: '2026-07-01',
+			createdAt: '2026-07-01T00:00:00.001Z',
+			updatedAt: '2026-07-01T00:00:00.001Z',
+		});
+
+		const model = await loadGoalDetails(database, 'card-a');
+
+		expect(model.stageGoal?.id).toBe('stage-a');
+		expect(model.stageGoals.map(({ id, status }) => ({ id, status }))).toEqual([
+			{ id: 'stage-a', status: 'active' },
+			{ id: 'stage-b', status: 'planned' },
+		]);
 	});
 
 	it('preserves both-mode facts without averaging ratios', async () => {

@@ -76,8 +76,64 @@ describe('loadHomeDashboard', () => {
 		expect(model.outcomeDates).toEqual(['2026-07-02']);
 		expect(model.outcomeDayCount).toBe(1);
 		expect(model.goalSummaries[0]).toMatchObject({
-			longTermGoal: { id: 'long-card-a', progress: { quantityBaseValue: 5_000, ratio: 0.05 } },
-			stageGoal: { id: 'stage-card-a', progress: { quantityBaseValue: 5_000, ratio: 0.25 } },
+			longTermGoal: {
+				id: 'long-card-a',
+				targetQuantityBase: 100_000,
+				progress: { quantityBaseValue: 5_000, ratio: 0.05 },
+			},
+			stageGoal: {
+				id: 'stage-card-a',
+				targetQuantityBase: 20_000,
+				progress: { quantityBaseValue: 5_000, ratio: 0.25 },
+			},
+		});
+	});
+
+	it('returns source goal targets beside independently hand-calculated mixed progress', async () => {
+		await createCard('card-a', '晨跑');
+		await database.table('longTermGoals').update('long-card-a', { targetQuantityBase: 120_000 });
+		await database.table('stageGoals').update('stage-card-a', {
+			mode: 'both',
+			targetQuantityBase: 30_000,
+			targetActiveDays: 3,
+		});
+		await database.table('actionRecords').bulkAdd([
+			{
+				id: 'record-a', userCardId: 'card-a', localDate: '2026-07-02', quantityBaseValue: 5_000,
+				longTermGoalId: 'long-card-a', stageGoalId: 'stage-card-a', firstSavedAt: '2026-07-02T08:00:00.000Z',
+				lastSavedAt: '2026-07-02T08:00:00.000Z', lastSubmissionId: 'submission-a',
+			},
+			{
+				id: 'record-b', userCardId: 'card-a', localDate: '2026-07-03', quantityBaseValue: 7_500,
+				longTermGoalId: 'long-card-a', stageGoalId: 'stage-card-a', firstSavedAt: '2026-07-03T08:00:00.000Z',
+				lastSavedAt: '2026-07-03T08:00:00.000Z', lastSubmissionId: 'submission-b',
+			},
+		]);
+
+		const summary = (await loadHomeDashboard(database, { year: 2026, monthIndex: 6 })).goalSummaries[0];
+
+		expect(summary).toMatchObject({
+			longTermGoal: {
+				targetQuantityBase: 120_000,
+				progress: {
+					quantityBaseValue: 12_500,
+					activeDays: 2,
+					quantityRatio: 12_500 / 120_000,
+					ratio: 12_500 / 120_000,
+				},
+			},
+			stageGoal: {
+				mode: 'both',
+				targetQuantityBase: 30_000,
+				targetActiveDays: 3,
+				progress: {
+					quantityBaseValue: 12_500,
+					activeDays: 2,
+					quantityRatio: 12_500 / 30_000,
+					activeDaysRatio: 2 / 3,
+					ratio: 12_500 / 30_000,
+				},
+			},
 		});
 	});
 

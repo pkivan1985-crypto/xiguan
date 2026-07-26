@@ -5,6 +5,7 @@ export const APP_DESCRIPTION = '把每天真实完成的重复行动，变成可
 export const APP_ROUTES = {
 	HOME: '/',
 	TODAY: '/today',
+	PROGRESS: '/progress',
 	DECK: '/deck',
 	DECK_NEW: '/deck/new',
 	HISTORY: '/history',
@@ -16,7 +17,6 @@ export const APP_ROUTES = {
 
 export const PRIMARY_NAV_ROUTES = [
 	APP_ROUTES.HOME,
-	APP_ROUTES.TODAY,
+	APP_ROUTES.PROGRESS,
 	APP_ROUTES.DECK,
-	APP_ROUTES.HISTORY,
 ] as const;

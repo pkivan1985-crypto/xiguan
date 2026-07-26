@@ -143,7 +143,7 @@ test('override and transitive lock graph drift fail against the approved baselin
 	if (!existsSync(verifierPath)) return context.skip('verifier does not exist yet');
 	const { validateReleaseReadiness } = await import(pathToFileURL(verifierPath).href);
 	const snapshot = validSnapshot();
-	snapshot.packageJson.overrides.sharp = '^0.34.0';
+	snapshot.packageJson.overrides.sharp = '0.35.2';
 	const transitive = Object.keys(snapshot.lockfile.packages).find((path) => path !== '');
 	snapshot.lockfile.packages[transitive].version = '0.0.0-review-drift';
 	const errors = validateReleaseReadiness(snapshot, 'local').join('\n');

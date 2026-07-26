@@ -3,6 +3,7 @@ import type { ActionRecord } from '@entities/action-record';
 import {
 	calculateGoalProgress,
 	reconcileGoalAfterCorrection,
+	selectNextPlannedStageGoal,
 } from '@entities/goal';
 import type {
 	GoalCompletionSnapshot,
@@ -106,6 +107,10 @@ export async function correctActionRecord(
 			await actionRecords.put({
 				...record,
 				quantityBaseValue: input.quantityBaseValue!,
+				entryMethod: 'adjustment',
+				carryOutBaseValue: record.plannedQuantityBaseValue === undefined
+					? record.carryOutBaseValue
+					: Math.max(0, record.plannedQuantityBaseValue - input.quantityBaseValue!),
 				lastSavedAt: input.nowIso,
 				lastSubmissionId: input.correctionId,
 			});
@@ -142,9 +147,34 @@ export async function correctActionRecord(
 			)!;
 			const next = reconcileGoalAfterCorrection(goal, progress, input.currentLocalDate, input.nowIso);
 			if (next.status !== goal.status || snapshotChanged(goal.completionSnapshot, next.completionSnapshot)) {
+				if (goal.status === 'completed' && next.status === 'active') {
+					const activeSiblings = await stageGoals
+						.where('[longTermGoalId+status]')
+						.equals([goal.longTermGoalId, 'active'])
+						.toArray();
+					for (const sibling of activeSiblings.filter(({ id }) => id !== goal.id)) {
+						await stageGoals.put({ ...sibling, status: 'planned', updatedAt: input.nowIso });
+						await goalRevisions.put(correctionRevision('stage', sibling.id, sibling.status, 'planned', input));
+						changedGoalIds.push(sibling.id);
+					}
+				}
 				await stageGoals.put(next);
 				await goalRevisions.put(correctionRevision('stage', goal.id, goal.status, next.status, input));
 				changedGoalIds.push(goal.id);
+				if (next.status === 'completed') {
+					const longTermGoal = record.longTermGoalId
+						? await longTermGoals.get(record.longTermGoalId)
+						: undefined;
+					if (longTermGoal?.status === 'active') {
+						const siblings = await stageGoals.where('longTermGoalId').equals(goal.longTermGoalId).toArray();
+						const nextPlanned = selectNextPlannedStageGoal(siblings);
+						if (nextPlanned) {
+							await stageGoals.put({ ...nextPlanned, status: 'active', updatedAt: input.nowIso });
+							await goalRevisions.put(correctionRevision('stage', nextPlanned.id, nextPlanned.status, 'active', input));
+							changedGoalIds.push(nextPlanned.id);
+						}
+					}
+				}
 			}
 		}
 

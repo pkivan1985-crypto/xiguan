@@ -21,7 +21,7 @@ const payload: BackupPayloadV1 = {
 	stageGoals: [{ id: 'stage-1', longTermGoalId: 'long-1', title: '阶段20公里', mode: 'quantity', targetQuantityBase: 20_000, status: 'active', startDate: '2026-07-01', createdAt: '2026-07-12T01:00:00.000Z', updatedAt: '2026-07-12T01:00:00.000Z' }],
 	goalRevisions: [],
 	todayDrafts: [],
-	actionRecords: [{ id: 'record-1', userCardId: 'card-1', localDate: '2026-07-12', quantityBaseValue: 5_000, longTermGoalId: 'long-1', stageGoalId: 'stage-1', firstSavedAt: '2026-07-12T01:00:00.000Z', lastSavedAt: '2026-07-12T01:00:00.000Z', lastSubmissionId: 'submission-1' }],
+	actionRecords: [{ id: 'record-1', userCardId: 'card-1', localDate: '2026-07-12', quantityBaseValue: 5_000, entryMethod: 'actual', plannedQuantityBaseValue: 6_000, carryInBaseValue: 0, carryOutBaseValue: 1_000, durationSeconds: 1_800, averagePaceSecondsPerKm: 360, averageHeartRateBpm: 145, note: '河边慢跑', longTermGoalId: 'long-1', stageGoalId: 'stage-1', firstSavedAt: '2026-07-12T01:00:00.000Z', lastSavedAt: '2026-07-12T01:00:00.000Z', lastSubmissionId: 'submission-1' }],
 	outcomeBatches: [],
 	settings: [{ key: 'repeat-outcome-ui-settings', value: '{"state":{}}', updatedAt: '2026-07-12T01:00:00.000Z' }],
 };
@@ -78,6 +78,40 @@ describe('backup V1 validation', () => {
 		const invalid = await envelope({ data: broken, checksum: { algorithm: 'SHA-256', value: await backupFingerprint(broken, digest) } });
 		await expect(validatePlainBackup(invalid, definitions, digest)).rejects.toMatchObject({ code: 'RELATIONSHIP_INVALID' });
 		await expect(validatePlainBackup(await envelope(), [{ id: 'running', version: 2 }], digest)).rejects.toMatchObject({ code: 'TEMPLATE_INCOMPATIBLE' });
+	});
+
+	it('rejects multiple active stages for one long-term goal', async () => {
+		const broken = structuredClone(payload);
+		broken.stageGoals.push({
+			...broken.stageGoals[0],
+			id: 'stage-2',
+			sequence: 1,
+			title: '阶段30公里',
+		});
+		const invalid = await envelope({ data: broken, checksum: { algorithm: 'SHA-256', value: await backupFingerprint(broken, digest) } });
+		await expect(validatePlainBackup(invalid, definitions, digest)).rejects.toMatchObject({ code: 'RELATIONSHIP_INVALID' });
+	});
+
+	it('accepts a compatible daily plan and rejects an invalid weekday', async () => {
+		const planned = await envelope();
+		planned.data.userCards[0].dailyPlan = {
+			mode: 'average',
+			weekdays: [1, 3, 5],
+			averageTargetBase: 2_500,
+		};
+		planned.data.stageGoals[0].dailyTargetBase = 2_000;
+		planned.checksum.value = await backupFingerprint(planned.data, digest);
+		await expect(validatePlainBackup(planned, definitions, digest)).resolves.toBeDefined();
+
+		const broken = structuredClone(planned);
+		broken.data.userCards[0].dailyPlan!.weekdays = [0 as never];
+		broken.checksum.value = await backupFingerprint(broken.data, digest);
+		await expect(validatePlainBackup(broken, definitions, digest)).rejects.toMatchObject({ code: 'INVALID_BACKUP' });
+
+		const invalidTarget = structuredClone(planned);
+		invalidTarget.data.userCards[0].dailyPlan!.averageTargetBase = 0;
+		invalidTarget.checksum.value = await backupFingerprint(invalidTarget.data, digest);
+		await expect(validatePlainBackup(invalidTarget, definitions, digest)).rejects.toMatchObject({ code: 'INVALID_BACKUP' });
 	});
 
 	it('uses stable error objects instead of translated entity messages', () => {

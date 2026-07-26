@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 const GUARDED_ENTRY_POINTS = [
 	['src/features/create-running-card/model/createRunningCard.ts', 'create-card', 'createRunningCardInApp'],
+	['src/features/manage-user-card/model/manageUserCard.ts', 'manage-card', 'manageUserCardInApp'],
 	['src/features/save-today-outcome/model/saveTodayOutcome.ts', 'save-outcome', 'saveTodayOutcomeInApp'],
 	['src/features/correct-action-record/model/correctActionRecord.ts', 'correct-record', 'correctActionRecordInApp'],
 	['src/features/data-management/restore-backup/model/restoreBackup.ts', 'restore-backup', 'restoreBackupInApp'],

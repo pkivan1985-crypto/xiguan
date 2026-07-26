@@ -6,7 +6,12 @@ import { HomeDashboardContent, HomePage } from './HomePage';
 import { homeErrorKey } from '../model/homePage';
 import type { HomeDashboardModel } from '@features/load-home-dashboard';
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', () => ({
+	useTranslation: () => ({
+		i18n: { language: 'en-US', resolvedLanguage: 'en-US' },
+		t: (key: string) => key,
+	}),
+}));
 vi.mock('@features/load-home-dashboard', async (importOriginal) => ({
 	...await importOriginal<typeof import('@features/load-home-dashboard')>(),
 	loadHomeDashboardInApp: vi.fn(() => new Promise(() => undefined)),

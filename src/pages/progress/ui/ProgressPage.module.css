@@ -1,0 +1,295 @@
+/* stylelint-disable no-descending-specificity -- Record detail copy intentionally extends the panel typography rules. */
+.page {
+	display: grid;
+	gap: 10px;
+	width: 100%;
+	max-width: 390px;
+	margin: 0 auto;
+}
+
+.settingsAction {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	font-size: 26px;
+	color: var(--text-color);
+	background: transparent;
+	border-radius: 13px;
+}
+
+.segmented {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	height: 32px;
+	padding: 3px;
+	margin-top: -14px;
+	background: var(--surface-color);
+	border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+	border-radius: var(--radius-pill);
+}
+
+.segmented button {
+	position: relative;
+	z-index: 0;
+	display: grid;
+	place-items: center;
+	min-width: 0;
+	padding: 0;
+	font-size: 15px;
+	font-weight: 650;
+	line-height: 24px;
+	color: var(--muted-color);
+	background: transparent;
+	border-radius: var(--radius-pill);
+}
+
+.segmented button::after {
+	position: absolute;
+	inset: -9px 0;
+	z-index: -1;
+	content: '';
+}
+
+.segmented button[aria-selected='true'] {
+	color: var(--text-color);
+	background: color-mix(in srgb, var(--accent-color) 28%, var(--surface-secondary));
+}
+
+.tabContent {
+	display: grid;
+	gap: 10px;
+	min-width: 0;
+	margin-top: -4px;
+}
+
+.calendarPanel {
+	min-width: 0;
+}
+
+.selectedDay {
+	display: grid;
+	gap: 5px;
+	padding-top: 8px;
+	margin-top: 5px;
+	border-top: 1px solid var(--border-color);
+}
+
+.planPanel header p {
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+}
+
+.selectedDay > p:first-child {
+	font-size: 12px;
+	line-height: 18px;
+	color: var(--muted-color);
+}
+
+.selectedDay h2 {
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 24px;
+}
+
+.records {
+	display: grid;
+	max-height: 210px;
+	overflow-y: auto;
+}
+
+.detailsLink > svg,
+.allGoalsLink > svg {
+	font-size: 18px;
+}
+
+.records article {
+	display: grid;
+	gap: 6px;
+	padding: 7px 0;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.recordMain {
+	display: grid;
+	grid-template-columns: 25px minmax(0, 1fr) auto;
+	gap: 8px;
+	align-items: center;
+	min-height: 24px;
+}
+
+.records article:last-child {
+	border-bottom: 0;
+}
+
+.recordMain > span {
+	display: grid;
+	place-items: center;
+	font-size: 19px;
+	color: var(--sport-color);
+}
+
+.recordMain > div {
+	display: flex;
+	gap: 6px;
+	align-items: baseline;
+	min-width: 0;
+}
+
+.records strong,
+.records small {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.records strong {
+	flex: none;
+	max-width: 46%;
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.records small {
+	font-size: 12px;
+	line-height: 18px;
+	color: var(--muted-color);
+}
+
+.recordMain b {
+	font-size: 14px;
+	line-height: 20px;
+	white-space: nowrap;
+}
+
+.recordFacts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 6px;
+	padding-left: 33px;
+}
+
+.recordFacts span {
+	padding: 2px 7px;
+	font-size: 11px;
+	line-height: 17px;
+	color: var(--muted-color);
+	background: var(--surface-secondary);
+	border-radius: var(--radius-pill);
+}
+
+.recordFacts span[data-accent='warning'] {
+	color: var(--reading-color);
+}
+
+.recordFacts p {
+	flex-basis: 100%;
+	margin: 1px 0 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 12px;
+	line-height: 18px;
+	color: var(--muted-color);
+	white-space: nowrap;
+}
+
+.empty {
+	display: grid;
+	align-items: center;
+	height: 96px;
+	margin: 0;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+}
+
+.detailsLink,
+.allGoalsLink {
+	display: flex;
+	gap: 7px;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	font-size: 14px;
+	font-weight: 650;
+	line-height: 20px;
+	color: var(--accent-color);
+}
+
+.planPanel {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+	padding: 10px 12px 4px;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-sm);
+}
+
+.planPanel > header {
+	display: grid;
+	gap: 1px;
+}
+
+.planPanel h2 {
+	font-size: 18px;
+	font-weight: 700;
+	line-height: 25px;
+}
+
+.planEmpty {
+	display: grid;
+	place-items: center;
+	min-height: 76px;
+	margin: 0;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+	text-align: center;
+	background: var(--surface-secondary);
+	border: 1px dashed var(--border-color);
+	border-radius: var(--radius-card);
+}
+
+.loading,
+.state {
+	display: grid;
+	gap: 10px;
+	place-items: center;
+	min-height: 260px;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+	text-align: center;
+}
+
+.state > svg {
+	font-size: 28px;
+	color: var(--accent-color);
+}
+
+.state button {
+	display: inline-flex;
+	gap: 7px;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 16px;
+	font-size: 14px;
+	font-weight: 700;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 14px;
+}
+
+@media (max-width: 359px) {
+	.recordMain > div {
+		display: grid;
+		gap: 0;
+	}
+
+	.planPanel {
+		padding-inline: 12px;
+	}
+}

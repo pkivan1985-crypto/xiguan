@@ -1,0 +1,32 @@
+.header {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	justify-content: space-between;
+	min-height: 44px;
+}
+
+.copy {
+	min-width: 0;
+}
+
+.copy h1 {
+	font-size: 24px;
+	font-weight: 700;
+	line-height: 32px;
+	color: var(--text-color);
+}
+
+.copy p {
+	margin-top: 2px;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+}
+
+.actions {
+	display: flex;
+	flex: none;
+	gap: 8px;
+	align-items: center;
+}

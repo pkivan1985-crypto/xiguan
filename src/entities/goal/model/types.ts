@@ -28,8 +28,10 @@ export interface LongTermGoal {
 export interface StageGoal {
 	id: string;
 	longTermGoalId: string;
+	sequence?: number;
 	title: string;
 	mode: StageCompletionMode;
+	dailyTargetBase?: number;
 	targetQuantityBase?: number;
 	targetActiveDays?: number;
 	status: GoalStatus;

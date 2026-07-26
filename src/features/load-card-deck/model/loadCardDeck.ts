@@ -1,11 +1,18 @@
 /* eslint-disable i18next/no-literal-string -- Table names, indexes, statuses, and modes are domain identifiers. */
-import type { ActionRecord } from '@entities/action-record';
+import { effectiveActionRecords, type ActionRecord } from '@entities/action-record';
 import type { CardTemplate } from '@entities/card-template';
-import { seedSystemDefinitions } from '@entities/card-template';
+import { seedSystemDefinitions, SYSTEM_CARD_TEMPLATES } from '@entities/card-template';
 import type { CategoryDefinition } from '@entities/category';
-import { calculateGoalProgress, type GoalProgress, type LongTermGoal, type StageGoal } from '@entities/goal';
+import {
+	calculateGoalProgress,
+	compareStageGoals,
+	selectCurrentStageGoal,
+	type GoalProgress,
+	type LongTermGoal,
+	type StageGoal,
+} from '@entities/goal';
 import type { TodayDraft } from '@entities/today-draft';
-import type { UserCard } from '@entities/user-card';
+import type { HabitDailyPlan, UserCard } from '@entities/user-card';
 import type { LocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 
@@ -21,8 +28,15 @@ export interface DeckCardView {
 	template: CardTemplate;
 	longTermGoal?: LongTermGoal;
 	stageGoal?: StageGoal;
+	stagePosition?: { current: number; total: number };
 	longTermProgress?: GoalProgress;
 	stageProgress?: GoalProgress;
+	dailyTargetBase?: number;
+	dailyPlan?: HabitDailyPlan;
+	todayStatus: {
+		kind: 'completed' | 'rest' | 'target';
+		targetBase?: number;
+	};
 }
 
 export interface DeckCategoryView {
@@ -32,15 +46,29 @@ export interface DeckCategoryView {
 	cards: DeckCardView[];
 }
 
+export interface ArchivedDeckCardView {
+	id: string;
+	title: string;
+	template: CardTemplate;
+}
+
 export interface DeckView {
 	slots: Array<DeckSlotView | null>;
 	categories: DeckCategoryView[];
+	archivedCards: ArchivedDeckCardView[];
+	archivedCount: number;
+}
+
+function isoWeekday(localDate: LocalDate): 1 | 2 | 3 | 4 | 5 | 6 | 7 {
+	const [year, month, day] = localDate.split('-').map(Number);
+	const weekday = new Date(Date.UTC(year!, month! - 1, day!)).getUTCDay();
+	return (weekday === 0 ? 7 : weekday) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
 }
 
 export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: LocalDate): Promise<DeckView> {
 	const categoriesTable = database.tableFor<CategoryDefinition>('categoryDefinitions');
 	const templatesTable = database.tableFor<CardTemplate>('cardTemplates');
-	if (!await templatesTable.get('running')) await seedSystemDefinitions(database);
+	if (await templatesTable.count() < SYSTEM_CARD_TEMPLATES.length) await seedSystemDefinitions(database);
 	const cardsTable = database.tableFor<UserCard>('userCards');
 	const longTermGoalsTable = database.tableFor<LongTermGoal>('longTermGoals');
 	const stageGoalsTable = database.tableFor<StageGoal>('stageGoals');
@@ -52,29 +80,42 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 	], async () => ({
 		categories: await categoriesTable.toArray(),
 		templates: await templatesTable.toArray(),
-		cards: await cardsTable.where('status').equals('active').toArray(),
+		cards: await cardsTable.toArray(),
 		longTermGoals: await longTermGoalsTable.where('status').equals('active').toArray(),
-		stageGoals: await stageGoalsTable.where('status').equals('active').toArray(),
+		stageGoals: await stageGoalsTable.toArray(),
 		records: await recordsTable.toArray(),
 		draft: await draftsTable.get(localDate),
 	}));
 
 	const templatesById = new Map(data.templates.map((template) => [template.id, template]));
-	const cardsById = new Map(data.cards.map((card) => [card.id, card]));
+	const activeCards = data.cards.filter((card) => card.status === 'active');
+	const archivedCards = data.cards
+		.filter((card) => card.status === 'archived')
+		.sort((left, right) => left.sortOrder - right.sortOrder)
+		.flatMap((card): ArchivedDeckCardView[] => {
+			const template = templatesById.get(card.officialCardId);
+			return template ? [{ id: card.id, title: card.title, template }] : [];
+		});
+	const cardsById = new Map(activeCards.map((card) => [card.id, card]));
 	const longTermByCard = new Map(data.longTermGoals.map((goal) => [goal.userCardId, goal]));
-	const stageByLongTerm = new Map(data.stageGoals.map((goal) => [goal.longTermGoalId, goal]));
-	const cardViews = data.cards
+	const effectiveRecords = effectiveActionRecords(data.records);
+	const todayWeekday = isoWeekday(localDate);
+	const cardViews = activeCards
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DeckCardView[] => {
 			const template = templatesById.get(card.officialCardId);
 			if (!template) return [];
 			const longTermGoal = longTermByCard.get(card.id);
-			const stageGoal = longTermGoal ? stageByLongTerm.get(longTermGoal.id) : undefined;
+			const relatedStageGoals = longTermGoal
+				? data.stageGoals.filter(({ longTermGoalId }) => longTermGoalId === longTermGoal.id).sort(compareStageGoals)
+				: [];
+			const stageGoal = selectCurrentStageGoal(relatedStageGoals);
+			const stageIndex = stageGoal ? relatedStageGoals.findIndex(({ id }) => id === stageGoal.id) : -1;
 			const longTermRecords = longTermGoal
-				? data.records.filter((record) => record.userCardId === card.id && record.longTermGoalId === longTermGoal.id)
+				? effectiveRecords.filter((record) => record.userCardId === card.id && record.longTermGoalId === longTermGoal.id)
 				: [];
 			const stageRecords = stageGoal
-				? data.records.filter((record) => record.userCardId === card.id && record.stageGoalId === stageGoal.id)
+				? effectiveRecords.filter((record) => record.userCardId === card.id && record.stageGoalId === stageGoal.id)
 				: [];
 			const longTermProgress = longTermGoal
 				? calculateGoalProgress(longTermRecords, { mode: 'quantity', targetQuantityBase: longTermGoal.targetQuantityBase }) ?? undefined
@@ -82,7 +123,34 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 			const stageProgress = stageGoal
 				? calculateGoalProgress(stageRecords, { mode: stageGoal.mode, targetQuantityBase: stageGoal.targetQuantityBase, targetActiveDays: stageGoal.targetActiveDays }) ?? undefined
 				: undefined;
-			return [{ id: card.id, title: card.title, template, longTermGoal, stageGoal, longTermProgress, stageProgress }];
+			const plannedTargetBase = card.dailyPlan?.mode === 'custom'
+				? card.dailyPlan.customTargetsBaseByWeekday?.[todayWeekday]
+				: stageGoal?.dailyTargetBase ?? card.dailyPlan?.averageTargetBase;
+			const dailyTargetBase = plannedTargetBase
+				?? template.defaultDailyTargetBase
+				?? template.quantity.basePerDisplayUnit;
+			const todayRecord = effectiveRecords.find((record) => (
+				record.userCardId === card.id && record.localDate === localDate
+			));
+			const scheduledToday = !card.dailyPlan || card.dailyPlan.weekdays.includes(todayWeekday);
+			const completedToday = todayRecord !== undefined && todayRecord.quantityBaseValue >= dailyTargetBase;
+			return [{
+				id: card.id,
+				title: card.title,
+				template,
+				longTermGoal,
+				stageGoal,
+				stagePosition: stageGoal && stageIndex >= 0 ? { current: stageIndex + 1, total: relatedStageGoals.length } : undefined,
+				longTermProgress,
+				stageProgress,
+				dailyTargetBase,
+				dailyPlan: card.dailyPlan,
+				todayStatus: completedToday
+					? { kind: 'completed' }
+					: scheduledToday
+						? { kind: 'target', targetBase: dailyTargetBase }
+						: { kind: 'rest' },
+			}];
 		});
 
 	const cardsByCategory = new Map<string, DeckCardView[]>();
@@ -102,7 +170,12 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 		return card ? { slotIndex, userCardId: card.id, title: card.title } : null;
 	});
 
-	return { slots, categories };
+	return {
+		slots,
+		categories,
+		archivedCards,
+		archivedCount: archivedCards.length,
+	};
 }
 
 export function loadCardDeckForDate(localDate: LocalDate): Promise<DeckView> {

@@ -1,7 +1,7 @@
 /* eslint-disable i18next/no-literal-string -- Table names and domain statuses are stable identifiers. */
 import { outcomeDatesForMonth, type ActionRecord } from '@entities/action-record';
 import type { CardTemplate, StageCompletionMode } from '@entities/card-template';
-import { calculateGoalProgress } from '@entities/goal';
+import { calculateGoalProgress, selectCurrentStageGoal } from '@entities/goal';
 import type { GoalProgress, GoalStatus, LongTermGoal, StageGoal } from '@entities/goal';
 import type { UserCard } from '@entities/user-card';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
@@ -10,11 +10,18 @@ export interface HomeGoalSummaryGoal {
 	id: string;
 	title: string;
 	status: GoalStatus;
+	targetQuantityBase: number;
 	progress: GoalProgress;
 }
 
-export interface HomeGoalSummaryStage extends HomeGoalSummaryGoal {
+export interface HomeGoalSummaryStage {
+	id: string;
+	title: string;
+	status: GoalStatus;
 	mode: StageCompletionMode;
+	targetQuantityBase?: number;
+	targetActiveDays?: number;
+	progress: GoalProgress;
 }
 
 export interface HomeGoalSummary {
@@ -88,7 +95,7 @@ export async function loadHomeDashboard(
 			if (!template) throw new Error('HOME_RELATIONSHIP_INVALID');
 			const longGoal = selectCurrentGoal(data.longGoals.filter(({ userCardId }) => userCardId === card.id));
 			const stage = longGoal
-				? selectCurrentGoal(data.stages.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id))
+				? selectCurrentStageGoal(data.stages.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id))
 				: undefined;
 			const longProgress = longGoal
 				? calculateGoalProgress(
@@ -110,10 +117,24 @@ export async function loadHomeDashboard(
 				basePerDisplayUnit: template.quantity.basePerDisplayUnit,
 				maxDecimalPlaces: template.quantity.maxDecimalPlaces,
 				longTermGoal: longGoal && longProgress
-					? { id: longGoal.id, title: longGoal.title, status: longGoal.status, progress: longProgress }
+					? {
+						id: longGoal.id,
+						title: longGoal.title,
+						status: longGoal.status,
+						targetQuantityBase: longGoal.targetQuantityBase,
+						progress: longProgress,
+					}
 					: null,
 				stageGoal: stage && stageProgress
-					? { id: stage.id, title: stage.title, status: stage.status, mode: stage.mode, progress: stageProgress }
+					? {
+						id: stage.id,
+						title: stage.title,
+						status: stage.status,
+						mode: stage.mode,
+						targetQuantityBase: stage.targetQuantityBase,
+						targetActiveDays: stage.targetActiveDays,
+						progress: stageProgress,
+					}
 					: null,
 			};
 		});

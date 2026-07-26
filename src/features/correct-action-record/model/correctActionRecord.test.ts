@@ -115,8 +115,26 @@ describe('correctActionRecord', () => {
 		expect(await database.tableFor<ActionRecord>('actionRecords').get('record-1')).toEqual({
 			...record(),
 			quantityBaseValue: 5_000,
+			entryMethod: 'adjustment',
 			lastSavedAt: updateInput.nowIso,
 			lastSubmissionId: updateInput.correctionId,
+		});
+	});
+
+	it('recalculates the next-session shortfall when today is corrected', async () => {
+		await seed([record({
+			plannedQuantityBaseValue: 8_000,
+			carryInBaseValue: 2_000,
+			carryOutBaseValue: 0,
+		})]);
+
+		await correctActionRecord(database, updateInput);
+
+		expect(await database.tableFor<ActionRecord>('actionRecords').get('record-1')).toMatchObject({
+			quantityBaseValue: 5_000,
+			entryMethod: 'adjustment',
+			plannedQuantityBaseValue: 8_000,
+			carryOutBaseValue: 3_000,
 		});
 	});
 
@@ -138,6 +156,31 @@ describe('correctActionRecord', () => {
 		expect(await database.tableFor<LongTermGoal>('longTermGoals').get('long-1')).toMatchObject({ status: 'active', completionSnapshot: undefined });
 		expect(await database.tableFor<StageGoal>('stageGoals').get('stage-1')).toMatchObject({ status: 'active', completionSnapshot: undefined });
 		expect((await database.tableFor<GoalRevision>('goalRevisions').toArray()).map(({ reason }) => reason)).toEqual(['correction', 'correction']);
+	});
+
+	it('reopens the corrected stage and returns its active successor to planned', async () => {
+		await seed(
+			[record()],
+			[longTermGoal({ status: 'active', targetQuantityBase: 20_000, completionSnapshot: undefined })],
+			[
+				stageGoal({ sequence: 0 }),
+				stageGoal({
+					id: 'stage-2',
+					sequence: 1,
+					title: '下一阶段',
+					status: 'active',
+					targetQuantityBase: 10_000,
+					completionSnapshot: undefined,
+					createdAt: '2026-07-01T00:00:00.001Z',
+					updatedAt: '2026-07-12T09:00:00.000Z',
+				}),
+			],
+		);
+
+		await correctActionRecord(database, updateInput);
+
+		expect(await database.tableFor<StageGoal>('stageGoals').get('stage-1')).toMatchObject({ status: 'active', completionSnapshot: undefined });
+		expect(await database.tableFor<StageGoal>('stageGoals').get('stage-2')).toMatchObject({ status: 'planned' });
 	});
 
 	it('recalculates activeDays after deleting one of two outcome dates', async () => {

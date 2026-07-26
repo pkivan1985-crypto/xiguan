@@ -6,8 +6,8 @@ import react from '@vitejs/plugin-react';
 import htmlPlugin from 'vite-plugin-html-config';
 import { APP_DESCRIPTION, APP_NAME, APP_SHORT_NAME } from './src/shared/config/app';
 
-const THEME_COLOR_DARK = '#173247';
-const THEME_COLOR_LIGHT = '#f3f7f8';
+const THEME_COLOR_DARK = '#071417';
+const THEME_COLOR_LIGHT = '#071417';
 const APP_TITLE = `${APP_NAME}｜让重复行动留下看得见的轨迹`;
 
 export default defineConfig({

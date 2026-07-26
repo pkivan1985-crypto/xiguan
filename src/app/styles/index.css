@@ -5,42 +5,50 @@
 }
 
 :root {
-	font-family: 'PingFang SC', 'Microsoft YaHei UI', 'Noto Sans CJK SC', system-ui, sans-serif;
+	font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
 	font-synthesis: none;
-	color-scheme: light dark;
+	color-scheme: dark;
 	text-rendering: optimizelegibility;
 
-	--app-width: 640px;
-	--page-bg: light-dark(#f3f7f8, #0d171b);
-	--surface-color: light-dark(#fff, #152329);
-	--text-color: light-dark(#173247, #e9f1f2);
-	--muted-color: light-dark(#617780, #9bb0b7);
-	--accent-color: light-dark(#1677d2, dodgerblue);
-	--accent-soft: light-dark(#e4f1fd, #152c43);
-	--achievement-color: light-dark(#d99a32, #efbb62);
-	--trail-color: light-dark(#9cb4b9, #60777d);
-	--border-color: light-dark(#d8e3e6, #2a3b41);
-	--border-strong: light-dark(#b9cacf, #496067);
-	--error-color: light-dark(#b84a3a, #e17b6d);
-	--sport-color: light-dark(#52a94c, #65c95d);
-	--sport-soft: light-dark(#e9f6e7, #172617);
-	--reading-color: light-dark(#c68320, #e8ad5c);
-	--reading-soft: light-dark(#f8efdf, #382d1e);
-	--output-color: light-dark(#9e4fb0, #d66be7);
-	--output-soft: light-dark(#f3e8f5, #342039);
-	--radius-lg: 26px;
-	--shadow-sm: 0 8px 22px rgb(23 50 71 / 7%);
-	--shadow-md: 0 18px 48px rgb(23 50 71 / 14%);
+	--app-width: 430px;
+	--page-bg: #071417;
+	--surface-color: #0e2027;
+	--surface-secondary: #132932;
+	--text-color: #f5f8fb;
+	--muted-color: #97a8b8;
+	--accent-color: #2594ff;
+	--accent-soft: color-mix(in srgb, var(--accent-color) 18%, transparent);
+	--achievement-color: #7ad64a;
+	--trail-color: #1f3841;
+	--border-color: #1f3841;
+	--border-strong: #1f3841;
+	--error-color: #e17b6d;
+	--sport-color: #7ad64a;
+	--sport-soft: color-mix(in srgb, var(--sport-color) 14%, transparent);
+	--reading-color: #ffb03b;
+	--reading-soft: color-mix(in srgb, var(--reading-color) 14%, transparent);
+	--output-color: #ad78ff;
+	--output-soft: color-mix(in srgb, var(--output-color) 14%, transparent);
+	--radius-lg: 22px;
+	--radius-card: 18px;
+	--radius-pill: 999px;
+	--page-gutter: 16px;
+	--section-gap: 16px;
+	--surface-padding: 16px;
+	--surface-padding-large: 18px;
+	--bottom-nav-height: 72px;
+	--shadow-sm: 0 8px 22px rgb(0 0 0 / 14%);
+	--shadow-md: 0 18px 48px rgb(0 0 0 / 20%);
 
 	/* Compatibility aliases for retained DoHabit UI infrastructure. */
 	--bg: var(--page-bg);
 	--bg-color-primary: var(--surface-color);
-	--bg-color-secondary: var(--border-color);
-	--bg-color-tertiary: var(--border-strong);
+	--bg-color-secondary: var(--surface-secondary);
+	--bg-color-tertiary: var(--border-color);
 	--color-primary: var(--text-color);
 	--color-secondary: var(--muted-color);
-	--border-radius-primary: 30px;
-	--border-radius-secondary: 22px;
+	--border-radius-primary: var(--radius-lg);
+	--border-radius-secondary: var(--radius-card);
 	--border-radius-tertiary: 14px;
 	--input-height-primary: 3rem;
 }
