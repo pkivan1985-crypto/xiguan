@@ -17,19 +17,15 @@ vi.mock('react-i18next', () => ({
 	}),
 }));
 
-function PageHeader({ label }: { label: string }) {
-	return <main><header data-page-header={label}><h1>{label}</h1></header></main>;
-}
-
-function renderShell(pathname: string, pageHeader: string) {
+function renderShell(pathname: string) {
 	return renderToStaticMarkup(
 		<MemoryRouter initialEntries={[pathname]}>
 			<Routes>
 				<Route path='/' element={<AppShell />}>
-					<Route index element={<PageHeader label={pageHeader} />} />
-					<Route path='progress' element={<PageHeader label={pageHeader} />} />
-					<Route path='deck' element={<PageHeader label={pageHeader} />} />
-					<Route path='settings' element={<PageHeader label={pageHeader} />} />
+					<Route index element={<main>今天内容</main>} />
+					<Route path='progress' element={<main>进展内容</main>} />
+					<Route path='deck' element={<main>习惯内容</main>} />
+					<Route path='settings' element={<main>设置内容</main>} />
 				</Route>
 			</Routes>
 		</MemoryRouter>,
@@ -38,14 +34,14 @@ function renderShell(pathname: string, pageHeader: string) {
 
 describe('AppShell primary navigation', () => {
 	it.each([
-		['/', '今天'],
-		['/progress', '进展'],
-		['/deck', '习惯'],
-	])('leaves the %s page-owned header as the only header', (pathname, pageHeader) => {
-		const html = renderShell(pathname, pageHeader);
+		['/', '今天内容'],
+		['/progress', '进展内容'],
+		['/deck', '习惯内容'],
+	])('omits the legacy sticky header on %s without asserting the page header', (pathname, outletContent) => {
+		const html = renderShell(pathname);
 
-		expect(html).toContain(`data-page-header="${pageHeader}"`);
-		expect(html.match(/<header/g)).toHaveLength(1);
+		expect(html).toContain(`>${outletContent}<`);
+		expect(html).not.toContain('<header');
 		expect(html).toContain('aria-label="主导航"');
 		expect(html).toContain('>今天<');
 		expect(html).toContain('>进展<');
@@ -54,9 +50,9 @@ describe('AppShell primary navigation', () => {
 	});
 
 	it('keeps the legacy shell header for settings', () => {
-		const html = renderShell('/settings', '设置内容');
+		const html = renderShell('/settings');
 
-		expect(html.match(/<header/g)).toHaveLength(2);
+		expect(html).toContain('<header');
 		expect(html).toContain('>设置<');
 	});
 });
