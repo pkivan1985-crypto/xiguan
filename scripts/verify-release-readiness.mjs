@@ -7,10 +7,10 @@ import { fileURLToPath } from 'node:url';
 const REQUIRED_FILES = ['LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md', 'release-assets.json'];
 const UPSTREAM_SOURCE_URL = 'https://github.com/iNikAnn/DoHabit';
 const CANDIDATE_SITE_URL = 'https://repeat-outcome.pages.dev';
-const APPROVED_DEPENDENCY_HASH = 'c4da73f4ffff9543dd7959748b0348a8061ad8677af0080ab66f098d6d11a7ce';
+const APPROVED_DEPENDENCY_HASH = 'bd27c8c970088bba1da0065f67fde084cbd0874bfd7cd166a0bc532e74cabd8a';
 const APPROVED_DEV_DEPENDENCY_HASH = 'daf33c8579a95c6f1895f9681f4e20a144227d0fbd3b97ab3c8a4528d3e8042b';
-const APPROVED_OVERRIDE_HASH = '09bb6e858995285fd60256e97ceb93229d2d844bd9a2c4ab68ccece36b4d3ea5';
-const APPROVED_TRANSITIVE_LOCK_HASH = 'e7b219a6f4a95d3112959373977b7766d77bf690cbef40e5a2d685eacb966fe9';
+const APPROVED_OVERRIDE_HASH = '453c2fca86b315165853a3931bdcd94f28af8a32b6f8f280add281c964e5e0d4';
+const APPROVED_TRANSITIVE_LOCK_HASH = 'ea1d4d75da0ffaa42166500edb7d46c4364b6f29a78d4a91d0ce234822ca1ab4';
 const REQUIRED_DIST_FILES = ['dist/_headers', 'dist/_redirects', 'dist/favicon.svg', 'dist/index.html', 'dist/manifest.webmanifest', 'dist/robots.txt', 'dist/sw.js'];
 const ALLOWED_DIST_FILE = /^(?:dist\/(?:_headers|_redirects|apple-touch-icon-180x180\.png|favicon\.(?:ico|svg)|index\.html|manifest\.webmanifest|maskable-icon-512x512\.png|pwa-(?:64x64|192x192|512x512)\.png|robots\.txt|sw\.js|workbox-[A-Za-z0-9_-]+\.js)|dist\/assets\/(?:index|workbox-window\.prod\.es5)-[A-Za-z0-9_-]+\.(?:css|js))$/;
 
