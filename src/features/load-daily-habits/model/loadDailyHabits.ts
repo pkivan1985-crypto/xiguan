@@ -133,7 +133,7 @@ export async function loadDailyHabits(
 					: null;
 			const baseDailyTargetBase = card.dailyPlan?.mode === 'custom'
 				? card.dailyPlan.customTargetsBaseByWeekday?.[todayWeekday]
-				: stageGoal?.dailyTargetBase;
+				: stageGoal?.dailyTargetBase ?? card.dailyPlan?.averageTargetBase;
 			const previousRecord = cardRecords
 				.filter((record) => record.localDate < localDate)
 				.sort((left, right) => right.localDate.localeCompare(left.localDate))[0];

@@ -5,6 +5,7 @@ export type DailyPlanMode = 'average' | 'custom';
 export interface HabitDailyPlan {
 	mode: DailyPlanMode;
 	weekdays: IsoWeekday[];
+	averageTargetBase?: number;
 	customTargetsBaseByWeekday?: Partial<Record<IsoWeekday, number>>;
 }
 

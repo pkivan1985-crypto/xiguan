@@ -248,6 +248,100 @@
 	box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+.stageToggle {
+	display: grid;
+	grid-template-columns: 34px minmax(0, 1fr) 48px;
+	gap: 9px;
+	align-items: center;
+	padding: 10px 8px 10px 10px;
+	background: color-mix(in srgb, var(--surface-raised) 74%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+	border-radius: 13px;
+}
+
+.stageToggleIcon {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	font-size: 0.82rem;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 10px;
+}
+
+.stageToggleCopy {
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+}
+
+.stageToggleCopy strong {
+	font-size: 0.65rem;
+}
+
+.stageToggleCopy small {
+	font-size: 0.53rem;
+	line-height: 1.45;
+	color: var(--muted-color);
+}
+
+.stageSwitch {
+	display: grid;
+	place-items: center;
+	width: 48px;
+	height: 44px;
+	padding: 0;
+	background: transparent;
+	border-radius: 12px;
+}
+
+.stageSwitch > span {
+	position: relative;
+	display: block;
+	width: 42px;
+	height: 24px;
+	background: color-mix(in srgb, var(--muted-color) 32%, var(--surface-color));
+	border: 1px solid color-mix(in srgb, var(--muted-color) 45%, transparent);
+	border-radius: 999px;
+	transition: background 160ms ease, border-color 160ms ease;
+}
+
+.stageSwitch > span::after {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 16px;
+	height: 16px;
+	content: '';
+	background: var(--text-color);
+	border-radius: 50%;
+	box-shadow: 0 2px 5px rgb(0 0 0 / 22%);
+	transition: transform 160ms ease;
+}
+
+.stageSwitch[aria-checked='true'] > span {
+	background: var(--accent-color);
+	border-color: var(--accent-color);
+}
+
+.stageSwitch[aria-checked='true'] > span::after {
+	background: white;
+	transform: translateX(18px);
+}
+
+.stageSwitch:focus-visible {
+	outline: 2px solid var(--accent-color);
+	outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.stageSwitch > span,
+	.stageSwitch > span::after {
+		transition: none;
+	}
+}
+
 .inputWithUnit,
 .inputWithIcon {
 	position: relative;

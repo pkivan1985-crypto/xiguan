@@ -111,7 +111,7 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 				: undefined;
 			const plannedTargetBase = card.dailyPlan?.mode === 'custom'
 				? card.dailyPlan.customTargetsBaseByWeekday?.[todayWeekday]
-				: stageGoal?.dailyTargetBase;
+				: stageGoal?.dailyTargetBase ?? card.dailyPlan?.averageTargetBase;
 			const dailyTargetBase = plannedTargetBase
 				?? template.defaultDailyTargetBase
 				?? template.quantity.basePerDisplayUnit;

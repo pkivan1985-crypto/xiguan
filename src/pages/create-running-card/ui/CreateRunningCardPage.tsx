@@ -95,6 +95,7 @@ function CreateRunningCardPage() {
 	const [weekdays, setWeekdays] = useState<IsoWeekday[]>([1, 2, 3, 4, 5, 6, 7]);
 	const [planMode, setPlanMode] = useState<'average' | 'custom'>('average');
 	const [customTargets, setCustomTargets] = useState<Partial<Record<IsoWeekday, string>>>({});
+	const [stagedPlanEnabled, setStagedPlanEnabled] = useState(false);
 	const [autoDistribution, setAutoDistribution] = useState(true);
 	const [stages, setStages] = useState<StageDraft[]>([{
 		key: crypto.randomUUID(),
@@ -152,6 +153,23 @@ function CreateRunningCardPage() {
 	const allocatedTarget = sumTargets(stages);
 	const targetTotal = numeric(longTarget) ?? 0;
 	const allocationDifference = targetTotal - allocatedTarget;
+	const directAverageTarget = useMemo(() => {
+		const total = numeric(longTarget);
+		if (!total || !longEndDate || weekdays.length === 0) return '';
+		try {
+			return distributeEvenStages({
+				totalDisplay: total,
+				startDate: today,
+				endDate: longEndDate,
+				stageCount: 1,
+				weekdays,
+				maxDecimalPlaces: selected.decimals,
+			})[0]?.dailyTargetDisplay ?? '';
+		} catch {
+			return '';
+		}
+	}, [longEndDate, longTarget, selected.decimals, today, weekdays]);
+	const averageDailyTarget = stagedPlanEnabled ? stages[0]?.dailyTarget ?? '' : directAverageTarget;
 	const customProjection = useMemo(() => {
 		if (planMode !== 'custom' || !longEndDate) return null;
 		const values = Object.fromEntries(
@@ -181,7 +199,7 @@ function CreateRunningCardPage() {
 			setLongDurationDays(value);
 			return;
 		}
-		const normalizedDuration = Math.max(duration, stages.length);
+		const normalizedDuration = Math.max(duration, stagedPlanEnabled ? stages.length : 1);
 		setLongDurationDays(String(normalizedDuration));
 		setLongEndDate(endDateFromDuration(today, normalizedDuration));
 		setAutoDistribution(true);
@@ -194,7 +212,7 @@ function CreateRunningCardPage() {
 			return;
 		}
 		const duration = countCalendarDays(today, value);
-		const normalizedDuration = Math.max(duration, stages.length);
+		const normalizedDuration = Math.max(duration, stagedPlanEnabled ? stages.length : 1);
 		setLongDurationDays(String(normalizedDuration));
 		setLongEndDate(endDateFromDuration(today, normalizedDuration));
 		setAutoDistribution(true);
@@ -209,6 +227,17 @@ function CreateRunningCardPage() {
 			return [...current, day].sort((left, right) => left - right);
 		});
 		setAutoDistribution(true);
+		setError(undefined);
+	}
+
+	function toggleStagedPlan(): void {
+		const nextEnabled = !stagedPlanEnabled;
+		setStagedPlanEnabled(nextEnabled);
+		if (nextEnabled) {
+			setAutoDistribution(true);
+			const generated = evenStages(stages.length, stages);
+			if (generated) setStages(generated);
+		}
 		setError(undefined);
 	}
 
@@ -337,7 +366,7 @@ function CreateRunningCardPage() {
 	}
 
 	function useCustomPlan(): void {
-		const fallback = stages[0]?.dailyTarget ?? '';
+		const fallback = averageDailyTarget;
 		setCustomTargets(Object.fromEntries(weekdays.map((day) => [day, customTargets[day] ?? fallback])));
 		setPlanMode('custom');
 		setError(undefined);
@@ -347,16 +376,17 @@ function CreateRunningCardPage() {
 		if (submitting) return;
 		const hasName = Boolean(cardTitle.trim());
 		const hasLongTarget = numeric(longTarget) !== null;
-		const hasValidStages = stages.length > 0 && stages.every((stage) => (
+		const hasValidStages = !stagedPlanEnabled || (stages.length > 0 && stages.every((stage) => (
 			Boolean(stage.title.trim())
 			&& numeric(stage.target) !== null
 			&& positiveInteger(stage.durationDays) !== null
 			&& numeric(stage.dailyTarget) !== null
 			&& Boolean(stage.endDate)
-		));
-		const allocationMatches = Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1);
+		)));
+		const allocationMatches = !stagedPlanEnabled || Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1);
+		const averageComplete = planMode === 'custom' || numeric(averageDailyTarget) !== null;
 		const customComplete = planMode === 'average' || weekdays.every((day) => numeric(customTargets[day] ?? '') !== null);
-		if (!hasName || !hasLongTarget || positiveInteger(longDurationDays) === null || !longEndDate || !hasValidStages || !allocationMatches || !customComplete) {
+		if (!hasName || !hasLongTarget || positiveInteger(longDurationDays) === null || !longEndDate || !hasValidStages || !allocationMatches || !averageComplete || !customComplete) {
 			setError(t(!hasName
 				? 'shell.createCard.nameRequired'
 				: !allocationMatches
@@ -372,16 +402,17 @@ function CreateRunningCardPage() {
 				cardTitle,
 				startDate: today,
 				longTerm: { targetDisplay: longTarget, endDate: longEndDate },
-				stages: stages.map((stage) => ({
+				stages: stagedPlanEnabled ? stages.map((stage) => ({
 					title: stage.title,
 					targetDisplay: stage.target,
 					startDate: stage.startDate,
 					endDate: stage.endDate,
 					dailyTargetDisplay: stage.dailyTarget,
-				})),
+				})) : undefined,
 				dailyPlan: {
 					mode: planMode,
 					weekdays,
+					averageTargetDisplay: planMode === 'average' ? averageDailyTarget : undefined,
 					customTargetsDisplayByWeekday: planMode === 'custom' ? customTargets : undefined,
 				},
 				nowIso: new Date().toISOString(),
@@ -389,7 +420,7 @@ function CreateRunningCardPage() {
 					userCardId: crypto.randomUUID(),
 					longTermGoalId: crypto.randomUUID(),
 					stageGoalId: crypto.randomUUID(),
-					stageGoalIds: stages.map(() => crypto.randomUUID()),
+					stageGoalIds: stagedPlanEnabled ? stages.map(() => crypto.randomUUID()) : undefined,
 				},
 			});
 			navigate(APP_ROUTES.DECK, { replace: true, state: { created: true } });
@@ -447,46 +478,65 @@ function CreateRunningCardPage() {
 						</header>
 						<div className={styles.longFields}>
 							<label><span>{t('shell.createCard.totalTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={longTarget} placeholder={t('shell.createCard.longTargetPlaceholder')} onChange={(event) => { setLongTarget(event.target.value); setAutoDistribution(true); setError(undefined); }} /><small>{selectedUnit}</small></span></label>
-							<label><span>{t('shell.createCard.planDuration')}</span><span className={`${styles.inputWithUnit} ${styles.durationInput}`}><input type='number' min={stages.length} inputMode='numeric' value={longDurationDays} onChange={(event) => updateLongDuration(event.target.value)} /><small>{t('shell.createCard.daysUnit')}</small></span></label>
-							<label><span>{t('shell.createCard.targetDate')}</span><span className={styles.inputWithIcon}><FiCalendar aria-hidden='true' /><input type='date' min={endDateFromDuration(today, stages.length)} value={longEndDate} onChange={(event) => updateLongEndDate(event.target.value)} /></span></label>
+							<label><span>{t('shell.createCard.planDuration')}</span><span className={`${styles.inputWithUnit} ${styles.durationInput}`}><input type='number' min={stagedPlanEnabled ? stages.length : 1} inputMode='numeric' value={longDurationDays} onChange={(event) => updateLongDuration(event.target.value)} /><small>{t('shell.createCard.daysUnit')}</small></span></label>
+							<label><span>{t('shell.createCard.targetDate')}</span><span className={styles.inputWithIcon}><FiCalendar aria-hidden='true' /><input type='date' min={endDateFromDuration(today, stagedPlanEnabled ? stages.length : 1)} value={longEndDate} onChange={(event) => updateLongEndDate(event.target.value)} /></span></label>
+						</div>
+						<div className={styles.stageToggle}>
+							<span className={styles.stageToggleIcon}><FiFlag aria-hidden='true' /></span>
+							<span className={styles.stageToggleCopy}>
+								<strong>{t('shell.createCard.stagedPlan')}</strong>
+								<small>{t(stagedPlanEnabled ? 'shell.createCard.stagedPlanOnHint' : 'shell.createCard.stagedPlanOffHint')}</small>
+							</span>
+							<button
+								type='button'
+								className={styles.stageSwitch}
+								role='switch'
+								aria-checked={stagedPlanEnabled}
+								aria-label={t('shell.createCard.stagedPlan')}
+								onClick={toggleStagedPlan}
+							>
+								<span aria-hidden='true' />
+							</button>
 						</div>
 					</section>
 
-					<section className={styles.planBlock}>
-						<header className={styles.blockHeader}>
-							<span><FiFlag aria-hidden='true' /></span>
-							<div><strong>{t('shell.createCard.stage')}</strong><small>{t('shell.createCard.stageInlineHint')}</small></div>
-							<button type='button' className={styles.averageAction} onClick={useAveragePlan}><FiCheck aria-hidden='true' />{t('shell.createCard.splitEvenly')}</button>
-						</header>
-						<div className={styles.stageList}>
-							{stages.map((stage, index) => (
-								<div className={styles.stageRow} key={stage.key}>
-									<span className={styles.stageNumber}>{index + 1}</span>
-									<div className={styles.stageMain}>
-										<label className={styles.editableTitle}>
-											<FiEdit3 aria-hidden='true' />
-											<input
-												value={stage.title}
-												aria-label={t('shell.createCard.editStageName', { number: index + 1 })}
-												onChange={(event) => setStages((current) => current.map((item) => item.key === stage.key ? { ...item, title: event.target.value } : item))}
-											/>
-										</label>
-										<div className={styles.stageInputs}>
-											<label><span>{t('shell.createCard.stageTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={stage.target} onChange={(event) => updateStageTarget(stage.key, event.target.value)} /><small>{selectedUnit}</small></span></label>
-											<label><span>{t('shell.createCard.stageDuration')}</span><span className={`${styles.inputWithUnit} ${styles.durationInput}`}><input type='number' min='1' max={countCalendarDays(stage.startDate, addCalendarDays(longEndDate, -(stages.length - index - 1)))} inputMode='numeric' value={stage.durationDays} onChange={(event) => updateStageDuration(index, event.target.value)} /><small>{t('shell.createCard.daysUnit')}</small></span></label>
-											<label><span>{t('shell.createCard.stageDate')}</span><input type='date' min={stage.startDate} max={addCalendarDays(longEndDate, -(stages.length - index - 1))} value={stage.endDate} onChange={(event) => updateStageEndDate(index, event.target.value)} /></label>
+					{stagedPlanEnabled && (
+						<section className={styles.planBlock}>
+							<header className={styles.blockHeader}>
+								<span><FiFlag aria-hidden='true' /></span>
+								<div><strong>{t('shell.createCard.stage')}</strong><small>{t('shell.createCard.stageInlineHint')}</small></div>
+								<button type='button' className={styles.averageAction} onClick={useAveragePlan}><FiCheck aria-hidden='true' />{t('shell.createCard.splitEvenly')}</button>
+							</header>
+							<div className={styles.stageList}>
+								{stages.map((stage, index) => (
+									<div className={styles.stageRow} key={stage.key}>
+										<span className={styles.stageNumber}>{index + 1}</span>
+										<div className={styles.stageMain}>
+											<label className={styles.editableTitle}>
+												<FiEdit3 aria-hidden='true' />
+												<input
+													value={stage.title}
+													aria-label={t('shell.createCard.editStageName', { number: index + 1 })}
+													onChange={(event) => setStages((current) => current.map((item) => item.key === stage.key ? { ...item, title: event.target.value } : item))}
+												/>
+											</label>
+											<div className={styles.stageInputs}>
+												<label><span>{t('shell.createCard.stageTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={stage.target} onChange={(event) => updateStageTarget(stage.key, event.target.value)} /><small>{selectedUnit}</small></span></label>
+												<label><span>{t('shell.createCard.stageDuration')}</span><span className={`${styles.inputWithUnit} ${styles.durationInput}`}><input type='number' min='1' max={countCalendarDays(stage.startDate, addCalendarDays(longEndDate, -(stages.length - index - 1)))} inputMode='numeric' value={stage.durationDays} onChange={(event) => updateStageDuration(index, event.target.value)} /><small>{t('shell.createCard.daysUnit')}</small></span></label>
+												<label><span>{t('shell.createCard.stageDate')}</span><input type='date' min={stage.startDate} max={addCalendarDays(longEndDate, -(stages.length - index - 1))} value={stage.endDate} onChange={(event) => updateStageEndDate(index, event.target.value)} /></label>
+											</div>
+											<small className={styles.stageDaily}>{t('shell.createCard.stageDailyReference', { value: stage.dailyTarget || '—', unit: selectedUnit, days: stage.activeDays })}</small>
 										</div>
-										<small className={styles.stageDaily}>{t('shell.createCard.stageDailyReference', { value: stage.dailyTarget || '—', unit: selectedUnit, days: stage.activeDays })}</small>
+										{stages.length > 1 && <button type='button' className={styles.removeStage} aria-label={t('shell.createCard.removeStage', { number: index + 1 })} onClick={() => removeStage(stage.key)}><FiTrash2 aria-hidden='true' /></button>}
 									</div>
-									{stages.length > 1 && <button type='button' className={styles.removeStage} aria-label={t('shell.createCard.removeStage', { number: index + 1 })} onClick={() => removeStage(stage.key)}><FiTrash2 aria-hidden='true' /></button>}
-								</div>
-							))}
-						</div>
-						<div className={styles.stageFooter}>
-							<button type='button' className={styles.addStage} onClick={addStage}><FiPlus aria-hidden='true' />{t('shell.createCard.addStage')}</button>
-							<small data-balanced={Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1)}>{Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1) ? t('shell.createCard.fullyAllocated') : t('shell.createCard.remainingAllocation', { value: allocationDifference.toFixed(selected.decimals).replace(/\.?0+$/, ''), unit: selectedUnit })}</small>
-						</div>
-					</section>
+								))}
+							</div>
+							<div className={styles.stageFooter}>
+								<button type='button' className={styles.addStage} onClick={addStage}><FiPlus aria-hidden='true' />{t('shell.createCard.addStage')}</button>
+								<small data-balanced={Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1)}>{Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1) ? t('shell.createCard.fullyAllocated') : t('shell.createCard.remainingAllocation', { value: allocationDifference.toFixed(selected.decimals).replace(/\.?0+$/, ''), unit: selectedUnit })}</small>
+							</div>
+						</section>
+					)}
 
 					<section className={styles.planBlock}>
 						<header className={styles.blockHeader}>
@@ -501,9 +551,9 @@ function CreateRunningCardPage() {
 							<button type='button' aria-pressed={planMode === 'custom'} onClick={useCustomPlan}>{t('shell.createCard.customMode')}</button>
 						</div>
 						{planMode === 'average' ? (
-							<div className={styles.averageSummary} data-ready={Boolean(stages[0]?.dailyTarget)}>
-								<strong>{stages[0]?.dailyTarget || '—'} <small>{selectedUnit}</small></strong>
-								<span>{stages[0]?.dailyTarget
+							<div className={styles.averageSummary} data-ready={Boolean(averageDailyTarget)}>
+								<strong>{averageDailyTarget || '—'} <small>{selectedUnit}</small></strong>
+								<span>{averageDailyTarget
 									? t('shell.createCard.averageSummary', { days: weekdays.length })
 									: t('shell.createCard.dailyPlanNeedsTarget')}</span>
 							</div>

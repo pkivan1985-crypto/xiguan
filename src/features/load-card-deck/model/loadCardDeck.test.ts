@@ -123,4 +123,25 @@ describe('loadCardDeck', () => {
 		expect(monday.categories[0]?.cards[0]?.todayStatus).toEqual({ kind: 'target', targetBase: 2_000 });
 		expect(tuesday.categories[0]?.cards[0]?.todayStatus).toEqual({ kind: 'rest' });
 	});
+
+	it('shows the direct average target when the card has no stage goals', async () => {
+		await database.table('userCards').add({
+			id: 'direct-run',
+			officialCardId: 'running',
+			title: 'Direct run',
+			dailyPlan: { mode: 'average', weekdays: [1, 3, 5], averageTargetBase: 2_500 },
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-07-27T00:00:00.000Z',
+			updatedAt: '2026-07-27T00:00:00.000Z',
+		});
+
+		const monday = await loadCardDeck(database, '2026-07-27');
+
+		expect(monday.categories[0]?.cards[0]).toMatchObject({
+			stageGoal: undefined,
+			dailyTargetBase: 2_500,
+			todayStatus: { kind: 'target', targetBase: 2_500 },
+		});
+	});
 });

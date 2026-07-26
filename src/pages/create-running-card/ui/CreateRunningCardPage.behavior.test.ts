@@ -18,4 +18,13 @@ describe('create habit daily planning controls', () => {
 		expect(source).toContain("t('shell.createCard.dailyPlanNeedsTarget')");
 		expect(source).toContain("placeholder={t('shell.createCard.longTargetPlaceholder')}");
 	});
+
+	it('keeps stage planning optional and excludes hidden stages from creation', () => {
+		expect(source).toContain("const [stagedPlanEnabled, setStagedPlanEnabled] = useState(false)");
+		expect(source).toContain("role='switch'");
+		expect(source).toContain('aria-checked={stagedPlanEnabled}');
+		expect(source).toContain('{stagedPlanEnabled && (');
+		expect(source).toContain('stages: stagedPlanEnabled ? stages.map');
+		expect(source).toContain("averageTargetDisplay: planMode === 'average' ? averageDailyTarget : undefined");
+	});
 });

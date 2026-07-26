@@ -69,6 +69,9 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 				|| card.dailyPlan.weekdays.length === 0
 				|| card.dailyPlan.weekdays.some((day) => !Number.isSafeInteger(day) || day < 1 || day > 7)
 				|| new Set(card.dailyPlan.weekdays).size !== card.dailyPlan.weekdays.length) fail('INVALID_BACKUP');
+			if (card.dailyPlan.averageTargetBase !== undefined && !isSafePositive(card.dailyPlan.averageTargetBase)) {
+				fail('INVALID_BACKUP');
+			}
 			if (card.dailyPlan.mode === 'custom') {
 				if (!isRecord(card.dailyPlan.customTargetsBaseByWeekday)) fail('INVALID_BACKUP');
 				for (const day of card.dailyPlan.weekdays) {

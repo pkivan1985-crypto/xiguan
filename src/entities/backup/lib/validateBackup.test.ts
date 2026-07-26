@@ -97,6 +97,7 @@ describe('backup V1 validation', () => {
 		planned.data.userCards[0].dailyPlan = {
 			mode: 'average',
 			weekdays: [1, 3, 5],
+			averageTargetBase: 2_500,
 		};
 		planned.data.stageGoals[0].dailyTargetBase = 2_000;
 		planned.checksum.value = await backupFingerprint(planned.data, digest);
@@ -106,6 +107,11 @@ describe('backup V1 validation', () => {
 		broken.data.userCards[0].dailyPlan!.weekdays = [0 as never];
 		broken.checksum.value = await backupFingerprint(broken.data, digest);
 		await expect(validatePlainBackup(broken, definitions, digest)).rejects.toMatchObject({ code: 'INVALID_BACKUP' });
+
+		const invalidTarget = structuredClone(planned);
+		invalidTarget.data.userCards[0].dailyPlan!.averageTargetBase = 0;
+		invalidTarget.checksum.value = await backupFingerprint(invalidTarget.data, digest);
+		await expect(validatePlainBackup(invalidTarget, definitions, digest)).rejects.toMatchObject({ code: 'INVALID_BACKUP' });
 	});
 
 	it('uses stable error objects instead of translated entity messages', () => {

@@ -84,6 +84,31 @@ describe('createHabit', () => {
 		});
 	});
 
+	it('stores an average daily target without creating a stage goal', async () => {
+		const result = await createHabit(database, {
+			templateId: 'running',
+			cardTitle: 'Direct plan',
+			startDate: '2026-07-27',
+			longTerm: { targetDisplay: '100', endDate: '2026-10-24' },
+			dailyPlan: {
+				mode: 'average',
+				weekdays: [1, 3, 5],
+				averageTargetDisplay: '2.5',
+			},
+			nowIso: '2026-07-27T01:00:00.000Z',
+			ids: { userCardId: 'card-direct', longTermGoalId: 'long-direct', stageGoalId: 'unused-stage' },
+		});
+
+		expect(result.userCard.dailyPlan).toEqual({
+			mode: 'average',
+			weekdays: [1, 3, 5],
+			averageTargetBase: 2_500,
+			customTargetsBaseByWeekday: undefined,
+		});
+		expect(result.stageGoals).toEqual([]);
+		expect(await database.table('stageGoals').count()).toBe(0);
+	});
+
 	it('creates ordered stages with only the first stage active', async () => {
 		const result = await createHabit(database, {
 			templateId: 'reading-time',

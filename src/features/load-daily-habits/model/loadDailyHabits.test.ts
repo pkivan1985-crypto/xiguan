@@ -93,6 +93,37 @@ describe('loadDailyHabits', () => {
 		expect((await loadDailyHabits(database, '2026-07-28')).habits).toHaveLength(0);
 	});
 
+	it('uses the saved average target when a long-term plan has no stages', async () => {
+		await database.table('userCards').add({
+			id: 'direct-run',
+			officialCardId: 'running',
+			title: 'Direct run',
+			dailyPlan: { mode: 'average', weekdays: [1, 3, 5], averageTargetBase: 2_500 },
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-07-27T00:00:00.000Z',
+			updatedAt: '2026-07-27T00:00:00.000Z',
+		});
+		await database.table('longTermGoals').add({
+			id: 'direct-long',
+			userCardId: 'direct-run',
+			title: 'Direct run',
+			targetQuantityBase: 100_000,
+			status: 'active',
+			startDate: '2026-07-27',
+			endDate: '2026-10-24',
+			createdAt: '2026-07-27T00:00:00.000Z',
+			updatedAt: '2026-07-27T00:00:00.000Z',
+		});
+
+		expect((await loadDailyHabits(database, '2026-07-27')).habits[0]).toMatchObject({
+			baseDailyTargetBase: 2_500,
+			dailyTargetBase: 2_500,
+			goalTitle: 'Direct run',
+		});
+		expect((await loadDailyHabits(database, '2026-07-28')).habits).toHaveLength(0);
+	});
+
 	it('adds the latest shortfall to the next scheduled target without reducing it for surplus', async () => {
 		await database.table('userCards').add({
 			id: 'run',

@@ -22,6 +22,7 @@ interface OptionalPlanInput {
 interface DailyPlanInput {
 	mode: HabitDailyPlan['mode'];
 	weekdays: readonly IsoWeekday[];
+	averageTargetDisplay?: string;
 	customTargetsDisplayByWeekday?: Partial<Record<IsoWeekday, string>>;
 }
 
@@ -76,6 +77,9 @@ export async function createHabit(
 	const dailyPlan = input.dailyPlan ? {
 		mode: input.dailyPlan.mode,
 		weekdays: [...new Set(input.dailyPlan.weekdays)],
+		averageTargetBase: input.dailyPlan.mode === 'average' && input.dailyPlan.averageTargetDisplay
+			? parseQuantityToBase(required(input.dailyPlan.averageTargetDisplay, 'DAILY_TARGET_REQUIRED'), template.quantity, targetOptions)
+			: undefined,
 		customTargetsBaseByWeekday: input.dailyPlan.mode === 'custom'
 			? Object.fromEntries(Object.entries(input.dailyPlan.customTargetsDisplayByWeekday ?? {}).map(([weekday, value]) => [
 				weekday,
