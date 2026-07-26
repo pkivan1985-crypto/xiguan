@@ -643,6 +643,7 @@
 		"progress": {
 			"activeDaysCurrent": "{{current}} days",
 			"activeDaysProgress": "{{current}} / {{target}} days",
+			"combinedConditions": "{{quantity}}; {{activeDays}}",
 			"activeSummary": "{{habits}} habits active · {{days}} outcome days this month",
 			"calendar": "Outcome calendar",
 			"calendarTab": "Calendar",

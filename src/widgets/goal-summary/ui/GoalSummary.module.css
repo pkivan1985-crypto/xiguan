@@ -57,6 +57,7 @@
 	grid-template-columns: minmax(0, 1fr) minmax(92px, 42%);
 	gap: 4px 10px;
 	align-items: center;
+	min-width: 0;
 }
 
 .goalLabel,
@@ -115,10 +116,34 @@
 }
 
 .value {
+	display: flex;
 	grid-row: 2;
 	grid-column: 2;
+	gap: 4px 10px;
+	justify-content: flex-end;
+	min-width: 0;
 	color: var(--muted-color);
 	text-align: right;
+}
+
+.value > span {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.goalRow[data-combined='true'] .value {
+	display: flex;
+	flex-wrap: wrap;
+	grid-row: 3;
+	grid-column: 1 / -1;
+	overflow: visible;
+	white-space: normal;
+}
+
+.goalRow[data-combined='true'] .bar {
+	grid-column: 1 / -1;
 }
 
 .noGoal {

@@ -59,7 +59,7 @@ interface GoalProgressRowProps {
 	title: string;
 	status: GoalStatus;
 	progress: GoalProgress;
-	valueText: string;
+	valueTexts: readonly string[];
 	t: TFunction;
 }
 
@@ -68,10 +68,17 @@ function GoalProgressRow({
 	title,
 	status,
 	progress,
-	valueText,
+	valueTexts,
 	t,
 }: GoalProgressRowProps) {
 	const completed = progress.completed || status === 'completed';
+	const combined = valueTexts.length > 1;
+	const valueText = combined
+		? t('shell.progress.combinedConditions', {
+			quantity: valueTexts[0],
+			activeDays: valueTexts[1],
+		})
+		: valueTexts[0]!;
 	const progressLabel = t(
 		kind === 'longTerm'
 			? 'shell.progress.longTermProgressLabel'
@@ -79,7 +86,10 @@ function GoalProgressRow({
 		{ title },
 	);
 	return (
-		<span className={styles.goalRow}>
+		<span
+			className={styles.goalRow}
+			data-combined={combined || undefined}
+		>
 			<span className={styles.goalLabel}>
 				{kind === 'longTerm'
 					? <PiTarget aria-hidden='true' />
@@ -104,7 +114,9 @@ function GoalProgressRow({
 			>
 				<i style={{ width: `${progress.ratio * 100}%` }} />
 			</span>
-			<span className={styles.value}>{valueText}</span>
+			<span className={styles.value}>
+				{valueTexts.map((condition) => <span key={condition}>{condition}</span>)}
+			</span>
 		</span>
 	);
 }
@@ -115,6 +127,30 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 		const longTerm = summary.longTermGoal;
 		const stage = summary.stageGoal;
 		const hasGoal = Boolean(longTerm || stage);
+		const stageValueTexts = stage
+			? stage.mode === 'activeDays'
+				? [activeDaysProgressText(stage.progress, stage.targetActiveDays, t)]
+				: stage.mode === 'both'
+					? [
+						quantityProgressText(
+							summary,
+							stage.progress,
+							stage.targetQuantityBase,
+							t,
+						),
+						activeDaysProgressText(
+							stage.progress,
+							stage.targetActiveDays,
+							t,
+						),
+					]
+					: [quantityProgressText(
+						summary,
+						stage.progress,
+						stage.targetQuantityBase,
+						t,
+					)]
+			: [];
 		return <Link className={styles.card} to={APP_ROUTES.goalDetails(summary.userCardId)} key={summary.userCardId}>
 			<span className={styles.heading}>
 				<span className={styles.icon}><PiTarget aria-hidden='true' /></span>
@@ -133,12 +169,14 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 							title={longTerm.title}
 							status={longTerm.status}
 							progress={longTerm.progress}
-							valueText={quantityProgressText(
-								summary,
-								longTerm.progress,
-								longTerm.targetQuantityBase,
-								t,
-							)}
+							valueTexts={[
+								quantityProgressText(
+									summary,
+									longTerm.progress,
+									longTerm.targetQuantityBase,
+									t,
+								),
+							]}
 							t={t}
 						/>
 					)}
@@ -148,18 +186,7 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 							title={stage.title}
 							status={stage.status}
 							progress={stage.progress}
-							valueText={stage.mode === 'activeDays'
-								? activeDaysProgressText(
-									stage.progress,
-									stage.targetActiveDays,
-									t,
-								)
-								: quantityProgressText(
-									summary,
-									stage.progress,
-									stage.targetQuantityBase,
-									t,
-								)}
+							valueTexts={stageValueTexts}
 							t={t}
 						/>
 					)}

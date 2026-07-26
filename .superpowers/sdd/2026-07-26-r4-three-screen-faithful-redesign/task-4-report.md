@@ -60,3 +60,25 @@ Follow-up verification:
 - Stylelint and TypeScript type-check: passed.
 - Production build: passed; 77 files and 300 tests passed.
 - No schema, business calculation, backup format, route contract, version, publish, or push change was made.
+
+## Independent Review Fix — Round 2
+
+The remaining `mode='both'` presentation issue was corrected with another RED/GREEN cycle:
+
+- RED evidence: the focused `GoalSummary` suite ran 8 tests; 3 failed because active-day facts and the narrow-screen wrapping contract were absent.
+- A combined stage now shows both direct read-model conditions:
+  - quantity current / target
+  - active days current / target
+- The stage progressbar still uses the existing overall `progress.ratio`, so its visual and accessible percentage remains the lower of the two calculated conditions.
+- The two condition values occupy a full-width flex-wrapping row on combined stages, preventing horizontal overflow in the 390px shell.
+- Chinese and English combined-condition accessibility text was added.
+- `calculateGoalProgress`, schema, backup format, and read-model calculation were not changed.
+
+Round 2 verification:
+
+- Task 4 focused tests: 3 files, 17 tests passed.
+- `loadHomeDashboard`: 1 file, 7 tests passed.
+- ESLint: passed with 0 errors; the same 10 pre-existing warnings remain.
+- Stylelint and TypeScript type-check: passed.
+- Production build: passed; 77 files and 303 tests passed.
+- No version, publish, or push action was performed.

@@ -648,6 +648,7 @@
 		"progress": {
 			"activeDaysCurrent": "{{current}} 天",
 			"activeDaysProgress": "{{current}} / {{target}} 天",
+			"combinedConditions": "{{quantity}}；{{activeDays}}",
 			"activeSummary": "{{habits}} 个习惯正在推进 · 本月 {{days}} 个成果日",
 			"calendar": "成果月历",
 			"calendarTab": "月历",

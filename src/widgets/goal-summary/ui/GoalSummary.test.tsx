@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router';
@@ -12,6 +14,7 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({
 			'shell.home.noGoalForCard': 'This card has no goal yet',
 			'shell.progress.activeDaysCurrent': '{{current}} days',
 			'shell.progress.activeDaysProgress': '{{current}} / {{target}} days',
+			'shell.progress.combinedConditions': '{{quantity}}; {{activeDays}}',
 			'shell.progress.currentProgress': '{{current}} {{unit}}',
 			'shell.progress.longTermProgressLabel': '{{title}} long-term progress',
 			'shell.progress.quantityProgress': '{{current}} / {{target}} {{unit}}',
@@ -147,6 +150,72 @@ describe('GoalSummary', () => {
 		const html = renderToStaticMarkup(<MemoryRouter><GoalSummary summaries={[activeDays]} /></MemoryRouter>);
 
 		expect(html).toContain('4 / 12 days');
+	});
+
+	it('shows both real conditions when quantity is complete but active days limit overall progress', () => {
+		const both = {
+			...summary,
+			stageGoal: {
+				...summary.stageGoal!,
+				mode: 'both' as const,
+				targetQuantityBase: 100_000,
+				targetActiveDays: 4,
+				progress: {
+					quantityBaseValue: 100_000,
+					activeDays: 2,
+					quantityRatio: 1,
+					activeDaysRatio: 0.5,
+					ratio: 0.5,
+					completed: false,
+				},
+			},
+		};
+		const html = renderToStaticMarkup(<MemoryRouter><GoalSummary summaries={[both]} /></MemoryRouter>);
+
+		expect(html).toContain('100.00 / 100.00 km');
+		expect(html).toContain('2 / 4 days');
+		expect(html).toContain('data-combined="true"');
+		expect(html).toContain(
+			'aria-label="阶段 20 km stage progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="100.00 / 100.00 km; 2 / 4 days"',
+		);
+	});
+
+	it('shows both real conditions when active days are complete but quantity limits overall progress', () => {
+		const both = {
+			...summary,
+			stageGoal: {
+				...summary.stageGoal!,
+				mode: 'both' as const,
+				targetQuantityBase: 100_000,
+				targetActiveDays: 4,
+				progress: {
+					quantityBaseValue: 50_000,
+					activeDays: 4,
+					quantityRatio: 0.5,
+					activeDaysRatio: 1,
+					ratio: 0.5,
+					completed: false,
+				},
+			},
+		};
+		const html = renderToStaticMarkup(<MemoryRouter><GoalSummary summaries={[both]} /></MemoryRouter>);
+
+		expect(html).toContain('50.00 / 100.00 km');
+		expect(html).toContain('4 / 4 days');
+		expect(html).toContain(
+			'aria-label="阶段 20 km stage progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50.00 / 100.00 km; 4 / 4 days"',
+		);
+	});
+
+	it('gives combined stage conditions a full-width wrapping row for the 390px layout', () => {
+		const css = readFileSync(new URL('./GoalSummary.module.css', import.meta.url), 'utf8');
+		const combinedValueRule = css.match(
+			/\.goalRow\[data-combined='true'\] \.value\s*\{[^}]*\}/s,
+		)?.[0] ?? '';
+
+		expect(combinedValueRule).toContain('grid-column: 1 / -1');
+		expect(combinedValueRule).toContain('flex-wrap: wrap');
+		expect(combinedValueRule).toContain('white-space: normal');
 	});
 
 	it('renders a truthful no-goal state without invented progress', () => {
