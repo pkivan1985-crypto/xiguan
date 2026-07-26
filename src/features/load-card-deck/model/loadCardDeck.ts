@@ -46,9 +46,16 @@ export interface DeckCategoryView {
 	cards: DeckCardView[];
 }
 
+export interface ArchivedDeckCardView {
+	id: string;
+	title: string;
+	template: CardTemplate;
+}
+
 export interface DeckView {
 	slots: Array<DeckSlotView | null>;
 	categories: DeckCategoryView[];
+	archivedCards: ArchivedDeckCardView[];
 	archivedCount: number;
 }
 
@@ -82,6 +89,13 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 
 	const templatesById = new Map(data.templates.map((template) => [template.id, template]));
 	const activeCards = data.cards.filter((card) => card.status === 'active');
+	const archivedCards = data.cards
+		.filter((card) => card.status === 'archived')
+		.sort((left, right) => left.sortOrder - right.sortOrder)
+		.flatMap((card): ArchivedDeckCardView[] => {
+			const template = templatesById.get(card.officialCardId);
+			return template ? [{ id: card.id, title: card.title, template }] : [];
+		});
 	const cardsById = new Map(activeCards.map((card) => [card.id, card]));
 	const longTermByCard = new Map(data.longTermGoals.map((goal) => [goal.userCardId, goal]));
 	const effectiveRecords = effectiveActionRecords(data.records);
@@ -159,7 +173,8 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 	return {
 		slots,
 		categories,
-		archivedCount: data.cards.filter((card) => card.status === 'archived').length,
+		archivedCards,
+		archivedCount: archivedCards.length,
 	};
 }
 

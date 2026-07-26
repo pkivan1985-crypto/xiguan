@@ -163,11 +163,16 @@ const categories: DeckCategoryView[] = [
 const copy: CardDeckCopy = {
 	active: '正在进行',
 	archive: '已归档',
+	archiveAction: '归档习惯',
+	cancel: '取消',
 	collapse: '收起',
 	completed: '已完成',
 	daily: '每天',
 	days: '天',
 	details: '查看详情',
+	deleteAction: '删除习惯',
+	deleteDescription: '这会删除习惯、目标、阶段和全部历史记录，且无法恢复。',
+	deleteTitle: (title) => `永久删除“${title}”？`,
 	empty: '这个分类还没有习惯',
 	filters: {
 		all: '全部',
@@ -177,10 +182,13 @@ const copy: CardDeckCopy = {
 	},
 	filtersLabel: '习惯分类',
 	longTerm: '长期目标',
+	manageAction: '管理习惯',
 	noGoal: '未设置目标',
+	operationError: '操作没有完成，请重试。',
 	pending: '待完成',
 	plan: '计划',
 	rest: '休息',
+	restoreAction: '恢复',
 	stage: '阶段目标',
 	today: '今日',
 	weeklyPlan: (count, days) => `每周 ${count} 天 · ${days}`,
@@ -248,10 +256,14 @@ describe('CardDeck', () => {
 	it('renders the approved filters, one expanded goal card, compact cards, and truthful archive count', () => {
 		const html = renderToStaticMarkup(
 			<CardDeck
+				archivedCards={[]}
 				archivedCount={2}
 				categories={categories}
 				copy={copy}
+				onArchiveCard={vi.fn()}
+				onDeleteCard={vi.fn()}
 				onOpenGoalDetails={vi.fn()}
+				onRestoreCard={vi.fn()}
 			/>,
 		);
 
@@ -276,6 +288,7 @@ describe('CardDeck', () => {
 		expect(html).toContain('计划');
 		expect(html).toContain('查看详情');
 		expect(html).toContain('收起');
+		expect(html).toContain('aria-label="管理习惯"');
 		expect(html).toContain('已归档');
 		expect(html).toContain('>2</strong>');
 	});
@@ -283,10 +296,14 @@ describe('CardDeck', () => {
 	it('separates today status from the weekly plan and never invents zero progress for a goal-free card', () => {
 		const html = renderToStaticMarkup(
 			<CardDeck
+				archivedCards={[]}
 				archivedCount={0}
 				categories={categories}
 				copy={copy}
+				onArchiveCard={vi.fn()}
+				onDeleteCard={vi.fn()}
 				onOpenGoalDetails={vi.fn()}
+				onRestoreCard={vi.fn()}
 			/>,
 		);
 
@@ -306,10 +323,28 @@ describe('CardDeck', () => {
 		}));
 
 		const completed = renderToStaticMarkup(
-			<CardDeck archivedCount={0} categories={withStatus('completed')} copy={copy} onOpenGoalDetails={vi.fn()} />,
+			<CardDeck
+				archivedCards={[]}
+				archivedCount={0}
+				categories={withStatus('completed')}
+				copy={copy}
+				onArchiveCard={vi.fn()}
+				onDeleteCard={vi.fn()}
+				onOpenGoalDetails={vi.fn()}
+				onRestoreCard={vi.fn()}
+			/>,
 		);
 		const rest = renderToStaticMarkup(
-			<CardDeck archivedCount={0} categories={withStatus('rest')} copy={copy} onOpenGoalDetails={vi.fn()} />,
+			<CardDeck
+				archivedCards={[]}
+				archivedCount={0}
+				categories={withStatus('rest')}
+				copy={copy}
+				onArchiveCard={vi.fn()}
+				onDeleteCard={vi.fn()}
+				onOpenGoalDetails={vi.fn()}
+				onRestoreCard={vi.fn()}
+			/>,
 		);
 
 		expect(completed).toContain('已完成');

@@ -17,6 +17,8 @@ const translations: Record<string, string> = {
 	'shell.deck.daily': '每天',
 	'shell.deck.days': '天',
 	'shell.deck.details': '查看详情',
+	'shell.deck.deleteDescription': '这会删除习惯及全部历史记录，且无法恢复。',
+	'shell.deck.deleteTitle': '永久删除“{{title}}”？',
 	'shell.deck.emptyCards': '这个分类还没有习惯',
 	'shell.deck.filters.all': '全部',
 	'shell.deck.filtersLabel': '习惯分类',
@@ -24,9 +26,12 @@ const translations: Record<string, string> = {
 	'shell.deck.filters.reading': '阅读',
 	'shell.deck.filters.sport': '运动',
 	'shell.deck.longTerm': '长期目标',
+	'shell.deck.manageTitle': '管理习惯',
+	'shell.deck.managementError': '操作没有完成，请重试。',
 	'shell.deck.newHabit': '新建习惯',
 	'shell.deck.noGoal': '未设置目标',
 	'shell.deck.plan': '计划',
+	'shell.deck.restore': '恢复',
 	'shell.deck.stage': '阶段目标',
 	'shell.deck.trackingTypes.avoid': '避免记录',
 	'shell.deck.trackingTypes.check': '完成记录',
@@ -35,6 +40,9 @@ const translations: Record<string, string> = {
 	'shell.deck.trackingTypes.quantity': '数值记录',
 	'shell.nav.deck': '我的卡套',
 	'shell.nav.habits': '习惯',
+	'common.cancel': '取消',
+	'habits.actions.archive': '归档习惯',
+	'habits.actions.delete': '删除习惯',
 };
 
 vi.mock('react-i18next', () => ({
@@ -50,6 +58,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 const view: DeckView = {
+	archivedCards: [],
 	archivedCount: 1,
 	categories: [{
 		id: 'sport',
@@ -62,8 +71,11 @@ const view: DeckView = {
 
 type DeckPageContentProps = {
 	view: DeckView;
+	onArchiveCard: (cardId: string) => Promise<void>;
 	onCreateHabit: () => void;
+	onDeleteCard: (cardId: string) => Promise<void>;
 	onOpenGoalDetails: (cardId: string) => void;
+	onRestoreCard: (cardId: string) => Promise<void>;
 };
 
 function deckContent(): ComponentType<DeckPageContentProps> | undefined {
@@ -84,7 +96,10 @@ describe('DeckPage', () => {
 			<MemoryRouter>
 				<DeckPageContent
 					onCreateHabit={vi.fn()}
+					onArchiveCard={vi.fn()}
+					onDeleteCard={vi.fn()}
 					onOpenGoalDetails={vi.fn()}
+					onRestoreCard={vi.fn()}
 					view={view}
 				/>
 			</MemoryRouter>,

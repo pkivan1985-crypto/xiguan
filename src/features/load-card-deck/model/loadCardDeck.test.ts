@@ -78,6 +78,11 @@ describe('loadCardDeck', () => {
 		expect(view.categories[0]?.cards).toEqual([]);
 		expect(view.slots).toEqual([null, null, null, null, null, null]);
 		expect(view.archivedCount).toBe(1);
+		expect(view.archivedCards).toEqual([expect.objectContaining({
+			id: 'card-a',
+			title: '晨跑',
+			template: expect.objectContaining({ id: 'running' }),
+		})]);
 	});
 
 	it('returns active cards by category and sort order while keeping progress scoped to the current goal', async () => {
@@ -102,6 +107,9 @@ describe('loadCardDeck', () => {
 			{ id: 'output', cards: [] },
 		]);
 		expect(view.archivedCount).toBe(1);
+		expect(view.archivedCards.map(({ id, title }) => ({ id, title }))).toEqual([
+			{ id: 'archived', title: '已归档' },
+		]);
 		expect(view.categories[0]?.cards[0]?.longTermProgress).toMatchObject({ quantityBaseValue: 2_500, ratio: 0.25 });
 	});
 

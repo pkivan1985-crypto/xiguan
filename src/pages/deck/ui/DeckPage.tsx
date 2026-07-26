@@ -4,6 +4,11 @@ import { PiGearSix, PiPlus, PiSpinnerGap } from 'react-icons/pi';
 import { Link, useNavigate } from 'react-router';
 
 import { loadCardDeckForDate, type DeckView } from '@features/load-card-deck';
+import {
+	archiveUserCardInApp,
+	deleteUserCardInApp,
+	restoreUserCardInApp,
+} from '@features/manage-user-card';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
 import { CardDeck } from '@widgets/card-deck';
@@ -13,8 +18,11 @@ import styles from './DeckPage.module.css';
 
 interface DeckPageContentProps {
 	view: DeckView;
+	onArchiveCard: (cardId: string) => Promise<void>;
 	onCreateHabit: () => void;
+	onDeleteCard: (cardId: string) => Promise<void>;
 	onOpenGoalDetails: (cardId: string) => void;
+	onRestoreCard: (cardId: string) => Promise<void>;
 }
 
 function activeCardCount(view: DeckView): number {
@@ -23,8 +31,11 @@ function activeCardCount(view: DeckView): number {
 
 function DeckPageContent({
 	view,
+	onArchiveCard,
 	onCreateHabit,
+	onDeleteCard,
 	onOpenGoalDetails,
+	onRestoreCard,
 }: DeckPageContentProps) {
 	const { t } = useTranslation();
 	const activeCount = activeCardCount(view);
@@ -60,17 +71,26 @@ function DeckPageContent({
 
 			<CardDeck
 				archivedCount={view.archivedCount}
+				archivedCards={view.archivedCards}
 				categories={view.categories}
+				onArchiveCard={onArchiveCard}
+				onDeleteCard={onDeleteCard}
 				onOpenGoalDetails={onOpenGoalDetails}
+				onRestoreCard={onRestoreCard}
 				copy={{
 					active: t('shell.deck.active'),
 					archive: t('shell.deck.archive'),
+					archiveAction: t('habits.actions.archive'),
+					cancel: t('common.cancel'),
 					collapse: t('shell.deck.collapse'),
 					completed: t('shell.deck.completed'),
 					customDaily: t('shell.deck.customDaily'),
 					daily: t('shell.deck.daily'),
 					days: t('shell.deck.days'),
 					details: t('shell.deck.details'),
+					deleteAction: t('habits.actions.delete'),
+					deleteDescription: t('shell.deck.deleteDescription'),
+					deleteTitle: (title) => t('shell.deck.deleteTitle', { title }),
 					empty: t('shell.deck.emptyCards'),
 					filters: {
 						all: t('shell.deck.filters.all'),
@@ -80,10 +100,13 @@ function DeckPageContent({
 					},
 					filtersLabel: t('shell.deck.filtersLabel'),
 					longTerm: t('shell.deck.longTerm'),
+					manageAction: t('shell.deck.manageTitle'),
 					noGoal: t('shell.deck.noGoal'),
+					operationError: t('shell.deck.managementError'),
 					pending: t('shell.deck.pending'),
 					plan: t('shell.deck.plan'),
 					rest: t('shell.deck.rest'),
+					restoreAction: t('shell.deck.restore'),
 					stage: t('shell.deck.stage'),
 					today: t('shell.deck.today'),
 					weekdays: {
@@ -166,8 +189,20 @@ function DeckPage() {
 	return (
 		<DeckPageContent
 			view={view}
+			onArchiveCard={async (cardId) => {
+				await archiveUserCardInApp(cardId, new Date().toISOString());
+				setReloadKey((key) => key + 1);
+			}}
 			onCreateHabit={() => navigate(APP_ROUTES.DECK_NEW)}
+			onDeleteCard={async (cardId) => {
+				await deleteUserCardInApp(cardId);
+				setReloadKey((key) => key + 1);
+			}}
 			onOpenGoalDetails={(cardId) => navigate(APP_ROUTES.goalDetails(cardId))}
+			onRestoreCard={async (cardId) => {
+				await restoreUserCardInApp(cardId, new Date().toISOString());
+				setReloadKey((key) => key + 1);
+			}}
 		/>
 	);
 }

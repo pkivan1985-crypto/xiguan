@@ -300,6 +300,7 @@
 	display: flex;
 	flex: none;
 	gap: 4px;
+	align-items: center;
 }
 
 .cardActions button {
@@ -319,6 +320,53 @@
 .cardActions svg {
 	width: 18px;
 	height: 18px;
+}
+
+.managementMenu {
+	position: relative;
+	display: inline-flex;
+}
+
+.cardActions .menuTrigger {
+	width: 44px;
+	padding: 0;
+	color: var(--muted-color);
+	background: var(--surface-secondary);
+	border: 1px solid var(--border-color);
+}
+
+.menuPopover {
+	position: absolute;
+	right: 0;
+	bottom: calc(100% + 6px);
+	z-index: 20;
+	display: grid;
+	min-width: 150px;
+	padding: 6px;
+	background: color-mix(in srgb, var(--surface-color) 94%, var(--page-bg));
+	border: 1px solid var(--border-color);
+	border-radius: 14px;
+	box-shadow: var(--shadow-lg);
+}
+
+.menuItem {
+	display: inline-flex;
+	gap: 5px;
+	align-items: center;
+	justify-content: flex-start;
+	width: 100%;
+	min-height: 44px;
+	padding: 0 12px;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--text-color);
+	white-space: nowrap;
+	background: transparent;
+	border-radius: 12px;
+}
+
+.menuItem.dangerAction {
+	color: var(--danger-color, #ff6b6b);
 }
 
 .compactCard {
@@ -386,18 +434,30 @@
 
 .archiveSummary {
 	display: grid;
-	grid-template-columns: 28px minmax(0, 1fr) auto;
+	grid-template-columns: 28px minmax(0, 1fr) auto 20px;
 	gap: 10px;
 	align-items: center;
+	width: 100%;
 	min-height: 52px;
 	padding: 0 16px;
 	color: var(--muted-color);
+	text-align: left;
 	border-radius: var(--radius-card);
+}
+
+.archiveSummary:disabled {
+	cursor: default;
+	opacity: 1;
 }
 
 .archiveSummary svg {
 	width: 24px;
 	height: 24px;
+}
+
+.archiveCaret {
+	width: 18px;
+	height: 18px;
 }
 
 .archiveSummary span {
@@ -408,6 +468,154 @@
 	font-size: 15px;
 	font-variant-numeric: tabular-nums;
 	color: var(--text-color);
+}
+
+.archiveList {
+	display: grid;
+	gap: 7px;
+	padding: 7px;
+	background: color-mix(in srgb, var(--surface-secondary) 76%, transparent);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-card);
+}
+
+.archiveCard {
+	display: grid;
+	grid-template-columns: 38px minmax(0, 1fr) auto;
+	gap: 10px;
+	align-items: center;
+	min-height: 58px;
+	padding: 6px 8px;
+	background: var(--surface-color);
+	border-radius: 13px;
+}
+
+.archiveCard > strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 14px;
+	line-height: 20px;
+	white-space: nowrap;
+}
+
+.archiveActions {
+	display: flex;
+	gap: 2px;
+	align-items: center;
+}
+
+.archiveActions button {
+	display: inline-flex;
+	gap: 5px;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0 10px;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--accent-color);
+	background: transparent;
+	border-radius: 12px;
+}
+
+.archiveActions svg {
+	width: 18px;
+	height: 18px;
+}
+
+.archiveActions .archiveDelete {
+	width: 44px;
+	padding: 0;
+	color: var(--danger-color, #ff6b6b);
+}
+
+.operationError {
+	padding: 10px 12px;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--danger-color, #ff8585);
+	background: color-mix(in srgb, var(--danger-color, #ff6b6b) 10%, var(--surface-color));
+	border: 1px solid color-mix(in srgb, var(--danger-color, #ff6b6b) 34%, transparent);
+	border-radius: 12px;
+}
+
+.dialogBackdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 80;
+	display: grid;
+	align-items: end;
+	padding: 20px max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+	background: rgb(0 8 12 / 68%);
+	backdrop-filter: blur(6px);
+}
+
+.deleteDialog {
+	display: grid;
+	grid-template-columns: 42px minmax(0, 1fr);
+	gap: 8px 12px;
+	width: min(100%, 430px);
+	padding: 18px;
+	margin: 0 auto;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 22px;
+	box-shadow: var(--shadow-lg);
+}
+
+.warningIcon {
+	display: grid;
+	grid-row: 1 / span 2;
+	place-items: center;
+	width: 42px;
+	height: 42px;
+	font-size: 22px;
+	color: var(--danger-color, #ff6b6b);
+	background: color-mix(in srgb, var(--danger-color, #ff6b6b) 14%, transparent);
+	border-radius: 13px;
+}
+
+.deleteDialog h2 {
+	align-self: end;
+	font-size: 18px;
+	line-height: 24px;
+}
+
+.deleteDialog p {
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+}
+
+.dialogActions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-column: 1 / -1;
+	gap: 10px;
+	margin-top: 8px;
+}
+
+.dialogActions button {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: center;
+	min-height: 46px;
+	font-size: 14px;
+	font-weight: 750;
+	color: var(--text-color);
+	background: var(--surface-secondary);
+	border-radius: 14px;
+}
+
+.dialogActions .confirmDelete {
+	color: #fff;
+	background: var(--danger-color, #d83c48);
+}
+
+.dialogActions svg {
+	width: 18px;
+	height: 18px;
 }
 
 .empty {
@@ -467,5 +675,11 @@
 
 	.cardActions {
 		align-self: flex-end;
+	}
+
+	.archiveActions button:first-child {
+		width: 44px;
+		padding: 0;
+		font-size: 0;
 	}
 }

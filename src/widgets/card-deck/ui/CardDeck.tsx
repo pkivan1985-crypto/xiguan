@@ -2,17 +2,26 @@
 import { useState } from 'react';
 import {
 	PiArchive,
+	PiArrowCounterClockwise,
 	PiCalendarBlank,
+	PiCaretDown,
 	PiCaretRight,
 	PiCaretUp,
+	PiDotsThree,
 	PiFlagPennant,
 	PiTarget,
+	PiTrash,
+	PiWarning,
 } from 'react-icons/pi';
 
 import { formatQuantityFromBase, type HabitTrackingType } from '@entities/card-template';
 import type { GoalProgress, LongTermGoal, StageGoal } from '@entities/goal';
 import type { IsoWeekday } from '@entities/user-card';
-import type { DeckCardView, DeckCategoryView } from '@features/load-card-deck';
+import type {
+	ArchivedDeckCardView,
+	DeckCardView,
+	DeckCategoryView,
+} from '@features/load-card-deck';
 import { HabitGlyph } from '@widgets/habit-glyph';
 
 import {
@@ -27,20 +36,28 @@ import styles from './CardDeck.module.css';
 interface CardDeckCopy {
 	active: string;
 	archive: string;
+	archiveAction: string;
+	cancel: string;
 	collapse: string;
 	completed: string;
 	customDaily?: string;
 	daily: string;
 	days: string;
 	details: string;
+	deleteAction: string;
+	deleteDescription: string;
+	deleteTitle: (title: string) => string;
 	empty: string;
 	filters: Record<DeckFilterId, string>;
 	filtersLabel: string;
 	longTerm: string;
+	manageAction: string;
 	noGoal: string;
+	operationError: string;
 	pending: string;
 	plan: string;
 	rest: string;
+	restoreAction: string;
 	stage: string;
 	today: string;
 	trackingTypes: Record<HabitTrackingType, string>;
@@ -52,9 +69,13 @@ interface CardDeckCopy {
 
 interface CardDeckProps {
 	archivedCount: number;
+	archivedCards: ArchivedDeckCardView[];
 	categories: DeckCategoryView[];
 	copy: CardDeckCopy;
+	onArchiveCard: (cardId: string) => Promise<void>;
+	onDeleteCard: (cardId: string) => Promise<void>;
 	onOpenGoalDetails: (cardId: string) => void;
+	onRestoreCard: (cardId: string) => Promise<void>;
 }
 
 const FILTERS: readonly DeckFilterId[] = ['all', 'sport', 'reading', 'life'];
@@ -178,18 +199,25 @@ function GoalLine(props: GoalLineProps) {
 }
 
 interface HabitCardProps {
+	busy: boolean;
 	item: FilteredDeckCard;
 	copy: CardDeckCopy;
+	onArchive: () => void;
+	onDelete: () => void;
 	onOpenGoalDetails: (cardId: string) => void;
 	onToggle: () => void;
 }
 
 function ExpandedHabitCard({
+	busy,
 	item,
 	copy,
+	onArchive,
+	onDelete,
 	onOpenGoalDetails,
 	onToggle,
 }: HabitCardProps) {
+	const [menuOpen, setMenuOpen] = useState(false);
 	const { card, category } = item;
 	const trackingType = card.template.trackingType ?? 'quantity';
 	const categoryName = copy.filters[category.id as DeckFilterId] ?? category.title;
@@ -261,6 +289,46 @@ function ExpandedHabitCard({
 						<PiCaretUp aria-hidden='true' />
 						{copy.collapse}
 					</button>
+					<span className={styles.managementMenu}>
+						<button
+							className={styles.menuTrigger}
+							type='button'
+							aria-expanded={menuOpen}
+							aria-label={copy.manageAction}
+							disabled={busy}
+							onClick={() => setMenuOpen((open) => !open)}
+						>
+							<PiDotsThree aria-hidden='true' />
+						</button>
+						{menuOpen && (
+							<span className={styles.menuPopover} role='menu'>
+								<button
+									className={styles.menuItem}
+									type='button'
+									role='menuitem'
+									onClick={() => {
+										setMenuOpen(false);
+										onArchive();
+									}}
+								>
+									<PiArchive aria-hidden='true' />
+									{copy.archiveAction}
+								</button>
+								<button
+									className={`${styles.menuItem} ${styles.dangerAction}`}
+									type='button'
+									role='menuitem'
+									onClick={() => {
+										setMenuOpen(false);
+										onDelete();
+									}}
+								>
+									<PiTrash aria-hidden='true' />
+									{copy.deleteAction}
+								</button>
+							</span>
+						)}
+					</span>
 				</span>
 			</footer>
 		</article>
@@ -317,11 +385,22 @@ function CompactHabitCard({ item, copy, onToggle }: HabitCardProps) {
 
 function CardDeck({
 	archivedCount,
+	archivedCards,
 	categories,
 	copy,
+	onArchiveCard,
+	onDeleteCard,
 	onOpenGoalDetails,
+	onRestoreCard,
 }: CardDeckProps) {
 	const [state, setState] = useState(() => createCardDeckState(categories));
+	const [archiveOpen, setArchiveOpen] = useState(false);
+	const [busyCardId, setBusyCardId] = useState<string | null>(null);
+	const [deleteTarget, setDeleteTarget] = useState<{
+		id: string;
+		title: string;
+	} | null>(null);
+	const [operationError, setOperationError] = useState(false);
 	const visibleCards = filterDeckCards(categories, state.filter);
 	const expandedItem = visibleCards.find(
 		({ card }) => card.id === state.expandedItemId,
@@ -336,6 +415,23 @@ function CardDeck({
 			{ type: 'selectFilter', filter },
 			categories,
 		));
+	};
+
+	const runCardOperation = async (
+		cardId: string,
+		operation: (id: string) => Promise<void>,
+	): Promise<boolean> => {
+		setBusyCardId(cardId);
+		setOperationError(false);
+		try {
+			await operation(cardId);
+			return true;
+		} catch {
+			setOperationError(true);
+			return false;
+		} finally {
+			setBusyCardId(null);
+		}
 	};
 
 	return (
@@ -371,8 +467,14 @@ function CardDeck({
 					<div className={styles.cardGrid}>
 						{expandedItem && (
 							<ExpandedHabitCard
+								busy={busyCardId === expandedItem.card.id}
 								copy={copy}
 								item={expandedItem}
+								onArchive={() => void runCardOperation(expandedItem.card.id, onArchiveCard)}
+								onDelete={() => setDeleteTarget({
+									id: expandedItem.card.id,
+									title: expandedItem.card.title,
+								})}
 								onOpenGoalDetails={onOpenGoalDetails}
 								onToggle={() => setState((current) => transitionCardDeckState(
 									current,
@@ -383,8 +485,11 @@ function CardDeck({
 						)}
 						{compactItems.map((item) => (
 							<CompactHabitCard
+								busy={busyCardId === item.card.id}
 								copy={copy}
 								item={item}
+								onArchive={() => void runCardOperation(item.card.id, onArchiveCard)}
+								onDelete={() => setDeleteTarget({ id: item.card.id, title: item.card.title })}
 								onOpenGoalDetails={onOpenGoalDetails}
 								onToggle={() => setState((current) => transitionCardDeckState(
 									current,
@@ -398,14 +503,98 @@ function CardDeck({
 				)}
 			</section>
 
-			<div
+			<button
+				type='button'
 				className={styles.archiveSummary}
 				data-testid='habit-archive-summary'
+				aria-expanded={archiveOpen}
+				disabled={archivedCount === 0}
+				onClick={() => setArchiveOpen((open) => !open)}
 			>
 				<PiArchive aria-hidden='true' />
 				<span>{copy.archive}</span>
 				<strong>{archivedCount}</strong>
-			</div>
+				{archivedCount > 0 && (
+					archiveOpen
+						? <PiCaretUp className={styles.archiveCaret} aria-hidden='true' />
+						: <PiCaretDown className={styles.archiveCaret} aria-hidden='true' />
+				)}
+			</button>
+
+			{archiveOpen && archivedCards.length > 0 && (
+				<section className={styles.archiveList}>
+					{archivedCards.map((card) => (
+						<article className={styles.archiveCard} key={card.id}>
+							<HabitGlyph
+								accent={card.template.accent ?? 'blue'}
+								decorative
+								iconKey={card.template.iconKey ?? 'activity'}
+								label={card.title}
+								size='sm'
+							/>
+							<strong>{card.title}</strong>
+							<span className={styles.archiveActions}>
+								<button
+									type='button'
+									disabled={busyCardId === card.id}
+									onClick={() => void runCardOperation(card.id, onRestoreCard)}
+								>
+									<PiArrowCounterClockwise aria-hidden='true' />
+									{copy.restoreAction}
+								</button>
+								<button
+									className={styles.archiveDelete}
+									type='button'
+									disabled={busyCardId === card.id}
+									aria-label={`${copy.deleteAction}：${card.title}`}
+									onClick={() => setDeleteTarget({ id: card.id, title: card.title })}
+								>
+									<PiTrash aria-hidden='true' />
+								</button>
+							</span>
+						</article>
+					))}
+				</section>
+			)}
+
+			{operationError && <p className={styles.operationError} role='alert'>{copy.operationError}</p>}
+
+			{deleteTarget && (
+				<div className={styles.dialogBackdrop}>
+					<section
+						className={styles.deleteDialog}
+						role='alertdialog'
+						aria-modal='true'
+						aria-labelledby='delete-habit-title'
+						aria-describedby='delete-habit-description'
+					>
+						<span className={styles.warningIcon}><PiWarning aria-hidden='true' /></span>
+						<h2 id='delete-habit-title'>{copy.deleteTitle(deleteTarget.title)}</h2>
+						<p id='delete-habit-description'>{copy.deleteDescription}</p>
+						<span className={styles.dialogActions}>
+							<button
+								type='button'
+								disabled={busyCardId === deleteTarget.id}
+								onClick={() => setDeleteTarget(null)}
+							>
+								{copy.cancel}
+							</button>
+							<button
+								className={styles.confirmDelete}
+								type='button'
+								disabled={busyCardId === deleteTarget.id}
+								onClick={() => void runCardOperation(deleteTarget.id, onDeleteCard)
+									.then((deleted) => {
+										if (deleted) setDeleteTarget(null);
+									})}
+							>
+								<PiTrash aria-hidden='true' />
+								{copy.deleteAction}
+							</button>
+						</span>
+					</section>
+				</div>
+			)}
 		</div>
 	);
 }

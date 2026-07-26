@@ -1,6 +1,7 @@
 /* eslint-disable i18next/no-literal-string -- Operation and error identifiers are internal constants. */
 export type CriticalOperationKind =
 	| 'create-card'
+	| 'manage-card'
 	| 'save-outcome'
 	| 'correct-record'
 	| 'restore-backup'
