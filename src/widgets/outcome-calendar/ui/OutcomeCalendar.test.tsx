@@ -1,9 +1,17 @@
+import { readFileSync } from 'node:fs';
+
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 import { OutcomeCalendar } from './OutcomeCalendar';
 
+const languageState = vi.hoisted(() => ({
+	language: 'zh-CN',
+	resolvedLanguage: 'zh-CN' as string | undefined,
+}));
+
 vi.mock('react-i18next', () => ({ useTranslation: () => ({
+	i18n: languageState,
 	t: (key: string, values?: Record<string, string>) => ({
 		'shell.home.previousMonth': '上个月',
 		'shell.home.nextMonth': '下个月',
@@ -66,5 +74,32 @@ describe('OutcomeCalendar', () => {
 		expect(html).toContain('data-selected="true"');
 		expect(html).toContain('data-today="true"');
 		expect(html).toContain('disabled=""');
+	});
+
+	it('formats weekdays with resolved i18n language before the configured fallback language', () => {
+		languageState.resolvedLanguage = 'en-US';
+		languageState.language = 'zh-CN';
+		const html = renderToStaticMarkup(<OutcomeCalendar
+			year={2026}
+			monthIndex={6}
+			outcomeDates={[]}
+			todayLocalDate='2026-07-25'
+			onSelectDate={() => undefined}
+			onPreviousMonth={() => undefined}
+			onNextMonth={() => undefined}
+			canGoNext={false}
+		/>);
+
+		expect(html).toContain('>M<');
+		expect(html).toContain('>S<');
+		expect(html).not.toContain('>一<');
+		languageState.resolvedLanguage = 'zh-CN';
+	});
+
+	it('keeps a 44px touch contract while preserving the compact visible date cell', () => {
+		const css = readFileSync(new URL('./OutcomeCalendar.module.css', import.meta.url), 'utf8');
+
+		expect(css).toMatch(/\.day\s*\{[^}]*height:\s*33px;/s);
+		expect(css).toMatch(/\.day::after\s*\{[^}]*inset:\s*-6px 0 -5px;/s);
 	});
 });

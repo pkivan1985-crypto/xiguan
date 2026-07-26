@@ -6,6 +6,12 @@ import { describe, expect, it, vi } from 'vitest';
 import type { HistoryModel } from '@features/load-history';
 import type { HomeDashboardModel } from '@features/load-home-dashboard';
 
+import {
+	buildHistoryDateHref,
+	buildProgressDateSearch,
+	buildProgressTabModel,
+	moveProgressMonth,
+} from '../model/progressPageState';
 import * as progressPageModule from './ProgressPage';
 
 const translations: Record<string, string> = {
@@ -59,6 +65,7 @@ const dashboard: HomeDashboardModel = {
 			id: 'run-long',
 			title: '累计 100 km',
 			status: 'active',
+			targetQuantityBase: 100_000,
 			progress: {
 				quantityBaseValue: 18_400,
 				activeDays: 7,
@@ -72,6 +79,7 @@ const dashboard: HomeDashboardModel = {
 			title: '7 月完成 30 km',
 			status: 'active',
 			mode: 'quantity',
+			targetQuantityBase: 30_000,
 			progress: {
 				quantityBaseValue: 18_400,
 				activeDays: 7,
@@ -90,6 +98,7 @@ const dashboard: HomeDashboardModel = {
 			id: 'read-long',
 			title: '读完 12 本书',
 			status: 'active',
+			targetQuantityBase: 12,
 			progress: {
 				quantityBaseValue: 4,
 				activeDays: 4,
@@ -103,6 +112,7 @@ const dashboard: HomeDashboardModel = {
 			title: '本月读完 1 本',
 			status: 'active',
 			mode: 'quantity',
+			targetQuantityBase: 1,
 			progress: {
 				quantityBaseValue: 0,
 				activeDays: 0,
@@ -182,6 +192,61 @@ function progressContent(): ComponentType<ProgressPageContentProps> | undefined 
 }
 
 describe('ProgressPage', () => {
+	it('builds deterministic tab state and date deep links without DOM state', () => {
+		expect(buildProgressDateSearch('2026-07-25')).toBe('date=2026-07-25');
+		expect(buildHistoryDateHref('2026-07-25')).toBe('/history?date=2026-07-25');
+		expect(buildProgressTabModel('goals')).toEqual([
+			{
+				tab: 'calendar',
+				selected: false,
+				id: 'progress-calendar-tab',
+				panelId: 'progress-tab-content',
+			},
+			{
+				tab: 'goals',
+				selected: true,
+				id: 'progress-goals-tab',
+				panelId: 'progress-tab-content',
+			},
+		]);
+	});
+
+	it('moves the selected day and date query with the month, clamping missing and future days', () => {
+		expect(moveProgressMonth(
+			{ year: 2026, monthIndex: 0 },
+			'2026-01-31',
+			1,
+			'2026-07-25',
+		)).toEqual({
+			year: 2026,
+			monthIndex: 1,
+			selectedDate: '2026-02-28',
+			dateSearch: 'date=2026-02-28',
+		});
+		expect(moveProgressMonth(
+			{ year: 2026, monthIndex: 5 },
+			'2026-06-30',
+			1,
+			'2026-07-25',
+		)).toEqual({
+			year: 2026,
+			monthIndex: 6,
+			selectedDate: '2026-07-25',
+			dateSearch: 'date=2026-07-25',
+		});
+		expect(moveProgressMonth(
+			{ year: 2026, monthIndex: 6 },
+			'2026-07-25',
+			1,
+			'2026-07-25',
+		)).toEqual({
+			year: 2026,
+			monthIndex: 6,
+			selectedDate: '2026-07-25',
+			dateSearch: 'date=2026-07-25',
+		});
+	});
+
 	it('assembles the approved calendar-first hierarchy without legacy metric tiles', () => {
 		const ProgressPageContent = progressContent();
 		expect(ProgressPageContent).toBeTypeOf('function');

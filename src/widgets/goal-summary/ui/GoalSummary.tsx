@@ -1,10 +1,16 @@
+/* eslint-disable i18next/no-literal-string -- Goal-kind identifiers are stable domain values. */
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { PiCaretRight, PiFlagPennant, PiTarget } from 'react-icons/pi';
+import {
+	PiCaretRight,
+	PiCheckCircle,
+	PiFlagPennant,
+	PiTarget,
+} from 'react-icons/pi';
 import { Link } from 'react-router';
 
 import { formatQuantityFromBase } from '@entities/card-template';
-import type { GoalProgress } from '@entities/goal';
+import type { GoalProgress, GoalStatus } from '@entities/goal';
 import type { HomeGoalSummary } from '@features/load-home-dashboard';
 import { APP_ROUTES } from '@shared/config';
 
@@ -19,38 +25,88 @@ function displayValue(summary: HomeGoalSummary, baseValue: number): string {
 	});
 }
 
-function inferredTarget(current: number, ratio: number | undefined): number | null {
-	if (!ratio || ratio <= 0 || ratio >= 1) return null;
-	return Math.round(current / ratio);
-}
-
 function quantityProgressText(
 	summary: HomeGoalSummary,
 	progress: GoalProgress,
+	targetQuantityBase: number | undefined,
 	t: TFunction,
 ): string {
 	const current = displayValue(summary, progress.quantityBaseValue);
-	const targetBase = inferredTarget(progress.quantityBaseValue, progress.quantityRatio);
-	return targetBase === null
+	return targetQuantityBase === undefined
 		? t('shell.progress.currentProgress', { current, unit: summary.displayUnit })
 		: t('shell.progress.quantityProgress', {
 			current,
-			target: displayValue(summary, targetBase),
+			target: displayValue(summary, targetQuantityBase),
 			unit: summary.displayUnit,
 		});
 }
 
 function activeDaysProgressText(
 	progress: GoalProgress,
+	targetActiveDays: number | undefined,
 	t: TFunction,
 ): string {
-	const targetDays = inferredTarget(progress.activeDays, progress.activeDaysRatio);
-	return targetDays === null
+	return targetActiveDays === undefined
 		? t('shell.progress.activeDaysCurrent', { current: progress.activeDays })
 		: t('shell.progress.activeDaysProgress', {
 			current: progress.activeDays,
-			target: targetDays,
+			target: targetActiveDays,
 		});
+}
+
+interface GoalProgressRowProps {
+	kind: 'longTerm' | 'stage';
+	title: string;
+	status: GoalStatus;
+	progress: GoalProgress;
+	valueText: string;
+	t: TFunction;
+}
+
+function GoalProgressRow({
+	kind,
+	title,
+	status,
+	progress,
+	valueText,
+	t,
+}: GoalProgressRowProps) {
+	const completed = progress.completed || status === 'completed';
+	const progressLabel = t(
+		kind === 'longTerm'
+			? 'shell.progress.longTermProgressLabel'
+			: 'shell.progress.stageProgressLabel',
+		{ title },
+	);
+	return (
+		<span className={styles.goalRow}>
+			<span className={styles.goalLabel}>
+				{kind === 'longTerm'
+					? <PiTarget aria-hidden='true' />
+					: <PiFlagPennant aria-hidden='true' />}
+				<b>{title}</b>
+				{completed && (
+					<small>
+						<PiCheckCircle aria-hidden='true' />
+						{t('shell.goalDetails.status.completed')}
+					</small>
+				)}
+			</span>
+			<span
+				className={styles.bar}
+				role='progressbar'
+				aria-label={progressLabel}
+				aria-valuemin={0}
+				aria-valuemax={100}
+				aria-valuenow={Math.round(progress.ratio * 100)}
+				aria-valuetext={valueText}
+				data-completed={completed || undefined}
+			>
+				<i style={{ width: `${progress.ratio * 100}%` }} />
+			</span>
+			<span className={styles.value}>{valueText}</span>
+		</span>
+	);
 }
 
 function GoalSummary({ summaries }: GoalSummaryProps) {
@@ -66,37 +122,47 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 				<PiCaretRight aria-hidden='true' />
 			</span>
 			{hasGoal ? (
-				<span className={styles.goalDetails}>
-					<span className={styles.labels}>
-						<span>{longTerm && <><PiTarget aria-hidden='true' /><b>{longTerm.title}</b></>}</span>
-						<span>{stage && <><PiFlagPennant aria-hidden='true' /><b>{stage.title}</b></>}</span>
-					</span>
-					<span
-						className={styles.bar}
-						role='progressbar'
-						aria-label={longTerm ? t('shell.progress.longTermProgressLabel', { title: longTerm.title }) : undefined}
-						aria-valuemin={0}
-						aria-valuemax={100}
-						aria-valuenow={longTerm ? Math.round(longTerm.progress.ratio * 100) : 0}
-					>
-						{longTerm && <i style={{ width: `${longTerm.progress.ratio * 100}%` }} />}
-						{stage && (
-							<em
-								role='progressbar'
-								aria-label={t('shell.progress.stageProgressLabel', { title: stage.title })}
-								aria-valuemin={0}
-								aria-valuemax={100}
-								aria-valuenow={Math.round(stage.progress.ratio * 100)}
-								style={{ left: `${stage.progress.ratio * 100}%` }}
-							/>
-						)}
-					</span>
-					<span className={styles.values}>
-						<span>{longTerm && quantityProgressText(summary, longTerm.progress, t)}</span>
-						<span>{stage && (stage.mode === 'activeDays'
-							? activeDaysProgressText(stage.progress, t)
-							: quantityProgressText(summary, stage.progress, t))}</span>
-					</span>
+				<span
+					className={styles.goalDetails}
+					role='group'
+					aria-label={summary.cardTitle}
+				>
+					{longTerm && (
+						<GoalProgressRow
+							kind='longTerm'
+							title={longTerm.title}
+							status={longTerm.status}
+							progress={longTerm.progress}
+							valueText={quantityProgressText(
+								summary,
+								longTerm.progress,
+								longTerm.targetQuantityBase,
+								t,
+							)}
+							t={t}
+						/>
+					)}
+					{stage && (
+						<GoalProgressRow
+							kind='stage'
+							title={stage.title}
+							status={stage.status}
+							progress={stage.progress}
+							valueText={stage.mode === 'activeDays'
+								? activeDaysProgressText(
+									stage.progress,
+									stage.targetActiveDays,
+									t,
+								)
+								: quantityProgressText(
+									summary,
+									stage.progress,
+									stage.targetQuantityBase,
+									t,
+								)}
+							t={t}
+						/>
+					)}
 				</span>
 			) : <small className={styles.noGoal}>{t('shell.home.noGoalForCard')}</small>}
 		</Link>;

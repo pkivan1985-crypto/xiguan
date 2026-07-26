@@ -10,20 +10,26 @@ import {
 } from 'react-icons/pi';
 import { Link, useSearchParams } from 'react-router';
 
+import {
+	buildHistoryDateHref,
+	buildProgressDateSearch,
+	buildProgressTabModel,
+	moveProgressMonth,
+	validSelectedDate,
+	type ProgressTab,
+} from '../model/progressPageState';
 import { loadHistoryInApp, type HistoryModel } from '@features/load-history';
 import {
 	loadHomeDashboardInApp,
 	type HomeDashboardModel,
 } from '@features/load-home-dashboard';
 import { APP_ROUTES } from '@shared/config';
-import { formatLocalDate, parseLocalDate } from '@shared/lib/date';
+import { formatLocalDate } from '@shared/lib/date';
 import { GoalSummary } from '@widgets/goal-summary';
 import { MobilePageHeader } from '@widgets/mobile-page-header';
 import { OutcomeCalendar } from '@widgets/outcome-calendar';
 
 import styles from './ProgressPage.module.css';
-
-type ProgressTab = 'calendar' | 'goals';
 
 interface ProgressPageContentProps {
 	activeTab: ProgressTab;
@@ -36,15 +42,6 @@ interface ProgressPageContentProps {
 	onNextMonth: () => void;
 	onPreviousMonth: () => void;
 	onSelectDate: (localDate: string) => void;
-}
-
-function validSelectedDate(value: string | null, today: string): string {
-	if (!value) return today;
-	try {
-		return parseLocalDate(value) <= today ? value : today;
-	} catch {
-		return today;
-	}
 }
 
 function shortDateLabel(localDate: string, locale: string): string {
@@ -99,9 +96,8 @@ function ProgressPageContent({
 		selectedDate,
 		i18n.resolvedLanguage ?? i18n.language,
 	);
-	const activeTabId = activeTab === 'calendar'
-		? 'progress-calendar-tab'
-		: 'progress-goals-tab';
+	const tabs = buildProgressTabModel(activeTab);
+	const activeTabId = tabs.find(({ selected }) => selected)!.id;
 
 	return (
 		<div className={styles.page}>
@@ -111,26 +107,21 @@ function ProgressPageContent({
 				role='tablist'
 				aria-label={t('shell.progress.tabsLabel')}
 			>
-				<button
-					id='progress-calendar-tab'
-					type='button'
-					role='tab'
-					aria-controls='progress-tab-content'
-					aria-selected={activeTab === 'calendar'}
-					onClick={() => onChangeTab('calendar')}
-				>
-					{t('shell.progress.calendarTab')}
-				</button>
-				<button
-					id='progress-goals-tab'
-					type='button'
-					role='tab'
-					aria-controls='progress-tab-content'
-					aria-selected={activeTab === 'goals'}
-					onClick={() => onChangeTab('goals')}
-				>
-					{t('shell.progress.goalsTab')}
-				</button>
+				{tabs.map((tab) => (
+					<button
+						id={tab.id}
+						type='button'
+						role='tab'
+						aria-controls={tab.panelId}
+						aria-selected={tab.selected}
+						onClick={() => onChangeTab(tab.tab)}
+						key={tab.tab}
+					>
+						{t(tab.tab === 'calendar'
+							? 'shell.progress.calendarTab'
+							: 'shell.progress.goalsTab')}
+					</button>
+				))}
 			</div>
 			<div
 				id='progress-tab-content'
@@ -189,7 +180,7 @@ function ProgressPageContent({
 								)}
 								<Link
 									className={styles.detailsLink}
-									to={`${APP_ROUTES.HISTORY}?date=${selectedDate}`}
+									to={buildHistoryDateHref(selectedDate)}
 								>
 									{t('shell.progress.details')}
 									<PiCaretRight aria-hidden='true' />
@@ -257,15 +248,16 @@ function ProgressPage() {
 	}, [month, reloadNonce, todayLocalDate]);
 
 	const moveMonth = useCallback((offset: number) => {
+		const next = moveProgressMonth(month, selectedDate, offset, todayLocalDate);
+		if (next.year === month.year && next.monthIndex === month.monthIndex) return;
 		setDashboard(null);
-		setMonth((current) => {
-			const next = new Date(current.year, current.monthIndex + offset, 1);
-			return { year: next.getFullYear(), monthIndex: next.getMonth() };
-		});
-	}, []);
+		setMonth({ year: next.year, monthIndex: next.monthIndex });
+		setSelectedDate(next.selectedDate);
+		setSearchParams(next.dateSearch, { replace: true });
+	}, [month, selectedDate, setSearchParams, todayLocalDate]);
 	const selectDate = (localDate: string) => {
 		setSelectedDate(localDate);
-		setSearchParams({ date: localDate }, { replace: true });
+		setSearchParams(buildProgressDateSearch(localDate), { replace: true });
 	};
 	const canGoNext = month.year < now.getFullYear()
 		|| (month.year === now.getFullYear() && month.monthIndex < now.getMonth());

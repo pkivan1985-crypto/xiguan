@@ -52,16 +52,15 @@
 	margin-top: 7px;
 }
 
-.labels,
-.values {
+.goalRow {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-	gap: 10px;
+	grid-template-columns: minmax(0, 1fr) minmax(92px, 42%);
+	gap: 4px 10px;
 	align-items: center;
 }
 
-.labels > span,
-.values > span {
+.goalLabel,
+.value {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	font-size: 12px;
@@ -69,27 +68,35 @@
 	white-space: nowrap;
 }
 
-.labels > span {
+.goalLabel {
 	display: flex;
 	gap: 5px;
 	align-items: center;
 	color: var(--muted-color);
 }
 
-.labels > span:last-child,
-.values > span:last-child {
-	justify-content: flex-end;
-	text-align: right;
+.goalLabel b {
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-.labels svg {
+.goalLabel > svg {
 	flex: none;
 	color: var(--sport-color);
 }
 
+.goalLabel small {
+	display: inline-flex;
+	gap: 3px;
+	align-items: center;
+	margin-left: auto;
+	color: var(--achievement-color);
+}
+
 .bar {
 	position: relative;
-	display: block;
+	display: grid;
+	grid-column: 1;
 	height: 7px;
 	overflow: hidden;
 	background: color-mix(in srgb, var(--muted-color) 28%, transparent);
@@ -103,22 +110,15 @@
 	border-radius: inherit;
 }
 
-.bar em {
-	position: absolute;
-	top: 50%;
-	width: 10px;
-	height: 14px;
+.bar[data-completed='true'] i {
 	background: var(--achievement-color);
-	border-radius: 999px;
-	transform: translate(-50%, -50%);
 }
 
-.values {
+.value {
+	grid-row: 2;
+	grid-column: 2;
 	color: var(--muted-color);
-}
-
-.values > span:last-child {
-	color: var(--achievement-color);
+	text-align: right;
 }
 
 .noGoal {

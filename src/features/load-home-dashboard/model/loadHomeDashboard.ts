@@ -10,11 +10,18 @@ export interface HomeGoalSummaryGoal {
 	id: string;
 	title: string;
 	status: GoalStatus;
+	targetQuantityBase: number;
 	progress: GoalProgress;
 }
 
-export interface HomeGoalSummaryStage extends HomeGoalSummaryGoal {
+export interface HomeGoalSummaryStage {
+	id: string;
+	title: string;
+	status: GoalStatus;
 	mode: StageCompletionMode;
+	targetQuantityBase?: number;
+	targetActiveDays?: number;
+	progress: GoalProgress;
 }
 
 export interface HomeGoalSummary {
@@ -110,10 +117,24 @@ export async function loadHomeDashboard(
 				basePerDisplayUnit: template.quantity.basePerDisplayUnit,
 				maxDecimalPlaces: template.quantity.maxDecimalPlaces,
 				longTermGoal: longGoal && longProgress
-					? { id: longGoal.id, title: longGoal.title, status: longGoal.status, progress: longProgress }
+					? {
+						id: longGoal.id,
+						title: longGoal.title,
+						status: longGoal.status,
+						targetQuantityBase: longGoal.targetQuantityBase,
+						progress: longProgress,
+					}
 					: null,
 				stageGoal: stage && stageProgress
-					? { id: stage.id, title: stage.title, status: stage.status, mode: stage.mode, progress: stageProgress }
+					? {
+						id: stage.id,
+						title: stage.title,
+						status: stage.status,
+						mode: stage.mode,
+						targetQuantityBase: stage.targetQuantityBase,
+						targetActiveDays: stage.targetActiveDays,
+						progress: stageProgress,
+					}
 					: null,
 			};
 		});

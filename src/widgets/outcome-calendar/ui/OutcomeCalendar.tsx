@@ -31,9 +31,15 @@ function OutcomeCalendar({
 	onSelectDate,
 	children,
 }: OutcomeCalendarProps) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const completed = new Set(outcomeDates);
-	const weekdays = Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(undefined, { weekday: 'narrow' }).format(new Date(2024, 0, index + 1)));
+	const weekdays = Array.from(
+		{ length: 7 },
+		(_, index) => new Intl.DateTimeFormat(
+			i18n.resolvedLanguage ?? i18n.language,
+			{ weekday: 'narrow' },
+		).format(new Date(2024, 0, index + 1)),
+	);
 
 	return (
 		<section className={styles.calendar} aria-labelledby='outcome-calendar-title'>

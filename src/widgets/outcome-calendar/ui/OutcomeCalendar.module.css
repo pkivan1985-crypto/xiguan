@@ -74,7 +74,7 @@
 
 .day::after {
 	position: absolute;
-	inset: -5px 0;
+	inset: -6px 0 -5px;
 	content: '';
 }
 
