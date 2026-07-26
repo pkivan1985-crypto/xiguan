@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import type { ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
@@ -32,7 +33,8 @@ const translations: Record<string, string> = {
 	'shell.deck.trackingTypes.count': '次数记录',
 	'shell.deck.trackingTypes.duration': '时长记录',
 	'shell.deck.trackingTypes.quantity': '数值记录',
-	'shell.nav.deck': '习惯',
+	'shell.nav.deck': '我的卡套',
+	'shell.nav.habits': '习惯',
 };
 
 vi.mock('react-i18next', () => ({
@@ -95,5 +97,46 @@ describe('DeckPage', () => {
 		expect(html).toContain('data-testid="habit-filter-group"');
 		expect(html).toContain('data-testid="habit-archive-summary"');
 		expect(html).not.toContain('管理卡套');
+	});
+
+	it('keeps the approved compact mobile visual contracts', () => {
+		const deckCss = readFileSync(
+			new URL('./DeckPage.module.css', import.meta.url),
+			'utf8',
+		);
+		const appShellCss = readFileSync(
+			new URL('../../../widgets/app-shell/ui/AppShell.module.css', import.meta.url),
+			'utf8',
+		);
+		const weekStripCss = readFileSync(
+			new URL('../../../widgets/week-strip/ui/WeekStrip.module.css', import.meta.url),
+			'utf8',
+		);
+		const calendarCss = readFileSync(
+			new URL('../../../widgets/outcome-calendar/ui/OutcomeCalendar.module.css', import.meta.url),
+			'utf8',
+		);
+		const progressCss = readFileSync(
+			new URL('../../progress/ui/ProgressPage.module.css', import.meta.url),
+			'utf8',
+		);
+
+		expect(deckCss).toMatch(/\.page\s*\{[^}]*gap:\s*0;/s);
+		expect(deckCss).toMatch(/\.headerActions\s*\{[^}]*gap:\s*0;/s);
+		expect(appShellCss).not.toMatch(
+			/\.navItem\.active\s*\{[^}]*background:/s,
+		);
+		expect(weekStripCss).toMatch(
+			/\.day::before\s*\{[^}]*width:\s*40px;/s,
+		);
+		expect(calendarCss).toMatch(
+			/\.date\s*\{[^}]*width:\s*38px;[^}]*height:\s*39px;/s,
+		);
+		expect(calendarCss).toMatch(
+			/\.day::after\s*\{[^}]*inset:\s*-6px 0 -5px;/s,
+		);
+		expect(progressCss).toMatch(
+			/\.detailsLink,\s*\.allGoalsLink\s*\{[^}]*min-height:\s*44px;/s,
+		);
 	});
 });

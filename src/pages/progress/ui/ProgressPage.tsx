@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- Tab, query and element identifiers are stable non-UI strings. */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	PiArrowClockwise,
@@ -14,7 +14,9 @@ import {
 	buildHistoryDateHref,
 	buildProgressDateSearch,
 	buildProgressTabModel,
+	canonicalProgressDateSearch,
 	moveProgressMonth,
+	progressMonthFromDate,
 	validSelectedDate,
 	type ProgressTab,
 } from '../model/progressPageState';
@@ -222,17 +224,21 @@ function ProgressPage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const now = useMemo(() => new Date(), []);
 	const todayLocalDate = formatLocalDate(now);
-	const initialSelected = validSelectedDate(searchParams.get('date'), todayLocalDate);
-	const [selectedDate, setSelectedDate] = useState(initialSelected);
+	const requestedDate = searchParams.get('date');
+	const selectedDate = validSelectedDate(requestedDate, todayLocalDate);
+	const canonicalDateSearch = canonicalProgressDateSearch(requestedDate, selectedDate);
 	const [activeTab, setActiveTab] = useState<ProgressTab>('calendar');
-	const [month, setMonth] = useState(() => {
-		const [year, monthNumber] = initialSelected.split('-').map(Number);
-		return { year: year!, monthIndex: monthNumber! - 1 };
-	});
+	const month = useMemo(() => progressMonthFromDate(selectedDate), [selectedDate]);
 	const [dashboard, setDashboard] = useState<HomeDashboardModel | null>(null);
 	const [history, setHistory] = useState<HistoryModel | null>(null);
 	const [error, setError] = useState(false);
 	const [reloadNonce, setReloadNonce] = useState(0);
+
+	useEffect(() => {
+		if (canonicalDateSearch) {
+			setSearchParams(canonicalDateSearch, { replace: true });
+		}
+	}, [canonicalDateSearch, setSearchParams]);
 
 	useEffect(() => {
 		let active = true;
@@ -247,16 +253,12 @@ function ProgressPage() {
 		return () => { active = false; };
 	}, [month, reloadNonce, todayLocalDate]);
 
-	const moveMonth = useCallback((offset: number) => {
+	const moveMonth = (offset: number) => {
 		const next = moveProgressMonth(month, selectedDate, offset, todayLocalDate);
 		if (next.year === month.year && next.monthIndex === month.monthIndex) return;
-		setDashboard(null);
-		setMonth({ year: next.year, monthIndex: next.monthIndex });
-		setSelectedDate(next.selectedDate);
 		setSearchParams(next.dateSearch, { replace: true });
-	}, [month, selectedDate, setSearchParams, todayLocalDate]);
+	};
 	const selectDate = (localDate: string) => {
-		setSelectedDate(localDate);
 		setSearchParams(buildProgressDateSearch(localDate), { replace: true });
 	};
 	const canGoNext = month.year < now.getFullYear()
@@ -285,7 +287,12 @@ function ProgressPage() {
 			</div>
 		);
 	}
-	if (!dashboard || !history) {
+	if (
+		!dashboard
+		|| dashboard.year !== month.year
+		|| dashboard.monthIndex !== month.monthIndex
+		|| !history
+	) {
 		return (
 			<div className={styles.page}>
 				<ProgressHeader />

@@ -77,7 +77,6 @@
 
 .navItem.active {
 	color: var(--accent-color);
-	background: var(--accent-soft);
 }
 
 @media (min-width: 641px) {

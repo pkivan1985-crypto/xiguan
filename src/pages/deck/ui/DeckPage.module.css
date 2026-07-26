@@ -1,6 +1,6 @@
 .page {
 	display: grid;
-	gap: 20px;
+	gap: 0;
 	width: 100%;
 	max-width: 398px;
 	margin: 0 auto;
@@ -9,9 +9,9 @@
 .headerActions {
 	display: grid;
 	grid-template-columns: auto;
-	gap: 2px;
+	gap: 0;
 	justify-items: end;
-	margin-top: -5px;
+	margin-top: -6px;
 }
 
 .settingsAction {
@@ -71,7 +71,7 @@
 
 @media (max-width: 359px) {
 	.page {
-		gap: 16px;
+		gap: 0;
 	}
 
 	.createAction {

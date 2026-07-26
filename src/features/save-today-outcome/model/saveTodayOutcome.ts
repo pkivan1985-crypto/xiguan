@@ -81,6 +81,7 @@ function assertInput(input: SaveTodayOutcomeInput): void {
 export async function saveTodayOutcome(
 	database: RepeatOutcomeDatabase,
 	input: SaveTodayOutcomeInput,
+	transientDraft?: TodayDraft,
 ): Promise<OutcomeBatch> {
 	assertInput(input);
 	let resultBatchId: string | undefined;
@@ -111,7 +112,7 @@ export async function saveTodayOutcome(
 			return;
 		}
 
-		const draft = await tables.todayDrafts.get(input.localDate);
+		const draft = transientDraft ?? await tables.todayDrafts.get(input.localDate);
 		if (!draft) throw new Error('TODAY_DRAFT_NOT_FOUND');
 		validateTodayDraft(draft, input.localDate);
 		const filledSlots = filledSlotsInOrder(draft);
@@ -217,7 +218,14 @@ export async function saveTodayOutcome(
 			items,
 		};
 		await tables.outcomeBatches.add(batch);
-		await tables.todayDrafts.put({ ...draft, status: 'submitted', updatedAt: input.nowIso, lastSubmissionId: input.submissionId });
+		if (!transientDraft) {
+			await tables.todayDrafts.put({
+				...draft,
+				status: 'submitted',
+				updatedAt: input.nowIso,
+				lastSubmissionId: input.submissionId,
+			});
+		}
 		resultBatchId = batch.id;
 	});
 

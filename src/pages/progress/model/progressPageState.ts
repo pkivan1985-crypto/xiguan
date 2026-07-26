@@ -34,6 +34,23 @@ function buildProgressDateSearch(localDate: string): string {
 	return new URLSearchParams({ date: parseLocalDate(localDate) }).toString();
 }
 
+function canonicalProgressDateSearch(
+	requestedDate: string | null,
+	selectedDate: string,
+): string | null {
+	return requestedDate === selectedDate
+		? null
+		: buildProgressDateSearch(selectedDate);
+}
+
+function progressMonthFromDate(localDate: string): ProgressMonthState {
+	const [year, monthNumber] = parseLocalDate(localDate).split('-').map(Number);
+	return {
+		year: year!,
+		monthIndex: monthNumber! - 1,
+	};
+}
+
 function buildHistoryDateHref(localDate: string): string {
 	return `${APP_ROUTES.HISTORY}?${buildProgressDateSearch(localDate)}`;
 }
@@ -88,9 +105,11 @@ function moveProgressMonth(
 
 export {
 	buildHistoryDateHref,
+	canonicalProgressDateSearch,
 	buildProgressDateSearch,
 	buildProgressTabModel,
 	moveProgressMonth,
+	progressMonthFromDate,
 	validSelectedDate,
 };
 export type {

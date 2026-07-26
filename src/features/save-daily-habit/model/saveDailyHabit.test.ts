@@ -1,14 +1,37 @@
 import 'fake-indexeddb/auto';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { seedSystemDefinitions } from '@entities/card-template';
+import type { TodayDraft } from '@entities/today-draft';
+import { completeOutcomePlayback } from '@features/manage-outcome-playback';
 import { RepeatOutcomeDatabase } from '@shared/lib/db';
 
 import { saveDailyHabit } from './saveDailyHabit';
 
+vi.mock('@features/manage-outcome-playback', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('@features/manage-outcome-playback')>();
+	return {
+		...actual,
+		completeOutcomePlayback: vi.fn(actual.completeOutcomePlayback),
+	};
+});
+
 const LOCAL_DATE = '2026-07-25';
 let database: RepeatOutcomeDatabase;
+
+function existingSixSlotDraft(): TodayDraft {
+	return {
+		localDate: LOCAL_DATE,
+		status: 'editing',
+		updatedAt: '2026-07-25T01:30:00.000Z',
+		slots: Array.from({ length: 6 }, (_, slotIndex) => ({
+			slotIndex,
+			userCardId: slotIndex === 0 ? 'card-a' : null,
+			valueText: slotIndex === 0 ? '9.50' : '',
+		})),
+	};
+}
 
 beforeEach(async () => {
 	database = new RepeatOutcomeDatabase(`test-save-daily-habit-${crypto.randomUUID()}`);
@@ -25,6 +48,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+	vi.clearAllMocks();
 	database.close();
 	await database.delete();
 });
@@ -112,5 +136,89 @@ describe('saveDailyHabit', () => {
 		});
 
 		expect(await database.table('actionRecords').get(`card-water:${LOCAL_DATE}`)).toMatchObject({ quantityBaseValue: 1 });
+	});
+
+	it('preserves an existing six-slot draft while saving one habit immediately', async () => {
+		const originalDraft = existingSixSlotDraft();
+		await database.table('todayDrafts').put(originalDraft);
+
+		await saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: LOCAL_DATE,
+			currentLocalDate: LOCAL_DATE,
+			quantityBaseValue: 2500,
+			nowIso: '2026-07-25T06:00:00.000Z',
+			submissionId: 'preserve-draft',
+		});
+
+		expect(await database.table('todayDrafts').get(LOCAL_DATE)).toEqual(originalDraft);
+		expect(await database.table('actionRecords').get(`card-a:${LOCAL_DATE}`)).toMatchObject({
+			quantityBaseValue: 2500,
+			lastSubmissionId: 'preserve-draft',
+		});
+	});
+
+	it('saves concurrent single habits from isolated callers without sharing a draft', async () => {
+		await database.table('userCards').add({
+			id: 'card-water',
+			officialCardId: 'water',
+			title: '喝水',
+			status: 'active',
+			sortOrder: 1,
+			createdAt: '2026-07-25T01:00:00.000Z',
+			updatedAt: '2026-07-25T01:00:00.000Z',
+		});
+
+		await Promise.all([
+			saveDailyHabit(database, {
+				userCardId: 'card-a',
+				localDate: LOCAL_DATE,
+				currentLocalDate: LOCAL_DATE,
+				quantityBaseValue: 2500,
+				nowIso: '2026-07-25T07:00:00.000Z',
+				submissionId: 'concurrent-run',
+			}),
+			saveDailyHabit(database, {
+				userCardId: 'card-water',
+				localDate: LOCAL_DATE,
+				currentLocalDate: LOCAL_DATE,
+				quantityBaseValue: 3,
+				nowIso: '2026-07-25T07:00:01.000Z',
+				submissionId: 'concurrent-water',
+			}),
+		]);
+
+		expect(await database.table('actionRecords').get(`card-a:${LOCAL_DATE}`)).toMatchObject({
+			quantityBaseValue: 2500,
+			lastSubmissionId: 'concurrent-run',
+		});
+		expect(await database.table('actionRecords').get(`card-water:${LOCAL_DATE}`)).toMatchObject({
+			quantityBaseValue: 3,
+			lastSubmissionId: 'concurrent-water',
+		});
+	});
+
+	it('reports a successful save when only playback completion fails after the record commits', async () => {
+		vi.mocked(completeOutcomePlayback).mockRejectedValueOnce(new Error('PLAYBACK_WRITE_FAILED'));
+
+		await expect(saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: LOCAL_DATE,
+			currentLocalDate: LOCAL_DATE,
+			quantityBaseValue: 2500,
+			nowIso: '2026-07-25T08:00:00.000Z',
+			submissionId: 'playback-failure',
+		})).resolves.toEqual({
+			operation: 'save',
+			actionRecordId: `card-a:${LOCAL_DATE}`,
+		});
+
+		expect(await database.table('actionRecords').get(`card-a:${LOCAL_DATE}`)).toMatchObject({
+			quantityBaseValue: 2500,
+			lastSubmissionId: 'playback-failure',
+		});
+		expect(await database.table('outcomeBatches').get('playback-failure')).toMatchObject({
+			status: 'ready',
+		});
 	});
 });

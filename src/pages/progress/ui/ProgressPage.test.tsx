@@ -10,7 +10,9 @@ import {
 	buildHistoryDateHref,
 	buildProgressDateSearch,
 	buildProgressTabModel,
+	canonicalProgressDateSearch,
 	moveProgressMonth,
+	progressMonthFromDate,
 } from '../model/progressPageState';
 import * as progressPageModule from './ProgressPage';
 
@@ -194,7 +196,15 @@ function progressContent(): ComponentType<ProgressPageContentProps> | undefined 
 describe('ProgressPage', () => {
 	it('builds deterministic tab state and date deep links without DOM state', () => {
 		expect(buildProgressDateSearch('2026-07-25')).toBe('date=2026-07-25');
+		expect(canonicalProgressDateSearch('2026-07-25', '2026-07-25')).toBeNull();
+		expect(canonicalProgressDateSearch('not-a-date', '2026-07-25')).toBe(
+			'date=2026-07-25',
+		);
+		expect(canonicalProgressDateSearch(null, '2026-07-25')).toBe(
+			'date=2026-07-25',
+		);
 		expect(buildHistoryDateHref('2026-07-25')).toBe('/history?date=2026-07-25');
+		expect(progressMonthFromDate('2026-07-25')).toEqual({ year: 2026, monthIndex: 6 });
 		expect(buildProgressTabModel('goals')).toEqual([
 			{
 				tab: 'calendar',

@@ -32,7 +32,7 @@ function DeckPageContent({
 	return (
 		<div className={styles.page}>
 			<MobilePageHeader
-				title={t('shell.nav.deck')}
+				title={t('shell.nav.habits')}
 				description={t('shell.deck.activeAndArchived', {
 					active: activeCount,
 					archived: view.archivedCount,

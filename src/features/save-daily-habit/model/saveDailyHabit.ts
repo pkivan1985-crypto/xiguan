@@ -75,19 +75,22 @@ export async function saveDailyHabit(
 	const template = await templates.get(card.officialCardId);
 	if (!template?.enabled) throw new Error('CARD_TEMPLATE_NOT_AVAILABLE');
 
-	const todayDrafts = database.tableFor<TodayDraft>('todayDrafts');
 	const displayValue = template.quantity.maxDecimalPlaces === 0
 		? String(input.quantityBaseValue / template.quantity.basePerDisplayUnit)
 		: formatQuantityFromBase(input.quantityBaseValue, template.quantity);
-	await todayDrafts.put(singleCardDraft(input, displayValue));
 	const batch = await saveTodayOutcome(database, {
 		localDate: input.localDate,
 		currentLocalDate: input.currentLocalDate,
 		nowIso: input.nowIso,
 		submissionId: input.submissionId,
 		confirmedOverLimit: true,
-	});
-	await completeOutcomePlayback(database, batch.id, input.nowIso);
+	}, singleCardDraft(input, displayValue));
+	try {
+		await completeOutcomePlayback(database, batch.id, input.nowIso);
+	} catch {
+		// The action record and audit batch are already committed. Playback status
+		// cleanup must not turn a successful user save into a reported failure.
+	}
 	return { operation: 'save', actionRecordId };
 }
 

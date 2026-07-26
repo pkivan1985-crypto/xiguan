@@ -297,4 +297,15 @@ describe('CardDeck', () => {
 			/\.filters button::before\s*\{[^}]*inset:\s*7\.5px 0;/s,
 		);
 	});
+
+	it('keeps the two-column compact cards dense without shrinking their touch target', () => {
+		const css = readFileSync(new URL('./CardDeck.module.css', import.meta.url), 'utf8');
+
+		expect(css).toMatch(
+			/\.compactCard > button\s*\{[^}]*min-height:\s*98px;/s,
+		);
+		expect(css).toMatch(
+			/\.archiveSummary\s*\{[^}]*min-height:\s*52px;/s,
+		);
+	});
 });

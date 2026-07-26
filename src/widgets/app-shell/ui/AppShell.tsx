@@ -3,7 +3,11 @@ import { NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PiChartBar, PiCheckSquare, PiGear, PiStack } from 'react-icons/pi';
 import { APP_ROUTES } from '@shared/config';
-import { appShellTitleKey, hasPageOwnedHeader } from '../model/appShellRoute';
+import {
+	appShellTitleKey,
+	hasPageOwnedHeader,
+	isSettingsPath,
+} from '../model/appShellRoute';
 
 function AppShell() {
 	const { t } = useTranslation();
@@ -22,7 +26,7 @@ function AppShell() {
 			{!pageOwnsHeader && (
 				<header className={styles.header}>
 					<h1 className={styles.title}>{pageTitle}</h1>
-					{pathname !== APP_ROUTES.SETTINGS && (
+					{!isSettingsPath(pathname) && (
 						<NavLink
 							className={styles.settingsLink}
 							to={APP_ROUTES.SETTINGS}

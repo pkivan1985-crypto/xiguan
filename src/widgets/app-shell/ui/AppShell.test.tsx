@@ -54,5 +54,14 @@ describe('AppShell primary navigation', () => {
 
 		expect(html).toContain('<header');
 		expect(html).toContain('>设置<');
+		expect(html).not.toContain('aria-label="打开设置"');
+	});
+
+	it('does not add a settings self-link for a trailing-slash settings URL', () => {
+		const html = renderShell('/settings/');
+
+		expect(html).toContain('<header');
+		expect(html).toContain('>设置<');
+		expect(html).not.toContain('aria-label="打开设置"');
 	});
 });
