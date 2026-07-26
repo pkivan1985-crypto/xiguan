@@ -1,43 +1,66 @@
 .strip {
 	display: grid;
 	grid-template-columns: repeat(7, 1fr);
-	gap: 5px;
-	padding: 6px;
-	background: var(--surface-color);
-	border: 1px solid var(--border-color);
-	border-radius: 18px;
+	gap: 6px;
+	width: 100%;
+	height: 63px;
 }
 
 .day {
 	display: grid;
-	gap: 3px;
+	grid-template-rows: 18px 24px 14px;
+	gap: 2px;
 	place-items: center;
 	min-width: 0;
-	min-height: 52px;
-	padding: 5px 0;
+	min-height: 63px;
+	padding: 2px 0;
 	color: var(--muted-color);
-	border-radius: 13px;
+	background: transparent;
+	border-radius: 18px;
 }
 
 .day small {
-	font-size: 0.58rem;
+	font-size: 13px;
 	font-weight: 650;
+	line-height: 18px;
 }
 
 .day strong {
 	display: grid;
 	place-items: center;
-	width: 27px;
-	height: 27px;
-	font-size: 0.72rem;
+	font-size: 15px;
+	line-height: 24px;
 }
 
 .day.selected {
 	color: #fff;
 	background: var(--accent-color);
-	box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-color) 24%, transparent);
+	box-shadow: 0 8px 18px color-mix(in srgb, var(--accent-color) 24%, transparent);
+}
+
+.marker {
+	display: grid;
+	place-items: center;
+	width: 14px;
+	height: 14px;
+}
+
+.marker > span {
+	display: grid;
+	place-items: center;
+	color: var(--achievement-color);
+}
+
+.selected .marker > span {
+	color: #fff;
+}
+
+.marker svg {
+	width: 13px;
+	height: 13px;
 }
 
 .day:disabled {
+	cursor: default;
 	opacity: 0.34;
 }

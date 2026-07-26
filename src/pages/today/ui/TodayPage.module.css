@@ -1,8 +1,10 @@
 .page {
-	display: grid;
-	gap: 14px;
-	max-width: 560px;
-	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	max-width: none;
+	padding-top: 12px;
+	margin: 0;
 }
 
 .loading,
@@ -11,13 +13,14 @@
 	gap: 10px;
 	place-items: center;
 	min-height: 240px;
-	font-size: 0.75rem;
+	font-size: 13px;
+	line-height: 20px;
 	color: var(--muted-color);
 	text-align: center;
 }
 
 .state > svg {
-	font-size: 1.4rem;
+	font-size: 24px;
 	color: var(--error-color);
 }
 
@@ -25,298 +28,120 @@
 	display: inline-flex;
 	gap: 6px;
 	align-items: center;
-	min-height: 40px;
+	min-height: 44px;
 	padding: 0 14px;
-	font-size: 0.72rem;
+	font-size: 13px;
 	font-weight: 700;
 	background: var(--surface-color);
 	border: 1px solid var(--border-color);
 	border-radius: 13px;
 }
 
-.overview {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 4px 2px;
-}
-
-.overview div {
+.settingsAction {
 	display: grid;
-	gap: 2px;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	font-size: 26px;
+	color: var(--muted-color);
+	background: transparent;
+	border-radius: 50%;
 }
 
-.overview small {
-	font-size: 0.66rem;
-	color: var(--muted-color);
+.weekRail {
+	margin-top: 22px;
+}
+
+.overview {
+	display: grid;
+	grid-template-columns: auto minmax(70px, 1fr) auto;
+	gap: 12px;
+	align-items: center;
+	min-height: 22px;
+	padding: 0;
+	margin-top: 20px;
 }
 
 .overview strong {
-	font-size: 0.9rem;
+	font-size: 15px;
+	font-weight: 650;
+	line-height: 22px;
+	white-space: nowrap;
 }
 
-.overview > span {
-	display: grid;
-	place-items: center;
-	min-width: 48px;
-	height: 34px;
-	font-size: 0.72rem;
-	font-weight: 800;
-	color: var(--accent-color);
-	background: var(--accent-soft);
-	border-radius: 12px;
+.overview small {
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+	white-space: nowrap;
 }
 
-.listSection {
-	display: grid;
-	gap: 10px;
-}
-
-.listSection > header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 2px;
-}
-
-.listSection h2 {
-	font-size: 0.82rem;
-}
-
-.listSection > header a {
-	display: grid;
-	place-items: center;
-	width: 38px;
-	height: 38px;
-	font-size: 1rem;
-	color: #fff;
-	background: var(--accent-color);
-	border-radius: 13px;
-}
-
-.habitList {
-	display: grid;
-	gap: 9px;
-}
-
-.habitCard {
-	position: relative;
-	display: grid;
-	grid-template-columns: 42px minmax(0, 1fr) auto;
-	gap: 10px;
-	align-items: center;
-	min-height: 82px;
-	padding: 13px 13px 16px;
-	overflow: hidden;
-	background: var(--surface-color);
-	border: 1px solid var(--border-color);
-	border-radius: 19px;
-	box-shadow: var(--shadow-sm);
-}
-
-.habitIcon {
-	display: grid;
-	place-items: center;
-	width: 42px;
-	height: 42px;
-	font-size: 1.1rem;
-	color: var(--habit-accent, var(--accent-color));
-	background: color-mix(in srgb, var(--habit-accent, var(--accent-color)) 14%, transparent);
-	border-radius: 14px;
-}
-
-.habitCopy {
-	display: grid;
-	gap: 4px;
+.overview > .overviewProgress {
+	display: block;
 	min-width: 0;
-}
-
-.habitCopy strong {
+	height: 7px;
 	overflow: hidden;
-	text-overflow: ellipsis;
-	font-size: 0.78rem;
-	white-space: nowrap;
+	background: var(--trail-color);
+	border-radius: var(--radius-pill);
 }
 
-.habitCopy small {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	font-size: 0.62rem;
-	color: var(--muted-color);
-	white-space: nowrap;
-}
-
-.stepper {
-	display: grid;
-	grid-template-columns: 34px minmax(58px, auto) 34px;
-	gap: 3px;
-	align-items: center;
-}
-
-.stepper button,
-.toggle {
-	display: grid;
-	place-items: center;
-	width: 34px;
-	height: 34px;
-	font-size: 0.9rem;
-	color: var(--habit-accent, var(--accent-color));
-	background: color-mix(in srgb, var(--habit-accent, var(--accent-color)) 12%, transparent);
-	border-radius: 11px;
-}
-
-.stepper button:disabled {
-	opacity: 0.35;
-}
-
-.stepper span {
-	display: grid;
-	place-items: center;
-	line-height: 1;
-}
-
-.stepper b {
-	font-size: 0.85rem;
-}
-
-.stepper small {
-	margin-top: 4px;
-	font-size: 0.55rem;
-	color: var(--muted-color);
-}
-
-.toggle {
-	width: 44px;
-	height: 44px;
-	font-size: 1.15rem;
-	border: 1px solid color-mix(in srgb, var(--habit-accent, var(--accent-color)) 26%, transparent);
-	border-radius: 15px;
-}
-
-.completed .toggle {
-	color: #fff;
-	background: var(--habit-accent, var(--accent-color));
-}
-
-.cardProgress {
-	position: absolute;
-	right: 13px;
-	bottom: 7px;
-	left: 65px;
-	height: 3px;
-	overflow: hidden;
-	background: var(--border-color);
-	border-radius: 99px;
-}
-
-.cardProgress i {
+.overviewProgress i {
 	display: block;
 	height: 100%;
-	background: var(--habit-accent, var(--accent-color));
+	background: var(--accent-color);
 	border-radius: inherit;
 	transition: width 180ms ease;
 }
 
-.green { --habit-accent: var(--sport-color); }
-.cyan { --habit-accent: #25b8d8; }
-.amber { --habit-accent: #e6a93a; }
-.violet { --habit-accent: #9278ee; }
-.blue { --habit-accent: var(--accent-color); }
+.panelSlot {
+	margin-top: 15px;
+}
 
-.inlineError {
-	display: flex;
-	gap: 5px;
+.primaryActions {
+	display: grid;
+	grid-template-columns: 1fr 1px 1fr;
 	align-items: center;
-	padding: 6px 8px 0;
-	font-size: 0.62rem;
-	color: var(--error-color);
+	width: calc(100% + 12px);
+	min-height: 44px;
+	margin-inline: -6px;
+	margin-top: 16px;
 }
 
-.empty {
-	display: grid;
-	gap: 8px;
-	place-items: center;
-	padding: 30px 20px;
-	text-align: center;
-	background: var(--surface-color);
-	border: 1px dashed var(--border-strong);
-	border-radius: 20px;
-}
-
-.empty > span {
-	display: grid;
-	place-items: center;
-	width: 44px;
-	height: 44px;
-	font-size: 1.1rem;
+.primaryActions a {
+	display: flex;
+	gap: 9px;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	min-height: 44px;
+	font-size: 15px;
+	line-height: 22px;
 	color: var(--accent-color);
-	background: var(--accent-soft);
-	border-radius: 15px;
 }
 
-.empty p {
-	max-width: 260px;
-	margin: 0;
-	font-size: 0.68rem;
-	color: var(--muted-color);
+.primaryActions a svg {
+	flex: none;
+	width: 24px;
+	height: 24px;
 }
 
-.emptyAction {
-	padding: 10px 15px;
-	font-size: 0.7rem;
-	font-weight: 750;
-	color: #fff;
-	background: var(--accent-color);
-	border-radius: 13px;
+.primaryActions > i {
+	width: 1px;
+	height: 22px;
+	background: var(--border-color);
 }
 
-.summaryLink {
-	display: flex;
-	gap: 10px;
-	align-items: center;
-	padding: 12px;
-	background: var(--surface-color);
-	border: 1px solid var(--border-color);
-	border-radius: 17px;
-}
-
-.summaryLink > span {
-	display: grid;
-	place-items: center;
-	width: 36px;
-	height: 36px;
-	color: var(--sport-color);
-	background: color-mix(in srgb, var(--sport-color) 12%, transparent);
-	border-radius: 12px;
-}
-
-.summaryLink div {
-	display: grid;
-	gap: 2px;
-}
-
-.summaryLink strong {
-	font-size: 0.72rem;
-}
-
-.summaryLink small {
-	font-size: 0.6rem;
-	color: var(--muted-color);
-}
-
-@media (max-width: 380px) {
-	.habitCard {
-		grid-template-columns: 38px minmax(0, 1fr) auto;
+@media (max-width: 370px) {
+	.overview {
 		gap: 8px;
-		padding-inline: 10px;
 	}
 
-	.habitIcon {
-		width: 38px;
-		height: 38px;
+	.overview strong,
+	.primaryActions a {
+		font-size: 13px;
 	}
 
-	.stepper {
-		grid-template-columns: 32px minmax(50px, auto) 32px;
+	.overview small {
+		font-size: 12px;
 	}
 }

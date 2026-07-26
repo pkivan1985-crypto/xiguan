@@ -1,0 +1,250 @@
+.panel {
+	width: calc(100% + 12px);
+	margin-inline: -6px;
+	overflow: hidden;
+	background: var(--surface-color);
+	border: 1px solid color-mix(in srgb, var(--border-color) 76%, transparent);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-sm);
+}
+
+.rows {
+	display: grid;
+}
+
+.habitRow {
+	--row-accent: var(--accent-color);
+
+	position: relative;
+	display: grid;
+	grid-template-columns: 44px minmax(0, 1fr) auto;
+	gap: 12px;
+	align-items: center;
+	min-height: 84px;
+	padding: 0 16px;
+}
+
+.habitRow + .habitRow {
+	border-top: 1px solid var(--border-color);
+}
+
+.habitRow[data-tracking-type='quantity'] {
+	min-height: 106px;
+}
+
+.habitRow[data-tracking-type='duration'] {
+	min-height: 79px;
+}
+
+.habitRow[data-tracking-type='check'] {
+	min-height: 90px;
+}
+
+.habitRow[data-tracking-type='avoid'] {
+	min-height: 81px;
+}
+
+.habitRow[data-accent='green'] {
+	--row-accent: var(--sport-color);
+}
+
+.habitRow[data-accent='cyan'],
+.habitRow[data-accent='blue'] {
+	--row-accent: var(--accent-color);
+}
+
+.habitRow[data-accent='amber'] {
+	--row-accent: var(--reading-color);
+}
+
+.habitRow[data-accent='violet'] {
+	--row-accent: var(--output-color);
+}
+
+.habitCopy {
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+}
+
+.habitCopy > strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 24px;
+	white-space: nowrap;
+}
+
+.habitCopy small {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 13px;
+	line-height: 19px;
+	color: var(--muted-color);
+	white-space: nowrap;
+}
+
+.quantityControl {
+	display: grid;
+	gap: 7px;
+	justify-items: end;
+	min-width: 118px;
+}
+
+.currentValue {
+	display: flex;
+	gap: 5px;
+	align-items: baseline;
+	justify-content: flex-end;
+}
+
+.currentValue strong {
+	font-size: 24px;
+	font-weight: 700;
+	line-height: 28px;
+}
+
+.currentValue small {
+	font-size: 13px;
+	color: var(--muted-color);
+}
+
+.stepActions {
+	display: flex;
+	gap: 12px;
+}
+
+.stepActions button,
+.squareControl,
+.circleControl {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 48px;
+	height: 44px;
+	font-size: 25px;
+	color: var(--row-accent);
+	background: color-mix(in srgb, var(--row-accent) 7%, var(--surface-secondary));
+	border: 1px solid color-mix(in srgb, var(--row-accent) 42%, var(--border-color));
+	border-radius: 13px;
+}
+
+.stepActions button {
+	position: relative;
+	height: 44px;
+	font-size: 20px;
+	color: var(--muted-color);
+	background: transparent;
+	border-color: transparent;
+}
+
+.stepActions button::before {
+	position: absolute;
+	inset: 7px 0;
+	content: '';
+	background: color-mix(in srgb, var(--row-accent) 7%, var(--surface-secondary));
+	border: 1px solid color-mix(in srgb, var(--muted-color) 28%, var(--border-color));
+	border-radius: 13px;
+}
+
+.stepActions svg {
+	position: relative;
+	z-index: 1;
+}
+
+.circleControl {
+	width: 46px;
+	height: 46px;
+	border-width: 2px;
+	border-radius: 50%;
+}
+
+.circleControl svg {
+	width: 24px;
+	height: 24px;
+}
+
+.habitRow[data-completed='true'] .circleControl {
+	color: var(--row-accent);
+	background: color-mix(in srgb, var(--row-accent) 6%, transparent);
+}
+
+.habitRow button:disabled {
+	cursor: wait;
+	opacity: 0.42;
+}
+
+.inlineError {
+	grid-column: 2 / -1;
+	padding-bottom: 8px;
+	margin-top: -5px;
+	font-size: 13px;
+	line-height: 18px;
+	color: var(--error-color);
+}
+
+.completedFold {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	width: 100%;
+	min-height: 46px;
+	padding: 0 16px;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+	background: transparent;
+	border-top: 1px solid var(--border-color);
+}
+
+.completedFold svg {
+	width: 18px;
+	height: 18px;
+	transition: transform 160ms ease;
+}
+
+.completedFold[aria-expanded='false'] svg {
+	transform: rotate(-90deg);
+}
+
+.empty {
+	display: grid;
+	gap: 8px;
+	place-items: center;
+	min-height: 180px;
+	padding: 28px 24px;
+	text-align: center;
+}
+
+.empty strong {
+	font-size: 16px;
+	line-height: 24px;
+}
+
+.empty p {
+	max-width: 260px;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+}
+
+@media (max-width: 370px) {
+	.habitRow {
+		grid-template-columns: 44px minmax(0, 1fr) auto;
+		gap: 9px;
+		padding-inline: 12px;
+	}
+
+	.quantityControl {
+		min-width: 108px;
+	}
+
+	.stepActions {
+		gap: 8px;
+	}
+
+	.stepActions button {
+		width: 44px;
+	}
+}
