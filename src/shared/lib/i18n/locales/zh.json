@@ -412,21 +412,43 @@
 			"shellStage": "M1 应用壳"
 		},
 		"deck": {
+			"active": "正在进行",
+			"activeAndArchived": "{{active}} 个进行中 · {{archived}} 个已归档",
 			"allCards": "全部卡片",
+			"archive": "已归档",
 			"cardCount": "{{count}} 个进行中的习惯",
 			"categoryMovement": "运动",
 			"categoryOutput": "输出",
 			"categoryReading": "阅读",
+			"collapse": "收起",
 			"create": "新建",
+			"daily": "每天",
+			"days": "天",
+			"details": "查看详情",
 			"emptyCards": "还没有循环卡",
 			"emptySlot": "空卡槽",
+			"filters": {
+				"all": "全部",
+				"life": "生活",
+				"reading": "阅读",
+				"sport": "运动"
+			},
 			"loading": "正在读取卡套…",
 			"loadError": "暂时无法读取卡套。",
 			"longTerm": "长期目标",
 			"manageTitle": "管理习惯",
-			"newHabit": "新建",
+			"newHabit": "新建习惯",
+			"noGoal": "未设置目标",
+			"plan": "计划",
 			"retry": "重试",
 			"stage": "阶段目标",
+			"trackingTypes": {
+				"avoid": "避免记录",
+				"check": "完成记录",
+				"count": "次数记录",
+				"duration": "时长记录",
+				"quantity": "数值记录"
+			},
 			"todayActive": "今天进行中的循环卡"
 		},
 		"createCard": {

@@ -1,14 +1,97 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiLayers, FiPlus, FiRefreshCw } from 'react-icons/fi';
-import { useNavigate } from 'react-router';
+import { PiGearSix, PiPlus, PiSpinnerGap } from 'react-icons/pi';
+import { Link, useNavigate } from 'react-router';
 
 import { loadCardDeckForDate, type DeckView } from '@features/load-card-deck';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
 import { CardDeck } from '@widgets/card-deck';
+import { MobilePageHeader } from '@widgets/mobile-page-header';
 
 import styles from './DeckPage.module.css';
+
+interface DeckPageContentProps {
+	view: DeckView;
+	onCreateHabit: () => void;
+	onOpenGoalDetails: (cardId: string) => void;
+}
+
+function activeCardCount(view: DeckView): number {
+	return view.categories.reduce((count, category) => count + category.cards.length, 0);
+}
+
+function DeckPageContent({
+	view,
+	onCreateHabit,
+	onOpenGoalDetails,
+}: DeckPageContentProps) {
+	const { t } = useTranslation();
+	const activeCount = activeCardCount(view);
+
+	return (
+		<div className={styles.page}>
+			<MobilePageHeader
+				title={t('shell.nav.deck')}
+				description={t('shell.deck.activeAndArchived', {
+					active: activeCount,
+					archived: view.archivedCount,
+				})}
+				primaryAction={(
+					<div className={styles.headerActions}>
+						<Link
+							className={styles.settingsAction}
+							to={APP_ROUTES.SETTINGS}
+							aria-label={t('shell.actions.openSettings')}
+						>
+							<PiGearSix aria-hidden='true' />
+						</Link>
+						<button
+							className={styles.createAction}
+							type='button'
+							onClick={onCreateHabit}
+						>
+							<PiPlus aria-hidden='true' />
+							{t('shell.deck.newHabit')}
+						</button>
+					</div>
+				)}
+			/>
+
+			<CardDeck
+				archivedCount={view.archivedCount}
+				categories={view.categories}
+				onOpenGoalDetails={onOpenGoalDetails}
+				copy={{
+					active: t('shell.deck.active'),
+					archive: t('shell.deck.archive'),
+					collapse: t('shell.deck.collapse'),
+					daily: t('shell.deck.daily'),
+					days: t('shell.deck.days'),
+					details: t('shell.deck.details'),
+					empty: t('shell.deck.emptyCards'),
+					filters: {
+						all: t('shell.deck.filters.all'),
+						sport: t('shell.deck.filters.sport'),
+						reading: t('shell.deck.filters.reading'),
+						life: t('shell.deck.filters.life'),
+					},
+					longTerm: t('shell.deck.longTerm'),
+					noGoal: t('shell.deck.noGoal'),
+					plan: t('shell.deck.plan'),
+					stage: t('shell.deck.stage'),
+					trackingTypes: {
+						check: t('shell.deck.trackingTypes.check'),
+						count: t('shell.deck.trackingTypes.count'),
+						quantity: t('shell.deck.trackingTypes.quantity'),
+						duration: t('shell.deck.trackingTypes.duration'),
+						avoid: t('shell.deck.trackingTypes.avoid'),
+					},
+				}}
+			/>
+		</div>
+	);
+}
 
 function DeckPage() {
 	const { t } = useTranslation();
@@ -20,35 +103,48 @@ function DeckPage() {
 	useEffect(() => {
 		let active = true;
 		loadCardDeckForDate(formatLocalDate(new Date()))
-			.then((nextView) => { if (active) setView(nextView); })
-			.catch(() => { if (active) setError(true); });
-		return () => { active = false; };
+			.then((nextView) => {
+				if (!active) return;
+				setView(nextView);
+				setError(false);
+			})
+			.catch(() => {
+				if (active) setError(true);
+			});
+		return () => {
+			active = false;
+		};
 	}, [reloadKey]);
 
-	if (error) return <div className={styles.status}><p>{t('shell.deck.loadError')}</p><button type='button' onClick={() => { setError(false); setView(null); setReloadKey((key) => key + 1); }}><FiRefreshCw aria-hidden='true' />{t('shell.deck.retry')}</button></div>;
+	if (error) {
+		return (
+			<div className={styles.status}>
+				<p>{t('shell.deck.loadError')}</p>
+				<button
+					type='button'
+					onClick={() => {
+						setError(false);
+						setView(null);
+						setReloadKey((key) => key + 1);
+					}}
+				>
+					<PiSpinnerGap aria-hidden='true' />
+					{t('shell.deck.retry')}
+				</button>
+			</div>
+		);
+	}
+
 	if (!view) return <p className={styles.loading}>{t('shell.deck.loading')}</p>;
 
-	const cardCount = view.categories.reduce((count, category) => count + category.cards.length, 0);
 	return (
-		<div className={styles.page}>
-			<section className={styles.overview}>
-				<span><FiLayers aria-hidden='true' /></span>
-				<div><strong>{t('shell.deck.manageTitle')}</strong><small>{t('shell.deck.cardCount', { count: cardCount })}</small></div>
-				<button type='button' onClick={() => navigate(APP_ROUTES.DECK_NEW)}><FiPlus aria-hidden='true' />{t('shell.deck.newHabit')}</button>
-			</section>
-			<CardDeck
-				categories={view.categories}
-				onCreateRunningCard={() => navigate(APP_ROUTES.DECK_NEW)}
-				copy={{
-					create: t('shell.deck.create'),
-					comingSoon: t('shell.common.comingSoon'),
-					empty: t('shell.deck.emptyCards'),
-					longTerm: t('shell.deck.longTerm'),
-					stage: t('shell.deck.stage'),
-				}}
-			/>
-		</div>
+		<DeckPageContent
+			view={view}
+			onCreateHabit={() => navigate(APP_ROUTES.DECK_NEW)}
+			onOpenGoalDetails={(cardId) => navigate(APP_ROUTES.goalDetails(cardId))}
+		/>
 	);
 }
 
-export { DeckPage };
+export { DeckPage, DeckPageContent };
+export type { DeckPageContentProps };

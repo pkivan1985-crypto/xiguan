@@ -1,84 +1,368 @@
-import styles from './CardDeck.module.css';
+/* eslint-disable i18next/no-literal-string -- Filter, icon, accent, size, and goal-kind values are stable UI/domain identifiers. */
 import { useState } from 'react';
-import { FiActivity, FiBookOpen, FiChevronDown, FiEdit3, FiHome, FiPlus } from 'react-icons/fi';
-import type { IconType } from 'react-icons';
-import { formatQuantityFromBase } from '@entities/card-template';
+import {
+	PiArchive,
+	PiCalendarBlank,
+	PiCaretRight,
+	PiCaretUp,
+	PiFlagPennant,
+	PiTarget,
+} from 'react-icons/pi';
+
+import { formatQuantityFromBase, type HabitTrackingType } from '@entities/card-template';
+import type { GoalProgress, LongTermGoal, StageGoal } from '@entities/goal';
 import type { DeckCardView, DeckCategoryView } from '@features/load-card-deck';
-import { toggleExpandedItemId } from '../model/toggleExpandedItemId';
+import { HabitGlyph } from '@widgets/habit-glyph';
+
+import {
+	filterDeckCards,
+	resolveDefaultExpandedItemId,
+	toggleExpandedItemId,
+	type DeckFilterId,
+	type FilteredDeckCard,
+} from '../model/toggleExpandedItemId';
+import styles from './CardDeck.module.css';
 
 interface CardDeckCopy {
-	create: string;
-	comingSoon: string;
+	active: string;
+	archive: string;
+	collapse: string;
+	daily: string;
+	days: string;
+	details: string;
 	empty: string;
+	filters: Record<DeckFilterId, string>;
 	longTerm: string;
+	noGoal: string;
+	plan: string;
 	stage: string;
+	trackingTypes: Record<HabitTrackingType, string>;
 }
 
 interface CardDeckProps {
+	archivedCount: number;
 	categories: DeckCategoryView[];
-	onCreateRunningCard: () => void;
+	copy: CardDeckCopy;
+	onOpenGoalDetails: (cardId: string) => void;
+}
+
+const FILTERS: readonly DeckFilterId[] = ['all', 'sport', 'reading', 'life'];
+
+function trimDeckQuantity(value: string): string {
+	return value.includes('.') ? value.replace(/0+$/, '').replace(/\.$/, '') : value;
+}
+
+function formatCardQuantity(card: DeckCardView, baseValue: number): string {
+	return trimDeckQuantity(formatQuantityFromBase(baseValue, card.template.quantity));
+}
+
+function dailyReference(card: DeckCardView, copy: CardDeckCopy): string {
+	const target = card.template.defaultDailyTargetBase;
+	if (target === undefined) return copy.daily;
+	return `${copy.daily} ${formatCardQuantity(card, target)} ${card.template.quantity.displayUnit}`;
+}
+
+function progressPercent(card: DeckCardView): number | null {
+	const progress = card.stageProgress ?? card.longTermProgress;
+	return progress ? Math.round(progress.ratio * 100) : null;
+}
+
+function quantityProgressText(
+	card: DeckCardView,
+	progress: GoalProgress,
+	target: number,
+): string {
+	return `${formatCardQuantity(card, progress.quantityBaseValue)} / ${formatCardQuantity(card, target)} ${card.template.quantity.displayUnit}`;
+}
+
+interface GoalLineProps {
+	card: DeckCardView;
+	goal: LongTermGoal | StageGoal;
+	kind: 'longTerm' | 'stage';
+	label: string;
+	progress: GoalProgress;
 	copy: CardDeckCopy;
 }
 
-const CATEGORY_ICONS: Record<string, IconType> = { sport: FiActivity, reading: FiBookOpen, life: FiHome, output: FiEdit3 };
+function goalValues({
+	card,
+	goal,
+	kind,
+	progress,
+	copy,
+}: GoalLineProps): string[] {
+	if (kind === 'longTerm') {
+		const longTermGoal = goal as LongTermGoal;
+		return [quantityProgressText(card, progress, longTermGoal.targetQuantityBase)];
+	}
+	const stageGoal = goal as StageGoal;
+	const values: string[] = [];
+	if (stageGoal.mode !== 'activeDays' && stageGoal.targetQuantityBase !== undefined) {
+		values.push(quantityProgressText(card, progress, stageGoal.targetQuantityBase));
+	}
+	if (stageGoal.mode !== 'quantity' && stageGoal.targetActiveDays !== undefined) {
+		values.push(`${progress.activeDays} / ${stageGoal.targetActiveDays} ${copy.days}`);
+	}
+	return values;
+}
 
-function GoalLine({ label, title, target, ratio = 0, card }: { label: string; title: string; target?: number; ratio?: number; card: DeckCardView }) {
+function GoalLine(props: GoalLineProps) {
+	const {
+		goal,
+		kind,
+		label,
+		progress,
+	} = props;
+	const values = goalValues(props);
+	const GoalIcon = kind === 'longTerm' ? PiTarget : PiFlagPennant;
+	const percentage = Math.round(progress.ratio * 100);
+
 	return (
 		<div className={styles.goal}>
-			<div><small className={styles.goalLabel}>{label}</small><span>{title}</span>{target !== undefined && <b>{formatQuantityFromBase(target, card.template.quantity)} {card.template.quantity.displayUnit}</b>}</div>
-			<div className={styles.track}><i style={{ width: `${Math.round(ratio * 100)}%` }} /></div>
+			<span className={styles.goalIcon}><GoalIcon aria-hidden='true' /></span>
+			<span className={styles.goalCopy}>
+				<small>{label}</small>
+				<strong>{goal.title}</strong>
+			</span>
+			<span className={styles.goalValues}>
+				{values.map((value) => <b key={value}>{value}</b>)}
+			</span>
+			<span
+				className={styles.goalTrack}
+				role='progressbar'
+				aria-label={`${label}：${goal.title}`}
+				aria-valuemin={0}
+				aria-valuemax={100}
+				aria-valuenow={percentage}
+				aria-valuetext={values.join('；')}
+			>
+				<i style={{ width: `${percentage}%` }} />
+			</span>
 		</div>
 	);
 }
 
-function UserCardView({ card, copy, expanded, onToggle }: { card: DeckCardView; copy: CardDeckCopy; expanded: boolean; onToggle: () => void }) {
-	const ratio = card.longTermProgress?.ratio ?? card.stageProgress?.ratio ?? 0;
+interface HabitCardProps {
+	item: FilteredDeckCard;
+	copy: CardDeckCopy;
+	onOpenGoalDetails: (cardId: string) => void;
+	onToggle: () => void;
+}
+
+function ExpandedHabitCard({
+	item,
+	copy,
+	onOpenGoalDetails,
+	onToggle,
+}: HabitCardProps) {
+	const { card, category } = item;
+	const trackingType = card.template.trackingType ?? 'quantity';
+	const categoryName = copy.filters[category.id as DeckFilterId] ?? category.title;
+	const hasGoal = Boolean(card.longTermGoal || card.stageGoal);
+
 	return (
-		<article className={`${styles.card} ${expanded ? styles.expanded : ''}`}>
-			<button className={styles.cardToggle} type='button' aria-expanded={expanded} onClick={onToggle}>
-				<span className={styles.cardIdentity}><strong>{card.title}</strong><small>{card.template.title}</small></span>
-				<span className={styles.progressSummary}>{Math.round(ratio * 100)}%</span>
-				<FiChevronDown className={styles.chevron} aria-hidden='true' />
-			</button>
-			<div className={styles.cardProgress} aria-hidden='true'><i style={{ width: `${Math.round(ratio * 100)}%` }} /></div>
-			{expanded && <div className={styles.cardDetails}>
-				{card.longTermGoal && <GoalLine card={card} label={copy.longTerm} title={card.longTermGoal.title} target={card.longTermGoal.targetQuantityBase} ratio={card.longTermProgress?.ratio} />}
-				{card.stageGoal && <GoalLine card={card} label={copy.stage} title={card.stageGoal.title} target={card.stageGoal.targetQuantityBase ?? card.stageGoal.targetActiveDays} ratio={card.stageProgress?.ratio} />}
-			</div>}
+		<article
+			className={styles.expandedCard}
+			data-card-id={card.id}
+			data-layout='expanded'
+		>
+			<header className={styles.expandedHeader}>
+				<HabitGlyph
+					accent={card.template.accent ?? 'blue'}
+					decorative
+					iconKey={card.template.iconKey ?? 'activity'}
+					label={card.title}
+					size='lg'
+				/>
+				<span className={styles.expandedIdentity}>
+					<strong>{card.title}</strong>
+					<small>{categoryName} · {copy.trackingTypes[trackingType]}</small>
+				</span>
+				<span className={styles.dailyReference}>{dailyReference(card, copy)}</span>
+			</header>
+
+			{hasGoal ? (
+				<div className={styles.goalPanel} role='group' aria-label={card.title}>
+					{card.longTermGoal && card.longTermProgress && (
+						<GoalLine
+							card={card}
+							copy={copy}
+							goal={card.longTermGoal}
+							kind='longTerm'
+							label={copy.longTerm}
+							progress={card.longTermProgress}
+						/>
+					)}
+					{card.stageGoal && card.stageProgress && (
+						<GoalLine
+							card={card}
+							copy={copy}
+							goal={card.stageGoal}
+							kind='stage'
+							label={copy.stage}
+							progress={card.stageProgress}
+						/>
+					)}
+				</div>
+			) : <p className={styles.noGoal}>{copy.noGoal}</p>}
+
+			<footer className={styles.expandedFooter}>
+				<span className={styles.plan}>
+					<PiCalendarBlank aria-hidden='true' />
+					<small>{copy.plan}</small>
+					<strong>{dailyReference(card, copy)}</strong>
+				</span>
+				<span className={styles.cardActions}>
+					{card.longTermGoal && (
+						<button type='button' onClick={() => onOpenGoalDetails(card.id)}>
+							<PiTarget aria-hidden='true' />
+							{copy.details}
+						</button>
+					)}
+					<button type='button' onClick={onToggle}>
+						<PiCaretUp aria-hidden='true' />
+						{copy.collapse}
+					</button>
+				</span>
+			</footer>
 		</article>
 	);
 }
 
-function CardDeck({ categories, onCreateRunningCard, copy }: CardDeckProps) {
-	const [expandedCardIds, setExpandedCardIds] = useState<Set<string>>(() => new Set());
-	const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(() => new Set());
+function CompactHabitCard({ item, copy, onToggle }: HabitCardProps) {
+	const { card } = item;
+	const percentage = progressPercent(card);
+
 	return (
-		<div className={styles.categories}>
-			{categories.map((category) => {
-				const Icon = CATEGORY_ICONS[category.id] ?? FiActivity;
-				const categoryExpanded = expandedCategoryIds.has(category.id);
-				return (
-					<section className={`${styles.category} ${styles[category.id] ?? ''}`} key={category.id}>
-						<header className={styles.categoryHeader}>
-							{category.cards.length > 0 ? <button className={styles.categoryToggle} type='button' aria-expanded={categoryExpanded} onClick={() => setExpandedCategoryIds((current) => toggleExpandedItemId(current, category.id))}>
-								<span className={styles.categoryIcon}><Icon aria-hidden='true' /></span>
-								<strong>{category.title}</strong>
-								<span className={styles.categoryCount}>{category.cards.length}</span>
-								<FiChevronDown className={styles.categoryChevron} aria-hidden='true' />
-							</button> : <div className={styles.categorySummary}>
-								<span className={styles.categoryIcon}><Icon aria-hidden='true' /></span><strong>{category.title}</strong>
-							</div>}
-							{category.enabled ? (
-								<button className={styles.createButton} type='button' onClick={onCreateRunningCard}><FiPlus aria-hidden='true' />{copy.create}</button>
-							) : <small>{copy.comingSoon}</small>}
-						</header>
-						{categoryExpanded && category.cards.length > 0 && <div className={styles.cardGrid}>
-							{category.cards.map((card) => <UserCardView card={card} copy={copy} expanded={expandedCardIds.has(card.id)} onToggle={() => setExpandedCardIds((current) => toggleExpandedItemId(current, card.id))} key={card.id} />)}
-						</div>}
-						{category.enabled && category.cards.length === 0 && <p className={styles.empty}>{copy.empty}</p>}
-					</section>
-				);
-			})}
+		<article
+			className={styles.compactCard}
+			data-card-id={card.id}
+			data-layout='compact'
+			data-progress={percentage === null ? undefined : `${percentage}%`}
+		>
+			<button type='button' aria-expanded='false' onClick={onToggle}>
+				<span className={styles.compactHeading}>
+					<HabitGlyph
+						accent={card.template.accent ?? 'blue'}
+						decorative
+						iconKey={card.template.iconKey ?? 'activity'}
+						label={card.title}
+						size='sm'
+					/>
+					<span className={styles.compactIdentity}>
+						<strong>{card.title}</strong>
+						<small>{dailyReference(card, copy)}</small>
+					</span>
+					<PiCaretRight aria-hidden='true' />
+				</span>
+				{percentage === null ? (
+					<span className={styles.compactStatus}>{copy.noGoal}</span>
+				) : (
+					<span className={styles.compactProgress}>
+						<strong>{percentage}%</strong>
+						<span
+							className={styles.compactTrack}
+							role='progressbar'
+							aria-label={card.title}
+							aria-valuemin={0}
+							aria-valuemax={100}
+							aria-valuenow={percentage}
+						>
+							<i style={{ width: `${percentage}%` }} />
+						</span>
+					</span>
+				)}
+			</button>
+		</article>
+	);
+}
+
+function CardDeck({
+	archivedCount,
+	categories,
+	copy,
+	onOpenGoalDetails,
+}: CardDeckProps) {
+	const allCards = filterDeckCards(categories, 'all');
+	const [activeFilter, setActiveFilter] = useState<DeckFilterId>('all');
+	const [expandedCardId, setExpandedCardId] = useState<string | null>(
+		() => resolveDefaultExpandedItemId(allCards),
+	);
+	const visibleCards = filterDeckCards(categories, activeFilter);
+	const expandedItem = visibleCards.find(({ card }) => card.id === expandedCardId);
+	const compactItems = visibleCards.filter(({ card }) => card.id !== expandedCardId);
+
+	const changeFilter = (filter: DeckFilterId) => {
+		const filteredCards = filterDeckCards(categories, filter);
+		setActiveFilter(filter);
+		setExpandedCardId(resolveDefaultExpandedItemId(filteredCards));
+	};
+
+	return (
+		<div className={styles.deck}>
+			<div
+				className={styles.filters}
+				data-testid='habit-filter-tabs'
+				role='tablist'
+				aria-label={copy.filters.all}
+			>
+				{FILTERS.map((filter) => (
+					<button
+						type='button'
+						role='tab'
+						aria-selected={activeFilter === filter}
+						onClick={() => changeFilter(filter)}
+						key={filter}
+					>
+						{copy.filters[filter]}
+					</button>
+				))}
+			</div>
+
+			<h2 className={styles.sectionTitle}>{copy.active}</h2>
+
+			<section
+				className={styles.activeSection}
+				id='habit-card-grid'
+				role='tabpanel'
+			>
+				{visibleCards.length === 0 ? (
+					<p className={styles.empty}>{copy.empty}</p>
+				) : (
+					<div className={styles.cardGrid}>
+						{expandedItem && (
+							<ExpandedHabitCard
+								copy={copy}
+								item={expandedItem}
+								onOpenGoalDetails={onOpenGoalDetails}
+								onToggle={() => setExpandedCardId((current) => (
+									toggleExpandedItemId(current, expandedItem.card.id)
+								))}
+							/>
+						)}
+						{compactItems.map((item) => (
+							<CompactHabitCard
+								copy={copy}
+								item={item}
+								onOpenGoalDetails={onOpenGoalDetails}
+								onToggle={() => setExpandedCardId((current) => (
+									toggleExpandedItemId(current, item.card.id)
+								))}
+								key={item.card.id}
+							/>
+						))}
+					</div>
+				)}
+			</section>
+
+			<div
+				className={styles.archiveSummary}
+				data-testid='habit-archive-summary'
+			>
+				<PiArchive aria-hidden='true' />
+				<span>{copy.archive}</span>
+				<strong>{archivedCount}</strong>
+			</div>
 		</div>
 	);
 }

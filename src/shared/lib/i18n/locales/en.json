@@ -407,21 +407,43 @@
 			"shellStage": "M1 application shell"
 		},
 		"deck": {
+			"active": "Active",
+			"activeAndArchived": "{{active}} active · {{archived}} archived",
 			"allCards": "All cards",
+			"archive": "Archived",
 			"cardCount": "{{count}} active habits",
 			"categoryMovement": "Movement",
 			"categoryOutput": "Output",
 			"categoryReading": "Reading",
+			"collapse": "Collapse",
 			"create": "New",
+			"daily": "Daily",
+			"days": "days",
+			"details": "View details",
 			"emptyCards": "No loop cards yet",
 			"emptySlot": "Empty slot",
+			"filters": {
+				"all": "All",
+				"life": "Life",
+				"reading": "Reading",
+				"sport": "Movement"
+			},
 			"loading": "Loading your cards…",
 			"loadError": "Your cards could not be loaded.",
 			"longTerm": "Long-term goal",
 			"manageTitle": "Manage habits",
-			"newHabit": "New",
+			"newHabit": "New habit",
+			"noGoal": "No goal set",
+			"plan": "Plan",
 			"retry": "Retry",
 			"stage": "Stage goal",
+			"trackingTypes": {
+				"avoid": "Avoidance",
+				"check": "Check-in",
+				"count": "Count",
+				"duration": "Duration",
+				"quantity": "Quantity"
+			},
 			"todayActive": "Today's loop cards"
 		},
 		"createCard": {
