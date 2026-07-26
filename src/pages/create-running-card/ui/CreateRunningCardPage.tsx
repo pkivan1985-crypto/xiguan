@@ -21,8 +21,10 @@ import type { IconType } from 'react-icons';
 import { useNavigate } from 'react-router';
 
 import {
+	countCalendarDays,
 	createHabitInApp,
 	distributeEvenStages,
+	endDateFromDuration,
 	projectedCustomTotal,
 } from '@features/create-habit';
 import type { IsoWeekday } from '@entities/user-card';
@@ -55,6 +57,7 @@ interface StageDraft {
 	target: string;
 	startDate: string;
 	endDate: string;
+	durationDays: string;
 	dailyTarget: string;
 	activeDays: number;
 }
@@ -70,6 +73,11 @@ function numeric(value: string): number | null {
 	return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+function positiveInteger(value: string): number | null {
+	const parsed = Number(value);
+	return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
 function sumTargets(stages: readonly StageDraft[]): number {
 	return stages.reduce((sum, stage) => sum + (numeric(stage.target) ?? 0), 0);
 }
@@ -82,6 +90,7 @@ function CreateRunningCardPage() {
 	const [cardTitle, setCardTitle] = useState(() => t('shell.createCard.presets.running'));
 	const [titleCustomized, setTitleCustomized] = useState(false);
 	const [longTarget, setLongTarget] = useState('');
+	const [longDurationDays, setLongDurationDays] = useState('90');
 	const [longEndDate, setLongEndDate] = useState(() => addCalendarDays(today, 89));
 	const [weekdays, setWeekdays] = useState<IsoWeekday[]>([1, 2, 3, 4, 5, 6, 7]);
 	const [planMode, setPlanMode] = useState<'average' | 'custom'>('average');
@@ -93,6 +102,7 @@ function CreateRunningCardPage() {
 		target: '',
 		startDate: today,
 		endDate: longEndDate,
+		durationDays: '90',
 		dailyTarget: '',
 		activeDays: 0,
 	}]);
@@ -101,14 +111,14 @@ function CreateRunningCardPage() {
 	const selected = PRESETS.find((preset) => preset.id === templateId)!;
 	const selectedUnit = t(selected.displayUnitKey);
 
-	function evenStages(count: number, current: readonly StageDraft[]): StageDraft[] | null {
+	function evenStages(count: number, current: readonly StageDraft[], endDate = longEndDate): StageDraft[] | null {
 		const total = numeric(longTarget);
-		if (!total || !longEndDate || weekdays.length === 0) return null;
+		if (!total || !endDate || weekdays.length === 0) return null;
 		try {
 			const plans = distributeEvenStages({
 				totalDisplay: total,
 				startDate: today,
-				endDate: longEndDate,
+				endDate,
 				stageCount: count,
 				weekdays,
 				maxDecimalPlaces: selected.decimals,
@@ -119,6 +129,7 @@ function CreateRunningCardPage() {
 				target: plan.targetDisplay,
 				startDate: plan.startDate,
 				endDate: plan.endDate,
+				durationDays: String(countCalendarDays(plan.startDate, plan.endDate)),
 				dailyTarget: plan.dailyTargetDisplay,
 				activeDays: plan.activeDays,
 			}));
@@ -164,6 +175,32 @@ function CreateRunningCardPage() {
 		setError(undefined);
 	}
 
+	function updateLongDuration(value: string): void {
+		const duration = positiveInteger(value);
+		if (!duration) {
+			setLongDurationDays(value);
+			return;
+		}
+		const normalizedDuration = Math.max(duration, stages.length);
+		setLongDurationDays(String(normalizedDuration));
+		setLongEndDate(endDateFromDuration(today, normalizedDuration));
+		setAutoDistribution(true);
+		setError(undefined);
+	}
+
+	function updateLongEndDate(value: string): void {
+		if (!value) {
+			setLongEndDate(value);
+			return;
+		}
+		const duration = countCalendarDays(today, value);
+		const normalizedDuration = Math.max(duration, stages.length);
+		setLongDurationDays(String(normalizedDuration));
+		setLongEndDate(endDateFromDuration(today, normalizedDuration));
+		setAutoDistribution(true);
+		setError(undefined);
+	}
+
 	function toggleWeekday(day: IsoWeekday): void {
 		setWeekdays((current) => {
 			if (current.includes(day)) {
@@ -182,11 +219,19 @@ function CreateRunningCardPage() {
 			target: '',
 			startDate: today,
 			endDate: longEndDate,
+			durationDays: longDurationDays,
 			dailyTarget: '',
 			activeDays: 0,
 		}];
+		const currentDuration = positiveInteger(longDurationDays) ?? countCalendarDays(today, longEndDate);
+		const normalizedDuration = Math.max(currentDuration, draft.length);
+		const normalizedEndDate = endDateFromDuration(today, normalizedDuration);
+		if (normalizedDuration !== currentDuration) {
+			setLongDurationDays(String(normalizedDuration));
+			setLongEndDate(normalizedEndDate);
+		}
 		setAutoDistribution(true);
-		setStages(evenStages(draft.length, draft) ?? draft);
+		setStages(evenStages(draft.length, draft, normalizedEndDate) ?? draft);
 	}
 
 	function removeStage(key: string): void {
@@ -195,31 +240,83 @@ function CreateRunningCardPage() {
 		setStages(evenStages(remaining.length, remaining) ?? remaining);
 	}
 
-	function updateStagePlan(key: string, patch: Partial<Pick<StageDraft, 'target' | 'endDate'>>): void {
+	function withStageMetrics(stage: StageDraft): StageDraft {
+		const target = numeric(stage.target);
+		if (!target || !stage.endDate) return stage;
+		try {
+			const recalculated = distributeEvenStages({
+				totalDisplay: target,
+				startDate: stage.startDate,
+				endDate: stage.endDate,
+				stageCount: 1,
+				weekdays,
+				maxDecimalPlaces: selected.decimals,
+			})[0]!;
+			return {
+				...stage,
+				durationDays: String(countCalendarDays(stage.startDate, stage.endDate)),
+				dailyTarget: recalculated.dailyTargetDisplay,
+				activeDays: recalculated.activeDays,
+			};
+		} catch {
+			return { ...stage, dailyTarget: '', activeDays: 0 };
+		}
+	}
+
+	function reflowStagesFrom(current: readonly StageDraft[], index: number, endDate: string): StageDraft[] {
+		const next = current.map((stage) => ({ ...stage }));
+		const currentStage = next[index];
+		if (!currentStage) return next;
+		currentStage.endDate = endDate;
+		currentStage.durationDays = String(countCalendarDays(currentStage.startDate, endDate));
+		for (let cursor = index + 1; cursor < next.length; cursor += 1) {
+			const previous = next[cursor - 1]!;
+			const stage = next[cursor]!;
+			stage.startDate = addCalendarDays(previous.endDate, 1);
+			const stagesAfter = next.length - cursor - 1;
+			const latestEnd = addCalendarDays(longEndDate, -stagesAfter);
+			const preservedEnd = cursor === next.length - 1 ? longEndDate : stage.endDate;
+			stage.endDate = preservedEnd < stage.startDate
+				? stage.startDate
+				: preservedEnd > latestEnd ? latestEnd : preservedEnd;
+			stage.durationDays = String(countCalendarDays(stage.startDate, stage.endDate));
+		}
+		return next.map(withStageMetrics);
+	}
+
+	function updateStageTarget(key: string, target: string): void {
 		setAutoDistribution(false);
-		setStages((current) => current.map((item) => {
-			if (item.key !== key) return item;
-			const changed = { ...item, ...patch };
-			const target = numeric(changed.target);
-			if (!target || !changed.endDate) return changed;
-			try {
-				const recalculated = distributeEvenStages({
-					totalDisplay: target,
-					startDate: changed.startDate,
-					endDate: changed.endDate,
-					stageCount: 1,
-					weekdays,
-					maxDecimalPlaces: selected.decimals,
-				})[0]!;
-				return {
-					...changed,
-					dailyTarget: recalculated.dailyTargetDisplay,
-					activeDays: recalculated.activeDays,
-				};
-			} catch {
-				return { ...changed, dailyTarget: '', activeDays: 0 };
+		setStages((current) => current.map((stage) => (
+			stage.key === key ? withStageMetrics({ ...stage, target }) : stage
+		)));
+	}
+
+	function updateStageEndDate(index: number, endDate: string): void {
+		setAutoDistribution(false);
+		setStages((current) => {
+			const stage = current[index];
+			if (!stage || !endDate) return current;
+			const latestEnd = addCalendarDays(longEndDate, -(current.length - index - 1));
+			const nextEnd = endDate > latestEnd ? latestEnd : endDate;
+			if (nextEnd < stage.startDate) return current;
+			return reflowStagesFrom(current, index, nextEnd);
+		});
+	}
+
+	function updateStageDuration(index: number, value: string): void {
+		setAutoDistribution(false);
+		setStages((current) => {
+			const stage = current[index];
+			if (!stage) return current;
+			const duration = positiveInteger(value);
+			if (!duration) {
+				return current.map((item, itemIndex) => itemIndex === index ? { ...item, durationDays: value } : item);
 			}
-		}));
+			const latestEnd = addCalendarDays(longEndDate, -(current.length - index - 1));
+			const maxDuration = countCalendarDays(stage.startDate, latestEnd);
+			const normalizedDuration = Math.min(duration, maxDuration);
+			return reflowStagesFrom(current, index, endDateFromDuration(stage.startDate, normalizedDuration));
+		});
 	}
 
 	function useAveragePlan(): void {
@@ -248,12 +345,13 @@ function CreateRunningCardPage() {
 		const hasValidStages = stages.length > 0 && stages.every((stage) => (
 			Boolean(stage.title.trim())
 			&& numeric(stage.target) !== null
+			&& positiveInteger(stage.durationDays) !== null
 			&& numeric(stage.dailyTarget) !== null
 			&& Boolean(stage.endDate)
 		));
 		const allocationMatches = Math.abs(allocationDifference) < 10 ** -(selected.decimals + 1);
 		const customComplete = planMode === 'average' || weekdays.every((day) => numeric(customTargets[day] ?? '') !== null);
-		if (!hasName || !hasLongTarget || !longEndDate || !hasValidStages || !allocationMatches || !customComplete) {
+		if (!hasName || !hasLongTarget || positiveInteger(longDurationDays) === null || !longEndDate || !hasValidStages || !allocationMatches || !customComplete) {
 			setError(t(!hasName
 				? 'shell.createCard.nameRequired'
 				: !allocationMatches
@@ -344,7 +442,8 @@ function CreateRunningCardPage() {
 						</header>
 						<div className={styles.longFields}>
 							<label><span>{t('shell.createCard.totalTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={longTarget} placeholder='100' onChange={(event) => { setLongTarget(event.target.value); setAutoDistribution(true); setError(undefined); }} /><small>{selectedUnit}</small></span></label>
-							<label><span>{t('shell.createCard.targetDate')}</span><span className={styles.inputWithIcon}><FiCalendar aria-hidden='true' /><input type='date' min={today} value={longEndDate} onChange={(event) => { setLongEndDate(event.target.value); setAutoDistribution(true); setError(undefined); }} /></span></label>
+							<label><span>{t('shell.createCard.planDuration')}</span><span className={`${styles.inputWithUnit} ${styles.durationInput}`}><input type='number' min={stages.length} inputMode='numeric' value={longDurationDays} onChange={(event) => updateLongDuration(event.target.value)} /><small>{t('shell.createCard.daysUnit')}</small></span></label>
+							<label><span>{t('shell.createCard.targetDate')}</span><span className={styles.inputWithIcon}><FiCalendar aria-hidden='true' /><input type='date' min={endDateFromDuration(today, stages.length)} value={longEndDate} onChange={(event) => updateLongEndDate(event.target.value)} /></span></label>
 						</div>
 					</section>
 
@@ -368,8 +467,9 @@ function CreateRunningCardPage() {
 											/>
 										</label>
 										<div className={styles.stageInputs}>
-											<label><span>{t('shell.createCard.stageTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={stage.target} onChange={(event) => updateStagePlan(stage.key, { target: event.target.value })} /><small>{selectedUnit}</small></span></label>
-											<label><span>{t('shell.createCard.stageDate')}</span><input type='date' min={stage.startDate} max={longEndDate} value={stage.endDate} onChange={(event) => updateStagePlan(stage.key, { endDate: event.target.value })} /></label>
+											<label><span>{t('shell.createCard.stageTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={stage.target} onChange={(event) => updateStageTarget(stage.key, event.target.value)} /><small>{selectedUnit}</small></span></label>
+											<label><span>{t('shell.createCard.stageDuration')}</span><span className={`${styles.inputWithUnit} ${styles.durationInput}`}><input type='number' min='1' max={countCalendarDays(stage.startDate, addCalendarDays(longEndDate, -(stages.length - index - 1)))} inputMode='numeric' value={stage.durationDays} onChange={(event) => updateStageDuration(index, event.target.value)} /><small>{t('shell.createCard.daysUnit')}</small></span></label>
+											<label><span>{t('shell.createCard.stageDate')}</span><input type='date' min={stage.startDate} max={addCalendarDays(longEndDate, -(stages.length - index - 1))} value={stage.endDate} onChange={(event) => updateStageEndDate(index, event.target.value)} /></label>
 										</div>
 										<small className={styles.stageDaily}>{t('shell.createCard.stageDailyReference', { value: stage.dailyTarget || '—', unit: selectedUnit, days: stage.activeDays })}</small>
 									</div>

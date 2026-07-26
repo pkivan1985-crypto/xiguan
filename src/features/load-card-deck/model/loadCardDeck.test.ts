@@ -58,6 +58,7 @@ describe('loadCardDeck', () => {
 		expect(card).toMatchObject({ title: '晨跑', longTermGoal: { id: 'long-a' }, stageGoal: { id: 'stage-a' } });
 		expect(card?.longTermProgress).toMatchObject({ quantityBaseValue: 5_000, ratio: 0.05 });
 		expect(card?.stageProgress).toMatchObject({ quantityBaseValue: 5_000, ratio: 0.25 });
+		expect(card?.todayStatus).toEqual({ kind: 'completed' });
 	});
 
 	it('ignores archived cards and invalid draft references', async () => {
@@ -102,5 +103,24 @@ describe('loadCardDeck', () => {
 		]);
 		expect(view.archivedCount).toBe(1);
 		expect(view.categories[0]?.cards[0]?.longTermProgress).toMatchObject({ quantityBaseValue: 2_500, ratio: 0.25 });
+	});
+
+	it('describes an unselected weekday as rest and a selected weekday with its real target', async () => {
+		await database.table('userCards').add({
+			id: 'planned-run',
+			officialCardId: 'running',
+			title: '隔日跑',
+			dailyPlan: { mode: 'custom', weekdays: [1, 3, 5], customTargetsBaseByWeekday: { 1: 2_000, 3: 3_000, 5: 4_000 } },
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-07-01T00:00:00.000Z',
+			updatedAt: '2026-07-01T00:00:00.000Z',
+		});
+
+		const monday = await loadCardDeck(database, '2026-07-27');
+		const tuesday = await loadCardDeck(database, '2026-07-28');
+
+		expect(monday.categories[0]?.cards[0]?.todayStatus).toEqual({ kind: 'target', targetBase: 2_000 });
+		expect(tuesday.categories[0]?.cards[0]?.todayStatus).toEqual({ kind: 'rest' });
 	});
 });

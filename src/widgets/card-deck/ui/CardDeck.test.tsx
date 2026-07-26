@@ -116,6 +116,7 @@ const categories: DeckCategoryView[] = [
 				ratio: 18.4 / 30,
 				completed: false,
 			},
+			todayStatus: { kind: 'target', targetBase: 5000 },
 		}],
 	},
 	{
@@ -143,6 +144,7 @@ const categories: DeckCategoryView[] = [
 				ratio: 0.67,
 				completed: false,
 			},
+			todayStatus: { kind: 'completed' },
 		}],
 	},
 	{
@@ -153,6 +155,7 @@ const categories: DeckCategoryView[] = [
 			id: 'water',
 			title: '喝水',
 			template: waterTemplate,
+			todayStatus: { kind: 'rest' },
 		}],
 	},
 ];
@@ -161,6 +164,7 @@ const copy: CardDeckCopy = {
 	active: '正在进行',
 	archive: '已归档',
 	collapse: '收起',
+	completed: '已完成',
 	daily: '每天',
 	days: '天',
 	details: '查看详情',
@@ -174,8 +178,13 @@ const copy: CardDeckCopy = {
 	filtersLabel: '习惯分类',
 	longTerm: '长期目标',
 	noGoal: '未设置目标',
+	pending: '待完成',
 	plan: '计划',
+	rest: '休息',
 	stage: '阶段目标',
+	today: '今日',
+	weeklyPlan: (count, days) => `每周 ${count} 天 · ${days}`,
+	weeklyRestPlan: (count, days) => `每周 ${count} 天 · ${days}休息`,
 	trackingTypes: {
 		check: '完成记录',
 		count: '次数记录',
@@ -271,7 +280,7 @@ describe('CardDeck', () => {
 		expect(html).toContain('>2</strong>');
 	});
 
-	it('shows daily references and never invents zero progress for a goal-free card', () => {
+	it('separates today status from the weekly plan and never invents zero progress for a goal-free card', () => {
 		const html = renderToStaticMarkup(
 			<CardDeck
 				archivedCount={0}
@@ -281,11 +290,30 @@ describe('CardDeck', () => {
 			/>,
 		);
 
-		expect(html).toContain('每天 5 km');
-		expect(html).toContain('每天 30 分钟');
-		expect(html).toContain('每天 8 杯');
+		expect(html).toContain('今日');
+		expect(html).toContain('5 km');
+		expect(html).toContain('每天');
 		expect(html).toContain('未设置目标');
 		expect(html).not.toContain('data-card-id="water" data-progress="0%"');
+	});
+
+	it('renders completed and rest states in the expanded card header', () => {
+		const withStatus = (kind: 'completed' | 'rest') => categories.map((category) => ({
+			...category,
+			cards: category.cards.map((card) => card.id === 'run'
+				? { ...card, todayStatus: { kind } }
+				: card),
+		}));
+
+		const completed = renderToStaticMarkup(
+			<CardDeck archivedCount={0} categories={withStatus('completed')} copy={copy} onOpenGoalDetails={vi.fn()} />,
+		);
+		const rest = renderToStaticMarkup(
+			<CardDeck archivedCount={0} categories={withStatus('rest')} copy={copy} onOpenGoalDetails={vi.fn()} />,
+		);
+
+		expect(completed).toContain('已完成');
+		expect(rest).toContain('休息');
 	});
 
 	it('keeps the visible filter pill near 29px while preserving a 44px button target', () => {

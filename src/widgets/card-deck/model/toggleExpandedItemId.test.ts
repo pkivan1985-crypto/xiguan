@@ -39,6 +39,7 @@ describe('toggleExpandedItemId', () => {
 						confirmationThresholdDisplay: 720,
 					},
 				},
+				todayStatus: { kind: 'target' as const, targetBase: 30 },
 			}],
 		}];
 		const initial = createCardDeckState(categories);

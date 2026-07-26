@@ -28,6 +28,7 @@ interface CardDeckCopy {
 	active: string;
 	archive: string;
 	collapse: string;
+	completed: string;
 	customDaily?: string;
 	daily: string;
 	days: string;
@@ -37,10 +38,16 @@ interface CardDeckCopy {
 	filtersLabel: string;
 	longTerm: string;
 	noGoal: string;
+	pending: string;
 	plan: string;
+	rest: string;
 	stage: string;
+	today: string;
 	trackingTypes: Record<HabitTrackingType, string>;
 	weekdays?: Partial<Record<IsoWeekday, string>>;
+	weekdaysLong?: Partial<Record<IsoWeekday, string>>;
+	weeklyPlan: (count: number, days: string) => string;
+	weeklyRestPlan: (count: number, days: string) => string;
 }
 
 interface CardDeckProps {
@@ -51,6 +58,7 @@ interface CardDeckProps {
 }
 
 const FILTERS: readonly DeckFilterId[] = ['all', 'sport', 'reading', 'life'];
+const WEEKDAYS: readonly IsoWeekday[] = [1, 2, 3, 4, 5, 6, 7];
 
 function trimDeckQuantity(value: string): string {
 	return value.includes('.') ? value.replace(/0+$/, '').replace(/\.$/, '') : value;
@@ -60,17 +68,33 @@ function formatCardQuantity(card: DeckCardView, baseValue: number): string {
 	return trimDeckQuantity(formatQuantityFromBase(baseValue, card.template.quantity));
 }
 
-function dailyReference(card: DeckCardView, copy: CardDeckCopy): string {
-	const target = card.dailyTargetBase ?? card.template.defaultDailyTargetBase;
-	if (card.dailyPlan?.mode === 'custom') {
-		const days = card.dailyPlan.weekdays.map((day) => copy.weekdays?.[day]).filter(Boolean).join('、');
-		return `${days || copy.daily} · ${copy.customDaily ?? copy.daily}`;
+function planSummary(card: DeckCardView, copy: CardDeckCopy): string {
+	const plan = card.dailyPlan;
+	if (!plan || plan.weekdays.length === 7) {
+		return plan?.mode === 'custom' ? `${copy.daily} · ${copy.customDaily ?? copy.daily}` : copy.daily;
 	}
-	const schedule = card.dailyPlan && card.dailyPlan.weekdays.length < 7
-		? card.dailyPlan.weekdays.map((day) => copy.weekdays?.[day]).filter(Boolean).join('、')
-		: copy.daily;
-	if (target === undefined) return copy.daily;
-	return `${schedule || copy.daily} ${formatCardQuantity(card, target)} ${card.template.quantity.displayUnit}`;
+	const names = copy.weekdaysLong ?? copy.weekdays;
+	const restDays = WEEKDAYS.filter((day) => !plan.weekdays.includes(day));
+	const summarizeRest = plan.weekdays.length >= 5 && restDays.length > 0;
+	const visibleDays = summarizeRest ? restDays : plan.weekdays;
+	const dayNames = visibleDays.map((day) => names?.[day]).filter(Boolean).join('、');
+	const summary = summarizeRest
+		? copy.weeklyRestPlan(plan.weekdays.length, dayNames)
+		: copy.weeklyPlan(plan.weekdays.length, dayNames);
+	return plan.mode === 'custom' ? `${summary} · ${copy.customDaily ?? copy.daily}` : summary;
+}
+
+function todayReference(card: DeckCardView, copy: CardDeckCopy): string {
+	if (card.todayStatus.kind === 'completed') return copy.completed;
+	if (card.todayStatus.kind === 'rest') return copy.rest;
+	const trackingType = card.template.trackingType ?? 'quantity';
+	if (trackingType === 'check' || trackingType === 'avoid') return copy.pending;
+	const target = card.todayStatus.targetBase
+		?? card.dailyTargetBase
+		?? card.template.defaultDailyTargetBase;
+	return target === undefined
+		? copy.pending
+		: `${formatCardQuantity(card, target)} ${card.template.quantity.displayUnit}`;
 }
 
 function progressPercent(card: DeckCardView): number | null {
@@ -189,7 +213,10 @@ function ExpandedHabitCard({
 					<strong>{card.title}</strong>
 					<small>{categoryName} · {copy.trackingTypes[trackingType]}</small>
 				</span>
-				<span className={styles.dailyReference}>{dailyReference(card, copy)}</span>
+				<span className={styles.todayStatus} data-kind={card.todayStatus.kind}>
+					<small>{copy.today}</small>
+					<strong>{todayReference(card, copy)}</strong>
+				</span>
 			</header>
 
 			{hasGoal ? (
@@ -221,7 +248,7 @@ function ExpandedHabitCard({
 				<span className={styles.plan}>
 					<PiCalendarBlank aria-hidden='true' />
 					<small>{copy.plan}</small>
-					<strong>{dailyReference(card, copy)}</strong>
+					<strong>{planSummary(card, copy)}</strong>
 				</span>
 				<span className={styles.cardActions}>
 					{card.longTermGoal && (
@@ -262,7 +289,7 @@ function CompactHabitCard({ item, copy, onToggle }: HabitCardProps) {
 					/>
 					<span className={styles.compactIdentity}>
 						<strong>{card.title}</strong>
-						<small>{dailyReference(card, copy)}</small>
+						<small>{planSummary(card, copy)}</small>
 					</span>
 					<PiCaretRight aria-hidden='true' />
 				</span>

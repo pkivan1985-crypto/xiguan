@@ -1,8 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
-import { countScheduledDays, distributeEvenStages, isoWeekday, projectedCustomTotal } from './planHabit';
+import {
+	countCalendarDays,
+	countScheduledDays,
+	distributeEvenStages,
+	endDateFromDuration,
+	isoWeekday,
+	projectedCustomTotal,
+} from './planHabit';
 
 describe('habit planning helpers', () => {
+	it('converts inclusive calendar durations and deadlines in both directions', () => {
+		expect(endDateFromDuration('2026-07-26', 1)).toBe('2026-07-26');
+		expect(endDateFromDuration('2026-07-26', 32)).toBe('2026-08-26');
+		expect(countCalendarDays('2026-07-26', '2026-08-26')).toBe(32);
+	});
+
 	it('uses ISO weekdays and counts only selected execution days', () => {
 		expect(isoWeekday('2026-07-27')).toBe(1);
 		expect(isoWeekday('2026-08-02')).toBe(7);

@@ -120,21 +120,35 @@
 	white-space: nowrap;
 }
 
-.dailyReference {
-	display: inline-flex;
-	flex-wrap: wrap;
-	gap: 5px;
-	align-items: baseline;
-	justify-content: flex-end;
-	max-width: 110px;
-	font-size: 14px;
-	line-height: 20px;
-	color: var(--muted-color);
+.todayStatus {
+	--today-status-color: var(--accent-color);
+
+	display: grid;
+	gap: 1px;
+	justify-items: end;
+	min-width: 82px;
 	text-align: right;
 }
 
-.dailyReference::first-line {
-	color: var(--text-color);
+.todayStatus small {
+	font-size: 11px;
+	line-height: 16px;
+	color: var(--muted-color);
+}
+
+.todayStatus strong {
+	font-size: 14px;
+	font-variant-numeric: tabular-nums;
+	line-height: 20px;
+	color: var(--today-status-color);
+}
+
+.todayStatus[data-kind='completed'] {
+	--today-status-color: var(--achievement-color);
+}
+
+.todayStatus[data-kind='rest'] {
+	--today-status-color: var(--muted-color);
 }
 
 .goalPanel {
@@ -248,10 +262,10 @@
 }
 
 .expandedFooter {
-	display: flex;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
 	gap: 10px;
 	align-items: center;
-	justify-content: space-between;
 	min-width: 0;
 }
 
@@ -277,11 +291,9 @@
 }
 
 .plan strong {
-	overflow: hidden;
-	text-overflow: ellipsis;
 	font-size: 13px;
 	line-height: 18px;
-	white-space: nowrap;
+	white-space: normal;
 }
 
 .cardActions {
@@ -424,10 +436,9 @@
 		grid-template-columns: 44px minmax(0, 1fr);
 	}
 
-	.dailyReference {
+	.todayStatus {
 		grid-column: 2;
-		justify-content: flex-start;
-		max-width: none;
+		justify-items: start;
 		text-align: left;
 	}
 
@@ -450,7 +461,7 @@
 	}
 
 	.expandedFooter {
-		flex-direction: column;
+		grid-template-columns: 1fr;
 		align-items: flex-start;
 	}
 

@@ -21,6 +21,18 @@ function localDateFromTimestamp(timestamp: number): LocalDate {
 	return parseLocalDate(new Date(timestamp).toISOString().slice(0, 10));
 }
 
+export function countCalendarDays(startDate: string, endDate: string): number {
+	const start = utcTimestamp(startDate);
+	const end = utcTimestamp(endDate);
+	if (end < start) throw new Error('END_DATE_BEFORE_START');
+	return Math.floor((end - start) / DAY_MS) + 1;
+}
+
+export function endDateFromDuration(startDate: string, durationDays: number): LocalDate {
+	if (!Number.isSafeInteger(durationDays) || durationDays < 1) throw new Error('INVALID_DURATION');
+	return localDateFromTimestamp(utcTimestamp(startDate) + (durationDays - 1) * DAY_MS);
+}
+
 export function isoWeekday(localDate: string): IsoWeekday {
 	const day = new Date(utcTimestamp(localDate)).getUTCDay();
 	return (day === 0 ? 7 : day) as IsoWeekday;
@@ -73,7 +85,7 @@ export function distributeEvenStages(input: {
 	const start = utcTimestamp(startDate);
 	const end = utcTimestamp(endDate);
 	if (end < start) throw new Error('END_DATE_BEFORE_START');
-	const totalCalendarDays = Math.floor((end - start) / DAY_MS) + 1;
+	const totalCalendarDays = countCalendarDays(startDate, endDate);
 	if (stageCount > totalCalendarDays) throw new Error('TOO_MANY_STAGES');
 
 	const precision = 10 ** maxDecimalPlaces;

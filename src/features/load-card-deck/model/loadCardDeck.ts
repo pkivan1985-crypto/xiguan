@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- Table names, indexes, statuses, and modes are domain identifiers. */
-import type { ActionRecord } from '@entities/action-record';
+import { effectiveActionRecords, type ActionRecord } from '@entities/action-record';
 import type { CardTemplate } from '@entities/card-template';
 import { seedSystemDefinitions, SYSTEM_CARD_TEMPLATES } from '@entities/card-template';
 import type { CategoryDefinition } from '@entities/category';
@@ -33,6 +33,10 @@ export interface DeckCardView {
 	stageProgress?: GoalProgress;
 	dailyTargetBase?: number;
 	dailyPlan?: HabitDailyPlan;
+	todayStatus: {
+		kind: 'completed' | 'rest' | 'target';
+		targetBase?: number;
+	};
 }
 
 export interface DeckCategoryView {
@@ -46,6 +50,12 @@ export interface DeckView {
 	slots: Array<DeckSlotView | null>;
 	categories: DeckCategoryView[];
 	archivedCount: number;
+}
+
+function isoWeekday(localDate: LocalDate): 1 | 2 | 3 | 4 | 5 | 6 | 7 {
+	const [year, month, day] = localDate.split('-').map(Number);
+	const weekday = new Date(Date.UTC(year!, month! - 1, day!)).getUTCDay();
+	return (weekday === 0 ? 7 : weekday) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
 }
 
 export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: LocalDate): Promise<DeckView> {
@@ -74,6 +84,8 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 	const activeCards = data.cards.filter((card) => card.status === 'active');
 	const cardsById = new Map(activeCards.map((card) => [card.id, card]));
 	const longTermByCard = new Map(data.longTermGoals.map((goal) => [goal.userCardId, goal]));
+	const effectiveRecords = effectiveActionRecords(data.records);
+	const todayWeekday = isoWeekday(localDate);
 	const cardViews = activeCards
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DeckCardView[] => {
@@ -86,10 +98,10 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 			const stageGoal = selectCurrentStageGoal(relatedStageGoals);
 			const stageIndex = stageGoal ? relatedStageGoals.findIndex(({ id }) => id === stageGoal.id) : -1;
 			const longTermRecords = longTermGoal
-				? data.records.filter((record) => record.userCardId === card.id && record.longTermGoalId === longTermGoal.id)
+				? effectiveRecords.filter((record) => record.userCardId === card.id && record.longTermGoalId === longTermGoal.id)
 				: [];
 			const stageRecords = stageGoal
-				? data.records.filter((record) => record.userCardId === card.id && record.stageGoalId === stageGoal.id)
+				? effectiveRecords.filter((record) => record.userCardId === card.id && record.stageGoalId === stageGoal.id)
 				: [];
 			const longTermProgress = longTermGoal
 				? calculateGoalProgress(longTermRecords, { mode: 'quantity', targetQuantityBase: longTermGoal.targetQuantityBase }) ?? undefined
@@ -97,6 +109,17 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 			const stageProgress = stageGoal
 				? calculateGoalProgress(stageRecords, { mode: stageGoal.mode, targetQuantityBase: stageGoal.targetQuantityBase, targetActiveDays: stageGoal.targetActiveDays }) ?? undefined
 				: undefined;
+			const plannedTargetBase = card.dailyPlan?.mode === 'custom'
+				? card.dailyPlan.customTargetsBaseByWeekday?.[todayWeekday]
+				: stageGoal?.dailyTargetBase;
+			const dailyTargetBase = plannedTargetBase
+				?? template.defaultDailyTargetBase
+				?? template.quantity.basePerDisplayUnit;
+			const todayRecord = effectiveRecords.find((record) => (
+				record.userCardId === card.id && record.localDate === localDate
+			));
+			const scheduledToday = !card.dailyPlan || card.dailyPlan.weekdays.includes(todayWeekday);
+			const completedToday = todayRecord !== undefined && todayRecord.quantityBaseValue >= dailyTargetBase;
 			return [{
 				id: card.id,
 				title: card.title,
@@ -106,8 +129,13 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 				stagePosition: stageGoal && stageIndex >= 0 ? { current: stageIndex + 1, total: relatedStageGoals.length } : undefined,
 				longTermProgress,
 				stageProgress,
-				dailyTargetBase: stageGoal?.dailyTargetBase,
+				dailyTargetBase,
 				dailyPlan: card.dailyPlan,
+				todayStatus: completedToday
+					? { kind: 'completed' }
+					: scheduledToday
+						? { kind: 'target', targetBase: dailyTargetBase }
+						: { kind: 'rest' },
 			}];
 		});
 
