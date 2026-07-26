@@ -12,7 +12,7 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({
 }) }));
 
 describe('OutcomeCalendar', () => {
-	it('renders one accessible check for each distinct outcome date', () => {
+	it('keeps date numbers visible and renders real outcome icons instead of text glyphs', () => {
 		const html = renderToStaticMarkup(<OutcomeCalendar
 			year={2026}
 			monthIndex={6}
@@ -23,7 +23,11 @@ describe('OutcomeCalendar', () => {
 			canGoNext
 		/>);
 
-		expect(html.match(/>✓</g)).toHaveLength(2);
+		expect(html.match(/data-outcome-marker="true"/g)).toHaveLength(2);
+		expect(html).toContain('>2<');
+		expect(html).toContain('>5<');
+		expect(html).toContain('<svg');
+		expect(html).not.toContain('✓');
 		expect(html).toContain('2026-07-02 成果日');
 		expect(html).toContain('2026-07-05 成果日');
 	});
@@ -40,11 +44,11 @@ describe('OutcomeCalendar', () => {
 		/>);
 
 		expect(html).toContain('aria-current="date"');
-		expect(html).not.toContain('>✓<');
+		expect(html).not.toContain('data-outcome-marker="true"');
 		expect(html).toContain('disabled=""');
 	});
 
-	it('renders selectable date buttons and marks the selected date', () => {
+	it('distinguishes the selected date, today and disabled future dates', () => {
 		const html = renderToStaticMarkup(<OutcomeCalendar
 			year={2026}
 			monthIndex={6}
@@ -58,6 +62,9 @@ describe('OutcomeCalendar', () => {
 		/>);
 
 		expect(html).toContain('aria-pressed="true"');
-		expect(html).toContain('type="button"');
+		expect(html).toContain('aria-current="date"');
+		expect(html).toContain('data-selected="true"');
+		expect(html).toContain('data-today="true"');
+		expect(html).toContain('disabled=""');
 	});
 });

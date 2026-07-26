@@ -646,17 +646,32 @@
 			"updateTitle": "新版本已准备好"
 		},
 		"progress": {
+			"activeDaysCurrent": "{{current}} 天",
+			"activeDaysProgress": "{{current}} / {{target}} 天",
+			"activeSummary": "{{habits}} 个习惯正在推进 · 本月 {{days}} 个成果日",
 			"calendar": "成果月历",
+			"calendarTab": "月历",
+			"currentProgress": "{{current}} {{unit}}",
 			"dailyRecord": "当日记录",
+			"details": "查看详情",
+			"goalsTab": "目标",
 			"loadError": "进展数据暂时无法读取。",
 			"loading": "正在读取真实进展…",
+			"longTermProgressLabel": "{{title}}长期目标进度",
 			"longPlans": "长期规划",
 			"noPlans": "还没有设置目标，也可以先从每天记录开始。",
 			"noRecords": "这一天还没有真实记录。",
 			"outcomeDays": "成果日",
 			"overview": "进展概览",
 			"plans": "总规划",
-			"selectedRecords": "所选记录"
+			"quantityProgress": "{{current}} / {{target}} {{unit}}",
+			"recordValue": "{{value}} {{unit}}",
+			"selectedDayHint": "点击日期查看当天记录",
+			"selectedDayTitle": "{{date}} · {{count}} 项成果",
+			"selectedRecords": "所选记录",
+			"stageProgressLabel": "{{title}}阶段目标进度",
+			"tabsLabel": "进展视图",
+			"viewAllGoals": "查看全部目标"
 		},
 		"dataManagement": {
 			"localTitle": "本地数据说明",

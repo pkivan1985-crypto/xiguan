@@ -1,71 +1,98 @@
 .list {
-	display: grid;
-	gap: 8px;
+	overflow: hidden;
+	background: var(--surface-secondary);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-card);
 }
 
 .card {
+	display: block;
+	padding: 12px 14px 11px;
+	color: var(--text-color);
+	border-bottom: 1px solid var(--border-color);
+}
+
+.card:last-child {
+	border-bottom: 0;
+}
+
+.heading {
 	display: grid;
-	grid-template-columns: 34px 1fr auto;
+	grid-template-columns: 28px minmax(0, 1fr) 20px;
 	gap: 8px;
 	align-items: center;
-	min-height: 72px;
-	padding: 9px;
-	color: var(--color-text);
-	background: var(--color-bg-lighter);
-	border: 1px solid var(--color-border);
-	border-radius: 14px;
 }
 
 .icon {
 	display: grid;
 	place-items: center;
-	width: 34px;
-	height: 34px;
-	color: #65c95d;
-	background: #172f21;
-	border-radius: 11px;
+	width: 28px;
+	height: 28px;
+	font-size: 20px;
+	color: var(--sport-color);
+	background: var(--sport-soft);
+	border-radius: 9px;
 }
 
-.copy {
-	display: grid;
-	gap: 2px;
-	min-width: 0;
-}
-
-.copy strong {
-	font-size: 0.78rem;
-}
-
-.copy small {
+.heading strong {
 	overflow: hidden;
 	text-overflow: ellipsis;
-	font-size: 0.64rem;
-	color: var(--color-text-secondary);
+	font-size: 15px;
+	line-height: 22px;
 	white-space: nowrap;
 }
 
-.copy .secondary {
-	color: var(--color-text-tertiary);
+.heading > svg {
+	color: var(--muted-color);
 }
 
-.value {
-	font-size: 0.68rem;
-	font-weight: 720;
+.goalDetails {
+	display: grid;
+	gap: 6px;
+	margin-top: 7px;
 }
 
-.progress {
-	display: flex;
-	gap: 3px;
+.labels,
+.values {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 10px;
 	align-items: center;
-	font-size: 0.72rem;
-	color: var(--accent-color);
+}
+
+.labels > span,
+.values > span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 12px;
+	line-height: 17px;
+	white-space: nowrap;
+}
+
+.labels > span {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+	color: var(--muted-color);
+}
+
+.labels > span:last-child,
+.values > span:last-child {
+	justify-content: flex-end;
+	text-align: right;
+}
+
+.labels svg {
+	flex: none;
+	color: var(--sport-color);
 }
 
 .bar {
-	grid-column: 2 / 4;
-	height: 3px;
+	position: relative;
+	display: block;
+	height: 7px;
 	overflow: hidden;
-	background: var(--color-border);
+	background: color-mix(in srgb, var(--muted-color) 28%, transparent);
 	border-radius: 999px;
 }
 
@@ -73,4 +100,31 @@
 	display: block;
 	height: 100%;
 	background: var(--accent-color);
+	border-radius: inherit;
+}
+
+.bar em {
+	position: absolute;
+	top: 50%;
+	width: 10px;
+	height: 14px;
+	background: var(--achievement-color);
+	border-radius: 999px;
+	transform: translate(-50%, -50%);
+}
+
+.values {
+	color: var(--muted-color);
+}
+
+.values > span:last-child {
+	color: var(--achievement-color);
+}
+
+.noGoal {
+	display: block;
+	margin: 8px 0 2px 36px;
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
 }

@@ -5,7 +5,21 @@ import { MemoryRouter } from 'react-router';
 import { GoalSummary } from './GoalSummary';
 import type { HomeGoalSummary } from '@features/load-home-dashboard';
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', () => ({ useTranslation: () => ({
+	t: (key: string, values: Record<string, string | number> = {}) => {
+		const templates: Record<string, string> = {
+			'shell.home.noGoalForCard': 'This card has no goal yet',
+			'shell.progress.activeDaysCurrent': '{{current}} days',
+			'shell.progress.activeDaysProgress': '{{current}} / {{target}} days',
+			'shell.progress.currentProgress': '{{current}} {{unit}}',
+			'shell.progress.quantityProgress': '{{current}} / {{target}} {{unit}}',
+		};
+		return Object.entries(values).reduce(
+			(result, [name, value]) => result.replace(`{{${name}}}`, String(value)),
+			templates[key] ?? key,
+		);
+	},
+}) }));
 
 const summary: HomeGoalSummary = {
 	userCardId: 'card-1',
@@ -24,18 +38,20 @@ const summary: HomeGoalSummary = {
 };
 
 describe('GoalSummary', () => {
-	it('shows stage progress before long-term evidence and links to goal details', () => {
+	it('shows truthful long-term and stage values on one compact goal track', () => {
 		const html = renderToStaticMarkup(<MemoryRouter><GoalSummary summaries={[summary]} /></MemoryRouter>);
 
-		expect(html.indexOf('阶段 20 km')).toBeLessThan(html.indexOf('长期 100 km'));
+		expect(html.indexOf('长期 100 km')).toBeLessThan(html.indexOf('阶段 20 km'));
+		expect(html).toContain('27.50 / 100.00 km');
 		expect(html).toContain('7.50');
-		expect(html).toContain('38%');
+		expect(html).toContain('7.50 / 20.00 km');
+		expect(html.match(/role="progressbar"/g)).toHaveLength(2);
 		expect(html).toContain('/goals/card-1');
 	});
 
 	it('renders a truthful no-goal state without invented progress', () => {
 		const html = renderToStaticMarkup(<MemoryRouter><GoalSummary summaries={[{ ...summary, longTermGoal: null, stageGoal: null }]} /></MemoryRouter>);
-		expect(html).toContain('shell.home.noGoalForCard');
+		expect(html).toContain('This card has no goal yet');
 		expect(html).not.toContain('0%');
 	});
 });

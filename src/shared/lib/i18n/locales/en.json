@@ -641,17 +641,32 @@
 			"updateTitle": "A new version is ready"
 		},
 		"progress": {
+			"activeDaysCurrent": "{{current}} days",
+			"activeDaysProgress": "{{current}} / {{target}} days",
+			"activeSummary": "{{habits}} habits active · {{days}} outcome days this month",
 			"calendar": "Outcome calendar",
+			"calendarTab": "Calendar",
+			"currentProgress": "{{current}} {{unit}}",
 			"dailyRecord": "Daily record",
+			"details": "View details",
+			"goalsTab": "Goals",
 			"loadError": "Progress cannot be read right now.",
 			"loading": "Reading real progress…",
+			"longTermProgressLabel": "{{title}} long-term goal progress",
 			"longPlans": "Long-term plans",
 			"noPlans": "No goals yet. You can start with daily records.",
 			"noRecords": "There are no real records for this date.",
 			"outcomeDays": "Outcome days",
 			"overview": "Progress overview",
 			"plans": "Plans",
-			"selectedRecords": "Selected records"
+			"quantityProgress": "{{current}} / {{target}} {{unit}}",
+			"recordValue": "{{value}} {{unit}}",
+			"selectedDayHint": "Tap a date to view its records",
+			"selectedDayTitle": "{{date}} · {{count}} outcomes",
+			"selectedRecords": "Selected records",
+			"stageProgressLabel": "{{title}} stage goal progress",
+			"tabsLabel": "Progress view",
+			"viewAllGoals": "View all goals"
 		},
 		"dataManagement": {
 			"localTitle": "Local data",

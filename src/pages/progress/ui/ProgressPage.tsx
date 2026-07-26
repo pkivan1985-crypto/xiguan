@@ -1,15 +1,42 @@
+/* eslint-disable i18next/no-literal-string -- Tab, query and element identifiers are stable non-UI strings. */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiBarChart2, FiCalendar, FiCheck, FiFlag, FiRefreshCw } from 'react-icons/fi';
-import { useSearchParams } from 'react-router';
+import {
+	PiArrowClockwise,
+	PiCaretRight,
+	PiChartBar,
+	PiCheckCircle,
+	PiGearSix,
+} from 'react-icons/pi';
+import { Link, useSearchParams } from 'react-router';
 
 import { loadHistoryInApp, type HistoryModel } from '@features/load-history';
-import { loadHomeDashboardInApp, type HomeDashboardModel } from '@features/load-home-dashboard';
+import {
+	loadHomeDashboardInApp,
+	type HomeDashboardModel,
+} from '@features/load-home-dashboard';
+import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate, parseLocalDate } from '@shared/lib/date';
 import { GoalSummary } from '@widgets/goal-summary';
+import { MobilePageHeader } from '@widgets/mobile-page-header';
 import { OutcomeCalendar } from '@widgets/outcome-calendar';
 
 import styles from './ProgressPage.module.css';
+
+type ProgressTab = 'calendar' | 'goals';
+
+interface ProgressPageContentProps {
+	activeTab: ProgressTab;
+	dashboard: HomeDashboardModel;
+	history: HistoryModel;
+	selectedDate: string;
+	todayLocalDate: string;
+	canGoNext: boolean;
+	onChangeTab: (tab: ProgressTab) => void;
+	onNextMonth: () => void;
+	onPreviousMonth: () => void;
+	onSelectDate: (localDate: string) => void;
+}
 
 function validSelectedDate(value: string | null, today: string): string {
 	if (!value) return today;
@@ -20,6 +47,185 @@ function validSelectedDate(value: string | null, today: string): string {
 	}
 }
 
+function shortDateLabel(localDate: string, locale: string): string {
+	const [year, month, day] = localDate.split('-').map(Number);
+	return new Intl.DateTimeFormat(locale, {
+		month: 'long',
+		day: 'numeric',
+	}).format(new Date(year!, month! - 1, day!, 12));
+}
+
+function ProgressHeader() {
+	const { t } = useTranslation();
+	return (
+		<MobilePageHeader
+			title={t('shell.nav.progress')}
+			settingsAction={(
+				<Link
+					className={styles.settingsAction}
+					to={APP_ROUTES.SETTINGS}
+					aria-label={t('shell.actions.openSettings')}
+				>
+					<PiGearSix aria-hidden='true' />
+				</Link>
+			)}
+		/>
+	);
+}
+
+function ProgressPageContent({
+	activeTab,
+	dashboard,
+	history,
+	selectedDate,
+	todayLocalDate,
+	canGoNext,
+	onChangeTab,
+	onNextMonth,
+	onPreviousMonth,
+	onSelectDate,
+}: ProgressPageContentProps) {
+	const { t, i18n } = useTranslation();
+	const selectedRecords = history.groups.find(
+		(group) => group.localDate === selectedDate,
+	)?.records ?? [];
+	const goalSummaries = dashboard.goalSummaries.filter(
+		(summary) => summary.longTermGoal || summary.stageGoal,
+	);
+	const visibleGoals = activeTab === 'calendar'
+		? goalSummaries.slice(0, 2)
+		: dashboard.goalSummaries;
+	const selectedDayLabel = shortDateLabel(
+		selectedDate,
+		i18n.resolvedLanguage ?? i18n.language,
+	);
+	const activeTabId = activeTab === 'calendar'
+		? 'progress-calendar-tab'
+		: 'progress-goals-tab';
+
+	return (
+		<div className={styles.page}>
+			<ProgressHeader />
+			<div
+				className={styles.segmented}
+				role='tablist'
+				aria-label={t('shell.progress.tabsLabel')}
+			>
+				<button
+					id='progress-calendar-tab'
+					type='button'
+					role='tab'
+					aria-controls='progress-tab-content'
+					aria-selected={activeTab === 'calendar'}
+					onClick={() => onChangeTab('calendar')}
+				>
+					{t('shell.progress.calendarTab')}
+				</button>
+				<button
+					id='progress-goals-tab'
+					type='button'
+					role='tab'
+					aria-controls='progress-tab-content'
+					aria-selected={activeTab === 'goals'}
+					onClick={() => onChangeTab('goals')}
+				>
+					{t('shell.progress.goalsTab')}
+				</button>
+			</div>
+			<div
+				id='progress-tab-content'
+				className={styles.tabContent}
+				role='tabpanel'
+				aria-labelledby={activeTabId}
+			>
+				{activeTab === 'calendar' && (
+					<section
+						className={styles.calendarPanel}
+						data-testid='progress-calendar-panel'
+					>
+						<OutcomeCalendar
+							year={dashboard.year}
+							monthIndex={dashboard.monthIndex}
+							outcomeDates={dashboard.outcomeDates}
+							todayLocalDate={todayLocalDate}
+							selectedDate={selectedDate}
+							onSelectDate={onSelectDate}
+							onPreviousMonth={onPreviousMonth}
+							onNextMonth={onNextMonth}
+							canGoNext={canGoNext}
+						>
+							<div className={styles.selectedDay}>
+								<p>{t('shell.progress.selectedDayHint')}</p>
+								<h2>
+									{t('shell.progress.selectedDayTitle', {
+										date: selectedDayLabel,
+										count: selectedRecords.length,
+									})}
+								</h2>
+								{selectedRecords.length === 0 ? (
+									<p className={styles.empty}>{t('shell.progress.noRecords')}</p>
+								) : (
+									<div className={styles.records}>
+										{selectedRecords.map((record) => (
+											<article key={record.id}>
+												<span><PiCheckCircle aria-hidden='true' /></span>
+												<div>
+													<strong>{record.cardTitle}</strong>
+													<small>
+														{record.stageGoalTitle
+															?? record.longTermGoalTitle
+															?? t('shell.progress.dailyRecord')}
+													</small>
+												</div>
+												<b>
+													{t('shell.progress.recordValue', {
+														value: record.displayValue,
+														unit: record.displayUnit,
+													})}
+												</b>
+											</article>
+										))}
+									</div>
+								)}
+								<Link
+									className={styles.detailsLink}
+									to={`${APP_ROUTES.HISTORY}?date=${selectedDate}`}
+								>
+									{t('shell.progress.details')}
+									<PiCaretRight aria-hidden='true' />
+								</Link>
+							</div>
+						</OutcomeCalendar>
+					</section>
+				)}
+				<section
+					className={styles.planPanel}
+					data-testid='progress-plan-panel'
+				>
+					<header>
+						<h2>{t('shell.progress.plans')}</h2>
+						<p>
+							{t('shell.progress.activeSummary', {
+								habits: dashboard.goalSummaries.length,
+								days: dashboard.outcomeDayCount,
+							})}
+						</p>
+					</header>
+					{visibleGoals.length > 0 ? (
+						<GoalSummary summaries={visibleGoals} />
+					) : (
+						<p className={styles.planEmpty}>{t('shell.progress.noPlans')}</p>
+					)}
+					<Link className={styles.allGoalsLink} to={APP_ROUTES.DECK}>
+						{t('shell.progress.viewAllGoals')}
+						<PiCaretRight aria-hidden='true' />
+					</Link>
+				</section>
+			</div>
+		</div>
+	);
+}
+
 function ProgressPage() {
 	const { t } = useTranslation();
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -27,6 +233,7 @@ function ProgressPage() {
 	const todayLocalDate = formatLocalDate(now);
 	const initialSelected = validSelectedDate(searchParams.get('date'), todayLocalDate);
 	const [selectedDate, setSelectedDate] = useState(initialSelected);
+	const [activeTab, setActiveTab] = useState<ProgressTab>('calendar');
 	const [month, setMonth] = useState(() => {
 		const [year, monthNumber] = initialSelected.split('-').map(Number);
 		return { year: year!, monthIndex: monthNumber! - 1 };
@@ -60,56 +267,56 @@ function ProgressPage() {
 		setSelectedDate(localDate);
 		setSearchParams({ date: localDate }, { replace: true });
 	};
-	const canGoNext = month.year < now.getFullYear() || (month.year === now.getFullYear() && month.monthIndex < now.getMonth());
-	const selectedRecords = history?.groups.find((group) => group.localDate === selectedDate)?.records ?? [];
+	const canGoNext = month.year < now.getFullYear()
+		|| (month.year === now.getFullYear() && month.monthIndex < now.getMonth());
 
-	if (error) return <section className={styles.state}><FiBarChart2 aria-hidden='true' /><p>{t('shell.progress.loadError')}</p><button type='button' onClick={() => { setDashboard(null); setHistory(null); setError(false); setReloadNonce((value) => value + 1); }}><FiRefreshCw aria-hidden='true' />{t('shell.home.retry')}</button></section>;
-	if (!dashboard || !history) return <p className={styles.loading}>{t('shell.progress.loading')}</p>;
+	if (error) {
+		return (
+			<div className={styles.page}>
+				<ProgressHeader />
+				<section className={styles.state}>
+					<PiChartBar aria-hidden='true' />
+					<p>{t('shell.progress.loadError')}</p>
+					<button
+						type='button'
+						onClick={() => {
+							setDashboard(null);
+							setHistory(null);
+							setError(false);
+							setReloadNonce((value) => value + 1);
+						}}
+					>
+						<PiArrowClockwise aria-hidden='true' />
+						{t('shell.home.retry')}
+					</button>
+				</section>
+			</div>
+		);
+	}
+	if (!dashboard || !history) {
+		return (
+			<div className={styles.page}>
+				<ProgressHeader />
+				<p className={styles.loading}>{t('shell.progress.loading')}</p>
+			</div>
+		);
+	}
 
 	return (
-		<div className={styles.page}>
-			<section className={styles.metrics} aria-label={t('shell.progress.overview')}>
-				<div><span><FiCalendar aria-hidden='true' /></span><strong>{dashboard.outcomeDayCount}</strong><small>{t('shell.progress.outcomeDays')}</small></div>
-				<div><span><FiCheck aria-hidden='true' /></span><strong>{selectedRecords.length}</strong><small>{t('shell.progress.selectedRecords')}</small></div>
-				<div><span><FiFlag aria-hidden='true' /></span><strong>{dashboard.goalSummaries.filter((item) => item.longTermGoal).length}</strong><small>{t('shell.progress.longPlans')}</small></div>
-			</section>
-
-			<section className={styles.panel}>
-				<header><div><FiCalendar aria-hidden='true' /><h2>{t('shell.progress.calendar')}</h2></div><span>{dashboard.outcomeDayCount}</span></header>
-				<OutcomeCalendar
-					year={dashboard.year}
-					monthIndex={dashboard.monthIndex}
-					outcomeDates={dashboard.outcomeDates}
-					todayLocalDate={todayLocalDate}
-					selectedDate={selectedDate}
-					onSelectDate={selectDate}
-					onPreviousMonth={() => moveMonth(-1)}
-					onNextMonth={() => moveMonth(1)}
-					canGoNext={canGoNext}
-				/>
-			</section>
-
-			<section className={styles.panel}>
-				<header><div><FiCheck aria-hidden='true' /><h2>{selectedDate}</h2></div><span>{selectedRecords.length}</span></header>
-				{selectedRecords.length === 0 ? <p className={styles.empty}>{t('shell.progress.noRecords')}</p> : (
-					<div className={styles.records}>
-						{selectedRecords.map((record) => (
-							<article key={record.id}>
-								<span><FiCheck aria-hidden='true' /></span>
-								<div><strong>{record.cardTitle}</strong><small>{record.stageGoalTitle ?? record.longTermGoalTitle ?? t('shell.progress.dailyRecord')}</small></div>
-								<b>{record.displayValue} {record.displayUnit}</b>
-							</article>
-						))}
-					</div>
-				)}
-			</section>
-
-			<section className={styles.plans}>
-				<header><div><FiFlag aria-hidden='true' /><h2>{t('shell.progress.plans')}</h2></div><span>{dashboard.goalSummaries.length}</span></header>
-				{dashboard.goalSummaries.length > 0 ? <GoalSummary summaries={dashboard.goalSummaries} /> : <p className={styles.empty}>{t('shell.progress.noPlans')}</p>}
-			</section>
-		</div>
+		<ProgressPageContent
+			activeTab={activeTab}
+			dashboard={dashboard}
+			history={history}
+			selectedDate={selectedDate}
+			todayLocalDate={todayLocalDate}
+			canGoNext={canGoNext}
+			onChangeTab={setActiveTab}
+			onPreviousMonth={() => moveMonth(-1)}
+			onNextMonth={() => moveMonth(1)}
+			onSelectDate={selectDate}
+		/>
 	);
 }
 
-export { ProgressPage };
+export { ProgressPage, ProgressPageContent };
+export type { ProgressPageContentProps, ProgressTab };
