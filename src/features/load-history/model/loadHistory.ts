@@ -67,7 +67,9 @@ export async function loadHistory(
 					cardTitle: card?.title ?? '',
 					quantityBaseValue: record.quantityBaseValue,
 					displayValue: template
-						? formatQuantityFromBase(record.quantityBaseValue, template.quantity)
+						? template.trackingType && template.trackingType !== 'quantity' && template.quantity.maxDecimalPlaces === 0
+							? String(record.quantityBaseValue / template.quantity.basePerDisplayUnit)
+							: formatQuantityFromBase(record.quantityBaseValue, template.quantity)
 						: String(record.quantityBaseValue),
 					displayUnit: template?.quantity.displayUnit ?? '',
 					basePerDisplayUnit: template?.quantity.basePerDisplayUnit ?? 1,

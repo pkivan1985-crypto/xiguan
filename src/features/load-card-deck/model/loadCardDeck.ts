@@ -1,7 +1,7 @@
 /* eslint-disable i18next/no-literal-string -- Table names, indexes, statuses, and modes are domain identifiers. */
 import type { ActionRecord } from '@entities/action-record';
 import type { CardTemplate } from '@entities/card-template';
-import { seedSystemDefinitions } from '@entities/card-template';
+import { seedSystemDefinitions, SYSTEM_CARD_TEMPLATES } from '@entities/card-template';
 import type { CategoryDefinition } from '@entities/category';
 import { calculateGoalProgress, type GoalProgress, type LongTermGoal, type StageGoal } from '@entities/goal';
 import type { TodayDraft } from '@entities/today-draft';
@@ -40,7 +40,7 @@ export interface DeckView {
 export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: LocalDate): Promise<DeckView> {
 	const categoriesTable = database.tableFor<CategoryDefinition>('categoryDefinitions');
 	const templatesTable = database.tableFor<CardTemplate>('cardTemplates');
-	if (!await templatesTable.get('running')) await seedSystemDefinitions(database);
+	if (await templatesTable.count() < SYSTEM_CARD_TEMPLATES.length) await seedSystemDefinitions(database);
 	const cardsTable = database.tableFor<UserCard>('userCards');
 	const longTermGoalsTable = database.tableFor<LongTermGoal>('longTermGoals');
 	const stageGoalsTable = database.tableFor<StageGoal>('stageGoals');

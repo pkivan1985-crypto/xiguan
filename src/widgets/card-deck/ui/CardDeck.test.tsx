@@ -28,7 +28,7 @@ describe('CardDeck', () => {
 		expect((html.match(/即将开放/g) ?? []).length).toBe(2);
 	});
 
-	it('shows two compact cards collapsed by default', () => {
+	it('keeps a populated category folded by default', () => {
 		const cards = [
 			{ id: 'card-a', title: '晨跑', template, longTermGoal: { id: 'goal-a', userCardId: 'card-a', title: '累计 100 公里', targetQuantityBase: 100000, status: 'active' as const, startDate: '2026-07-01', createdAt: '2026-07-01', updatedAt: '2026-07-01' }, longTermProgress: { quantityBaseValue: 20000, activeDays: 5, ratio: 0.2, completed: false } },
 			{ id: 'card-b', title: '夜跑', template, longTermGoal: { id: 'goal-b', userCardId: 'card-b', title: '累计 50 公里', targetQuantityBase: 50000, status: 'active' as const, startDate: '2026-07-01', createdAt: '2026-07-01', updatedAt: '2026-07-01' }, longTermProgress: { quantityBaseValue: 25000, activeDays: 6, ratio: 0.5, completed: false } },
@@ -39,10 +39,10 @@ describe('CardDeck', () => {
 			copy={{ create: '新建', comingSoon: '即将开放', empty: '还没有循环卡', longTerm: '长期目标', stage: '阶段目标' }}
 		/>);
 
-		expect((html.match(/aria-expanded="true"/g) ?? []).length).toBe(1);
-		expect((html.match(/aria-expanded="false"/g) ?? []).length).toBe(2);
-		expect(html).toContain('晨跑');
-		expect(html).toContain('夜跑');
+		expect((html.match(/aria-expanded="true"/g) ?? []).length).toBe(0);
+		expect((html.match(/aria-expanded="false"/g) ?? []).length).toBe(1);
+		expect(html).not.toContain('晨跑');
+		expect(html).not.toContain('夜跑');
 		expect(html).not.toContain('累计 100 公里');
 	});
 

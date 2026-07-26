@@ -1,7 +1,8 @@
 import styles from './CardDeck.module.css';
 import { useState } from 'react';
-import { FiActivity, FiBookOpen, FiChevronDown, FiEdit3, FiPlus } from 'react-icons/fi';
+import { FiActivity, FiBookOpen, FiChevronDown, FiEdit3, FiHome, FiPlus } from 'react-icons/fi';
 import type { IconType } from 'react-icons';
+import { formatQuantityFromBase } from '@entities/card-template';
 import type { DeckCardView, DeckCategoryView } from '@features/load-card-deck';
 import { toggleExpandedItemId } from '../model/toggleExpandedItemId';
 
@@ -19,16 +20,12 @@ interface CardDeckProps {
 	copy: CardDeckCopy;
 }
 
-const CATEGORY_ICONS: Record<string, IconType> = { sport: FiActivity, reading: FiBookOpen, output: FiEdit3 };
+const CATEGORY_ICONS: Record<string, IconType> = { sport: FiActivity, reading: FiBookOpen, life: FiHome, output: FiEdit3 };
 
-function formatKilometers(baseValue: number): string {
-	return `${Number((baseValue / 1000).toFixed(3))} km`;
-}
-
-function GoalLine({ label, title, target, ratio = 0 }: { label: string; title: string; target?: number; ratio?: number }) {
+function GoalLine({ label, title, target, ratio = 0, card }: { label: string; title: string; target?: number; ratio?: number; card: DeckCardView }) {
 	return (
 		<div className={styles.goal}>
-			<div><small className={styles.goalLabel}>{label}</small><span>{title}</span>{target !== undefined && <b>{formatKilometers(target)}</b>}</div>
+			<div><small className={styles.goalLabel}>{label}</small><span>{title}</span>{target !== undefined && <b>{formatQuantityFromBase(target, card.template.quantity)} {card.template.quantity.displayUnit}</b>}</div>
 			<div className={styles.track}><i style={{ width: `${Math.round(ratio * 100)}%` }} /></div>
 		</div>
 	);
@@ -45,8 +42,8 @@ function UserCardView({ card, copy, expanded, onToggle }: { card: DeckCardView; 
 			</button>
 			<div className={styles.cardProgress} aria-hidden='true'><i style={{ width: `${Math.round(ratio * 100)}%` }} /></div>
 			{expanded && <div className={styles.cardDetails}>
-				{card.longTermGoal && <GoalLine label={copy.longTerm} title={card.longTermGoal.title} target={card.longTermGoal.targetQuantityBase} ratio={card.longTermProgress?.ratio} />}
-				{card.stageGoal && <GoalLine label={copy.stage} title={card.stageGoal.title} target={card.stageGoal.targetQuantityBase} ratio={card.stageProgress?.ratio} />}
+				{card.longTermGoal && <GoalLine card={card} label={copy.longTerm} title={card.longTermGoal.title} target={card.longTermGoal.targetQuantityBase} ratio={card.longTermProgress?.ratio} />}
+				{card.stageGoal && <GoalLine card={card} label={copy.stage} title={card.stageGoal.title} target={card.stageGoal.targetQuantityBase ?? card.stageGoal.targetActiveDays} ratio={card.stageProgress?.ratio} />}
 			</div>}
 		</article>
 	);
@@ -54,7 +51,7 @@ function UserCardView({ card, copy, expanded, onToggle }: { card: DeckCardView; 
 
 function CardDeck({ categories, onCreateRunningCard, copy }: CardDeckProps) {
 	const [expandedCardIds, setExpandedCardIds] = useState<Set<string>>(() => new Set());
-	const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(() => new Set(categories.filter((category) => category.cards.length > 0).map((category) => category.id)));
+	const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(() => new Set());
 	return (
 		<div className={styles.categories}>
 			{categories.map((category) => {

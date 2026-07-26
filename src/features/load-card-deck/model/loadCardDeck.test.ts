@@ -24,7 +24,8 @@ describe('loadCardDeck', () => {
 		expect(view.slots).toEqual([null, null, null, null, null, null]);
 		expect(view.categories.map(({ id, enabled, cards }) => ({ id, enabled, cards: cards.length }))).toEqual([
 			{ id: 'sport', enabled: true, cards: 0 },
-			{ id: 'reading', enabled: false, cards: 0 },
+			{ id: 'reading', enabled: true, cards: 0 },
+			{ id: 'life', enabled: true, cards: 0 },
 			{ id: 'output', enabled: false, cards: 0 },
 		]);
 	});

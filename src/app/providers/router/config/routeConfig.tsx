@@ -1,6 +1,6 @@
 import { Navigate, type RouteObject } from 'react-router';
-import { HomePage } from '@pages/home';
 import { TodayPage } from '@pages/today';
+import { ProgressPage } from '@pages/progress';
 import { DeckPage } from '@pages/deck';
 import { HistoryPage } from '@pages/history';
 import { SettingsPage } from '@pages/settings';
@@ -23,8 +23,9 @@ export const routeConfig: RouteObject[] = [
 		path: APP_ROUTES.HOME,
 		element: <AppShell />,
 		children: [
-			{ index: true, element: <HomePage /> },
-			{ path: APP_ROUTES.TODAY.slice(1), element: <TodayPage /> },
+			{ index: true, element: <TodayPage /> },
+			{ path: APP_ROUTES.TODAY.slice(1), element: <Navigate to={APP_ROUTES.HOME} replace /> },
+			{ path: APP_ROUTES.PROGRESS.slice(1), element: <ProgressPage /> },
 			{ path: APP_ROUTES.DECK.slice(1), element: <DeckPage /> },
 			{ path: APP_ROUTES.HISTORY.slice(1), element: <HistoryPage /> },
 			{ path: APP_ROUTES.SETTINGS.slice(1), element: <SettingsPage /> },

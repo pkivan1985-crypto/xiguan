@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router';
 
 import { todayErrorKey } from '../model/todayPage';
 import { TodayPage } from './TodayPage';
@@ -8,7 +9,7 @@ vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => (
 
 describe('TodayPage', () => {
 	it('renders a truthful loading state before IndexedDB readback', () => {
-		expect(renderToStaticMarkup(<TodayPage />)).toContain('正在读取今日成果');
+		expect(renderToStaticMarkup(<MemoryRouter><TodayPage /></MemoryRouter>)).toContain('正在读取今日成果');
 	});
 
 	it('maps actionable domain failures without hiding unknown errors', () => {

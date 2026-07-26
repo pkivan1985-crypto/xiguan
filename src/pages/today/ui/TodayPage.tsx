@@ -1,144 +1,183 @@
-/* eslint-disable i18next/no-literal-string -- Screen discriminants and domain error codes are not user-facing copy. */
-import { useCallback, useEffect, useState } from 'react';
-import { FiAlertCircle, FiCheckCircle, FiPlay, FiRotateCcw } from 'react-icons/fi';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+	FiActivity,
+	FiAlertCircle,
+	FiBookOpen,
+	FiCheck,
+	FiDroplet,
+	FiMinus,
+	FiMoon,
+	FiPlus,
+	FiRefreshCw,
+	FiShield,
+} from 'react-icons/fi';
+import type { IconType } from 'react-icons';
+import { Link, useNavigate } from 'react-router';
 
-import { useSettingsStore } from '@entities/settings';
-import type { OutcomeBatch } from '@entities/outcome-batch';
-import { assignTodayCard, removeTodayCard, swapTodaySlots, updateTodayValue } from '@entities/today-draft';
-import { loadTodayOutcomeForDate, type TodayOutcomeView } from '@features/load-today-outcome';
-import { advanceOutcomePlaybackInApp, beginOutcomePlaybackInApp, completeOutcomePlaybackInApp } from '@features/manage-outcome-playback';
-import { updateTodayDraftInApp } from '@features/manage-today-draft';
-import { saveTodayOutcomeInApp } from '@features/save-today-outcome';
+import { loadDailyHabitsInApp, type DailyHabitView, type DailyHabitsModel } from '@features/load-daily-habits';
+import { saveDailyHabitInApp } from '@features/save-daily-habit';
+import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
-import { useSystemMotion } from '@shared/lib/react';
-import { OutcomePlayback } from '@widgets/outcome-playback';
-import { OutcomeSummary } from '@widgets/outcome-summary';
-import { TodayCardPicker } from '@widgets/today-card-picker';
-import { TodayOutcomeEditor } from '@widgets/today-outcome-editor';
+import { WeekStrip } from '@widgets/week-strip';
 
 import styles from './TodayPage.module.css';
-import { todayErrorKey, type TodayErrorKey } from '../model/todayPage';
 
-type TodayScreen =
-	| { kind: 'loading' }
-	| { kind: 'editing'; view: TodayOutcomeView }
-	| { kind: 'submitting'; view: TodayOutcomeView; submissionId: string }
-	| { kind: 'confirmingLimit'; view: TodayOutcomeView; submissionId: string }
-	| { kind: 'error'; view?: TodayOutcomeView; messageKey: TodayErrorKey; submissionId?: string }
-	| { kind: 'playback'; batch: OutcomeBatch }
-	| { kind: 'summary'; batch: OutcomeBatch };
+const HABIT_ICONS: Record<DailyHabitView['iconKey'], IconType> = {
+	activity: FiActivity,
+	droplet: FiDroplet,
+	book: FiBookOpen,
+	moon: FiMoon,
+	shield: FiShield,
+};
+
+function DailyCard({
+	habit,
+	pending,
+	onChange,
+}: {
+	habit: DailyHabitView;
+	pending: boolean;
+	onChange: (nextValue: number) => void;
+}) {
+	const { t } = useTranslation();
+	const Icon = HABIT_ICONS[habit.iconKey];
+	const completed = habit.quantityBaseValue >= habit.dailyTargetBase;
+	const isToggle = habit.trackingType === 'check' || habit.trackingType === 'avoid';
+	const ratio = Math.min(habit.quantityBaseValue / Math.max(habit.dailyTargetBase, 1), 1);
+
+	return (
+		<article className={`${styles.habitCard} ${styles[habit.accent]} ${completed ? styles.completed : ''}`}>
+			<span className={styles.habitIcon}><Icon aria-hidden='true' /></span>
+			<div className={styles.habitCopy}>
+				<strong>{habit.title}</strong>
+				<small>{habit.goalTitle ?? t('shell.today.dailyTarget', {
+					value: habit.dailyTargetBase / (habit.trackingType === 'quantity' ? 1000 : 1),
+					unit: habit.displayUnit,
+				})}</small>
+			</div>
+			{isToggle ? (
+				<button
+					type='button'
+					className={styles.toggle}
+					disabled={pending}
+					aria-pressed={completed}
+					aria-label={completed ? t('shell.today.undoHabit', { title: habit.title }) : t('shell.today.completeHabit', { title: habit.title })}
+					onClick={() => onChange(completed ? 0 : habit.dailyTargetBase)}
+				>
+					<FiCheck aria-hidden='true' />
+				</button>
+			) : (
+				<div className={styles.stepper}>
+					<button
+						type='button'
+						disabled={pending || habit.quantityBaseValue === 0}
+						aria-label={t('shell.today.decreaseHabit', { title: habit.title })}
+						onClick={() => onChange(Math.max(0, habit.quantityBaseValue - habit.stepBase))}
+					><FiMinus aria-hidden='true' /></button>
+					<span><b>{habit.displayValue}</b><small>{habit.displayUnit}</small></span>
+					<button
+						type='button'
+						disabled={pending}
+						aria-label={t('shell.today.increaseHabit', { title: habit.title })}
+						onClick={() => onChange(habit.quantityBaseValue + habit.stepBase)}
+					><FiPlus aria-hidden='true' /></button>
+				</div>
+			)}
+			<span className={styles.cardProgress} aria-hidden='true'><i style={{ width: `${ratio * 100}%` }} /></span>
+		</article>
+	);
+}
 
 function TodayPage() {
 	const { t } = useTranslation();
-	const [localDate] = useState(() => formatLocalDate(new Date()));
-	const [screen, setScreen] = useState<TodayScreen>({ kind: 'loading' });
-	const [pickerOpen, setPickerOpen] = useState(false);
-	const [editPending, setEditPending] = useState(false);
-	const systemReducedMotion = useSystemMotion();
-	const animationsEnabled = useSettingsStore((state) => state.settings.isAnimationsEnabled);
-	const reducedMotion = systemReducedMotion || !animationsEnabled;
+	const navigate = useNavigate();
+	const todayLocalDate = useMemo(() => formatLocalDate(new Date()), []);
+	const [model, setModel] = useState<DailyHabitsModel | null>(null);
+	const [loadError, setLoadError] = useState(false);
+	const [pendingId, setPendingId] = useState<string>();
+	const [saveErrorId, setSaveErrorId] = useState<string>();
+	const [reloadNonce, setReloadNonce] = useState(0);
 
-	const load = useCallback(async () => loadTodayOutcomeForDate(localDate, new Date().toISOString()), [localDate]);
-
+	const load = useCallback(() => loadDailyHabitsInApp(todayLocalDate), [todayLocalDate]);
 	useEffect(() => {
 		let active = true;
-		load().then((view) => { if (active) setScreen({ kind: 'editing', view }); })
-			.catch((error) => { if (active) setScreen({ kind: 'error', messageKey: todayErrorKey(error) }); });
+		void load()
+			.then((next) => { if (active) setModel(next); })
+			.catch(() => { if (active) setLoadError(true); });
 		return () => { active = false; };
-	}, [load]);
+	}, [load, reloadNonce]);
 
-	const activeView = screen.kind === 'editing' || screen.kind === 'submitting' || screen.kind === 'confirmingLimit' || screen.kind === 'error'
-		? screen.view
-		: undefined;
-
-	async function mutateDraft(update: Parameters<typeof updateTodayDraftInApp>[1]): Promise<void> {
-		if (!activeView || editPending) return;
-		setEditPending(true);
+	async function changeHabit(habit: DailyHabitView, quantityBaseValue: number): Promise<void> {
+		if (pendingId) return;
+		setPendingId(habit.id);
+		setSaveErrorId(undefined);
 		try {
-			await updateTodayDraftInApp(localDate, update);
-			setScreen({ kind: 'editing', view: await load() });
-		} catch (error) {
-			setScreen({ kind: 'error', view: activeView, messageKey: todayErrorKey(error) });
-		} finally {
-			setEditPending(false);
-		}
-	}
-
-	async function performSave(view: TodayOutcomeView, submissionId: string, confirmedOverLimit = false): Promise<void> {
-		setScreen({ kind: 'submitting', view, submissionId });
-		try {
-			const batch = await saveTodayOutcomeInApp({
-				localDate,
+			await saveDailyHabitInApp({
+				userCardId: habit.id,
+				localDate: todayLocalDate,
 				currentLocalDate: formatLocalDate(new Date()),
+				quantityBaseValue,
 				nowIso: new Date().toISOString(),
-				submissionId,
-				confirmedOverLimit,
+				submissionId: crypto.randomUUID(),
 			});
-			setScreen({ kind: 'playback', batch: await beginOutcomePlaybackInApp(batch.id, new Date().toISOString()) });
-		} catch (error) {
-			if (error instanceof Error && error.message === 'QUANTITY_CONFIRMATION_REQUIRED') {
-				setScreen({ kind: 'confirmingLimit', view, submissionId });
-				return;
-			}
-			setScreen({ kind: 'error', view, messageKey: todayErrorKey(error), submissionId });
+			setModel(await load());
+		} catch {
+			setSaveErrorId(habit.id);
+		} finally {
+			setPendingId(undefined);
 		}
 	}
 
-	async function resumeBatch(batch: OutcomeBatch): Promise<void> {
-		try {
-			setScreen({ kind: 'playback', batch: await beginOutcomePlaybackInApp(batch.id, new Date().toISOString()) });
-		} catch (error) {
-			setScreen({ kind: 'error', view: activeView, messageKey: todayErrorKey(error) });
-		}
+	if (loadError) {
+		return <section className={styles.state}><FiAlertCircle aria-hidden='true' /><p>{t('shell.today.loadError')}</p><button type='button' onClick={() => { setModel(null); setLoadError(false); setReloadNonce((value) => value + 1); }}><FiRefreshCw aria-hidden='true' />{t('shell.today.retry')}</button></section>;
 	}
+	if (!model) return <p className={styles.loading}>{t('shell.today.loading')}</p>;
 
-	async function showSummary(batch: OutcomeBatch): Promise<void> {
-		try {
-			setScreen({ kind: 'summary', batch: await completeOutcomePlaybackInApp(batch.id, new Date().toISOString()) });
-		} catch (error) {
-			setScreen({ kind: 'error', view: activeView, messageKey: todayErrorKey(error) });
-		}
-	}
+	const [year, month, day] = todayLocalDate.split('-').map(Number);
+	const todayLabel = new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', weekday: 'long' }).format(new Date(year!, month! - 1, day!));
 
-	async function advancePlayback(batch: OutcomeBatch): Promise<void> {
-		try {
-			const next = await advanceOutcomePlaybackInApp(batch.id, new Date().toISOString());
-			setScreen(next.status === 'completed' ? { kind: 'summary', batch: next } : { kind: 'playback', batch: next });
-		} catch (error) {
-			setScreen({ kind: 'error', messageKey: todayErrorKey(error) });
-		}
-	}
-
-	if (screen.kind === 'loading') return <p className={styles.loading}>{t('shell.today.loading')}</p>;
-	if (screen.kind === 'playback') return <OutcomePlayback batch={screen.batch} reducedMotion={reducedMotion} onNext={() => { void advancePlayback(screen.batch); }} onSummary={() => { void showSummary(screen.batch); }} />;
-	if (screen.kind === 'summary') return <OutcomeSummary batch={screen.batch} onBack={() => { setScreen({ kind: 'loading' }); void load().then((view) => setScreen({ kind: 'editing', view })).catch((error) => setScreen({ kind: 'error', messageKey: todayErrorKey(error) })); }} />;
-
-	if (!activeView) {
-		const messageKey = screen.kind === 'error' ? screen.messageKey : 'shell.today.submitError';
-		return <div className={styles.failure}><FiAlertCircle /><p>{t(messageKey)}</p><button type='button' onClick={() => { setScreen({ kind: 'loading' }); void load().then((view) => setScreen({ kind: 'editing', view })).catch((error) => setScreen({ kind: 'error', messageKey: todayErrorKey(error) })); }}><FiRotateCcw />{t('shell.today.retry')}</button></div>;
-	}
-
-	return <div className={styles.page}>
-		{activeView.recoverableBatch && screen.kind === 'editing' && <aside className={styles.recovery}><FiPlay /><div><strong>{t('shell.today.resumeTitle')}</strong><p>{t('shell.today.resumeDescription')}</p></div><div><button type='button' onClick={() => { void resumeBatch(activeView.recoverableBatch!); }}>{t('shell.today.resume')}</button><button type='button' onClick={() => { void showSummary(activeView.recoverableBatch!); }}>{t('shell.today.viewSummary')}</button></div></aside>}
-		{screen.kind === 'error' && <div className={styles.alert} role='alert'><FiAlertCircle /><span>{t(screen.messageKey)}</span><button type='button' onClick={() => screen.submissionId ? void performSave(activeView, screen.submissionId) : setScreen({ kind: 'editing', view: activeView })}>{t('shell.today.retry')}</button></div>}
-		<TodayOutcomeEditor
-			view={activeView}
-			disabled={editPending || screen.kind === 'submitting' || screen.kind === 'confirmingLimit'}
-			onValueChange={(slotIndex, valueText) => { void mutateDraft((draft) => updateTodayValue(draft, slotIndex, valueText, new Date().toISOString())); }}
-			onMove={(slotIndex, direction) => { void mutateDraft((draft) => swapTodaySlots(draft, slotIndex, slotIndex + direction, new Date().toISOString())); }}
-			onRemove={(slotIndex) => { void mutateDraft((draft) => removeTodayCard(draft, slotIndex, new Date().toISOString())); }}
-			onOpenPicker={() => setPickerOpen(true)}
-			onSubmit={() => { void performSave(activeView, crypto.randomUUID()); }}
-		/>
-		{screen.kind === 'submitting' && <div className={styles.status}><FiCheckCircle />{t('shell.today.submitting')}</div>}
-		{screen.kind === 'confirmingLimit' && <div className={styles.confirm} role='alertdialog' aria-label={t('shell.today.confirmLimitTitle')}><div><FiAlertCircle /><strong>{t('shell.today.confirmLimitTitle')}</strong><p>{t('shell.today.confirmLimitDescription')}</p></div><div><button type='button' onClick={() => setScreen({ kind: 'editing', view: activeView })}>{t('common.cancel')}</button><button type='button' onClick={() => { void performSave(activeView, screen.submissionId, true); }}>{t('shell.today.confirmAndSave')}</button></div></div>}
-		<TodayCardPicker open={pickerOpen} cards={activeView.availableCards} onClose={() => setPickerOpen(false)} onSelect={(userCardId) => {
-			const emptySlot = activeView.draft.slots.find(({ userCardId: assigned }) => !assigned);
-			setPickerOpen(false);
-			if (emptySlot) void mutateDraft((draft) => assignTodayCard(draft, emptySlot.slotIndex, userCardId, new Date().toISOString()));
-		}} />
-	</div>;
+	return (
+		<div className={styles.page}>
+			<header className={styles.overview}>
+				<div><small>{todayLabel}</small><strong>{t('shell.today.overview', { completed: model.completedCount, total: model.habits.length })}</strong></div>
+				<span>{model.completedCount}/{model.habits.length}</span>
+			</header>
+			<WeekStrip
+				selectedLocalDate={todayLocalDate}
+				todayLocalDate={todayLocalDate}
+				onSelect={(localDate) => {
+					if (localDate !== todayLocalDate) navigate(`${APP_ROUTES.PROGRESS}?date=${localDate}`);
+				}}
+			/>
+			<section className={styles.listSection}>
+				<header><h2>{t('shell.today.listTitle')}</h2><Link to={APP_ROUTES.DECK_NEW} aria-label={t('shell.today.createHabit')}><FiPlus aria-hidden='true' /></Link></header>
+				{model.habits.length === 0 ? (
+					<div className={styles.empty}>
+						<span><FiPlus aria-hidden='true' /></span>
+						<h2>{t('shell.today.emptyTitle')}</h2>
+						<p>{t('shell.today.emptyDescription')}</p>
+						<Link className={styles.emptyAction} to={APP_ROUTES.DECK_NEW}>{t('shell.today.createHabit')}</Link>
+					</div>
+				) : (
+					<div className={styles.habitList}>
+						{model.habits.map((habit) => (
+							<div key={habit.id}>
+								<DailyCard habit={habit} pending={pendingId === habit.id} onChange={(value) => { void changeHabit(habit, value); }} />
+								{saveErrorId === habit.id && <p className={styles.inlineError} role='alert'><FiAlertCircle aria-hidden='true' />{t('shell.today.itemSaveError')}</p>}
+							</div>
+						))}
+					</div>
+				)}
+			</section>
+			{model.habits.length > 0 && (
+				<Link className={styles.summaryLink} to={`${APP_ROUTES.PROGRESS}?date=${todayLocalDate}`}>
+					<span><FiCheck aria-hidden='true' /></span>
+					<div><strong>{t('shell.today.viewTodaySummary')}</strong><small>{t('shell.today.viewTodaySummaryHint')}</small></div>
+				</Link>
+			)}
+		</div>
+	);
 }
 
 export { TodayPage };

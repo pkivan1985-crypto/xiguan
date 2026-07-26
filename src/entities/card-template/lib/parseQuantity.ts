@@ -11,7 +11,8 @@ export function parseQuantityToBase(
 	config: QuantityConfig,
 	options: { confirmedOverLimit?: boolean } = {},
 ): number {
-	const valuePattern = new RegExp(`^(?:0|[1-9]\\d*)(?:\\.(\\d{1,${config.maxDecimalPlaces}}))?$`);
+	const decimalPart = config.maxDecimalPlaces > 0 ? `(?:\\.(\\d{1,${config.maxDecimalPlaces}}))?` : '';
+	const valuePattern = new RegExp(`^(?:0|[1-9]\\d*)${decimalPart}$`);
 	if (!valuePattern.test(valueText)) throw new Error('INVALID_QUANTITY');
 	const displayValue = Number(valueText);
 	const baseValue = displayValue * config.basePerDisplayUnit;

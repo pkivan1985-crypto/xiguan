@@ -1,87 +1,140 @@
-/* eslint-disable i18next/no-literal-string -- Form field keys and fallback error codes are implementation identifiers. */
-import styles from './CreateRunningCardPage.module.css';
-import { useReducer, useState } from 'react';
+/* eslint-disable i18next/no-literal-string -- Preset IDs are stable domain identifiers. */
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiArrowRight, FiCalendar, FiCheck, FiChevronLeft, FiFlag, FiTarget, FiX } from 'react-icons/fi';
+import {
+	FiActivity,
+	FiBookOpen,
+	FiCheck,
+	FiChevronLeft,
+	FiDroplet,
+	FiFlag,
+	FiMoon,
+	FiShield,
+	FiTarget,
+	FiX,
+} from 'react-icons/fi';
+import type { IconType } from 'react-icons';
 import { useNavigate } from 'react-router';
-import { createRunningCardInApp } from '@features/create-running-card';
+
+import { createHabitInApp } from '@features/create-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
-import { createInitialFormState, formReducer, type FormField, validateCurrentStep } from '../model/createRunningCardForm';
 
-const STEP_KEYS = ['card', 'longTerm', 'stage', 'review'] as const;
+import styles from './CreateRunningCardPage.module.css';
+
+const PRESETS = [
+	{ id: 'running', icon: FiActivity, labelKey: 'shell.createCard.presets.running', unitKey: 'shell.createCard.units.distance', accent: 'green' },
+	{ id: 'water', icon: FiDroplet, labelKey: 'shell.createCard.presets.water', unitKey: 'shell.createCard.units.count', accent: 'cyan' },
+	{ id: 'reading-time', icon: FiBookOpen, labelKey: 'shell.createCard.presets.reading', unitKey: 'shell.createCard.units.duration', accent: 'amber' },
+	{ id: 'sleep', icon: FiMoon, labelKey: 'shell.createCard.presets.sleep', unitKey: 'shell.createCard.units.check', accent: 'violet' },
+	{ id: 'screen-free', icon: FiShield, labelKey: 'shell.createCard.presets.screenFree', unitKey: 'shell.createCard.units.avoid', accent: 'blue' },
+] as const satisfies readonly {
+	id: string;
+	icon: IconType;
+	labelKey: string;
+	unitKey: string;
+	accent: string;
+}[];
 
 function CreateRunningCardPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const [state, dispatch] = useReducer(formReducer, formatLocalDate(new Date()), createInitialFormState);
-	const [invalidField, setInvalidField] = useState<FormField | null>(null);
-	const stepKey = STEP_KEYS[state.step]!;
-	const update = (field: FormField, value: string) => { setInvalidField(null); dispatch({ type: 'update', field, value }); };
-	const close = () => navigate(APP_ROUTES.DECK);
-	const back = () => state.step === 0 ? close() : dispatch({ type: 'back' });
-	const next = () => {
-		const invalid = validateCurrentStep(state);
-		if (invalid) return setInvalidField(invalid);
-		dispatch({ type: 'next' });
-	};
-	const submit = async () => {
-		if (state.status === 'submitting') return;
-		dispatch({ type: 'submit' });
+	const [templateId, setTemplateId] = useState('running');
+	const [cardTitle, setCardTitle] = useState('');
+	const [planning, setPlanning] = useState(false);
+	const [longTitle, setLongTitle] = useState('');
+	const [longTarget, setLongTarget] = useState('');
+	const [stageTitle, setStageTitle] = useState('');
+	const [stageTarget, setStageTarget] = useState('');
+	const [submitting, setSubmitting] = useState(false);
+	const [error, setError] = useState<string>();
+	const selected = PRESETS.find((preset) => preset.id === templateId)!;
+
+	async function submit(): Promise<void> {
+		if (!cardTitle.trim() || submitting) {
+			if (!cardTitle.trim()) setError(t('shell.createCard.nameRequired'));
+			return;
+		}
+		const hasLong = planning && longTitle.trim() && longTarget.trim();
+		const hasStage = hasLong && stageTitle.trim() && stageTarget.trim();
+		setSubmitting(true);
+		setError(undefined);
 		try {
-			await createRunningCardInApp({
-				...state.values,
-				endDate: state.values.endDate || undefined,
+			await createHabitInApp({
+				templateId,
+				cardTitle,
+				startDate: formatLocalDate(new Date()),
+				longTerm: hasLong ? { title: longTitle, targetDisplay: longTarget } : undefined,
+				stage: hasStage ? { title: stageTitle, targetDisplay: stageTarget } : undefined,
 				nowIso: new Date().toISOString(),
-				ids: { userCardId: crypto.randomUUID(), longTermGoalId: crypto.randomUUID(), stageGoalId: crypto.randomUUID() },
+				ids: {
+					userCardId: crypto.randomUUID(),
+					longTermGoalId: crypto.randomUUID(),
+					stageGoalId: crypto.randomUUID(),
+				},
 			});
 			navigate(APP_ROUTES.DECK, { replace: true, state: { created: true } });
-		} catch (error) {
-			dispatch({ type: 'error', errorCode: error instanceof Error ? error.message : 'SAVE_FAILED' });
+		} catch {
+			setError(t('shell.createCard.saveError'));
+		} finally {
+			setSubmitting(false);
 		}
-	};
-	const fieldError = (field: FormField) => invalidField === field ? <small className={styles.error}>{t('shell.createCard.required')}</small> : null;
+	}
 
 	return (
 		<main className={styles.page}>
 			<header className={styles.header}>
-				<button type='button' onClick={back} aria-label={t('shell.createCard.back')}><FiChevronLeft aria-hidden='true' /></button>
-				<h1>{t('shell.createCard.title')}</h1>
-				<button type='button' onClick={close} aria-label={t('shell.createCard.close')}><FiX aria-hidden='true' /></button>
+				<button type='button' onClick={() => navigate(APP_ROUTES.DECK)} aria-label={t('shell.createCard.back')}><FiChevronLeft aria-hidden='true' /></button>
+				<h1>{t('shell.createCard.newHabit')}</h1>
+				<button type='button' onClick={() => navigate(APP_ROUTES.DECK)} aria-label={t('shell.createCard.close')}><FiX aria-hidden='true' /></button>
 			</header>
-			<div className={styles.progress} aria-label={t('shell.createCard.progress', { current: state.step + 1 })}>
-				{STEP_KEYS.map((key, index) => <i key={key} className={index <= state.step ? styles.active : ''} />)}
-			</div>
-			<section className={styles.content}>
-				<p className={styles.step}><FiTarget aria-hidden='true' />{t('shell.createCard.step', { current: state.step + 1 })}</p>
-				<h2>{t(`shell.createCard.steps.${stepKey}.title`)}</h2>
-				<p className={styles.description}>{t(`shell.createCard.steps.${stepKey}.description`)}</p>
 
-				{state.step === 0 && <div className={styles.fields}>
-					<div className={styles.template}><FiTarget aria-hidden='true' /><div><small>{t('shell.createCard.template')}</small><strong>{t('shell.createCard.running')}</strong></div></div>
-					<label><span><FiFlag aria-hidden='true' />{t('shell.createCard.cardTitle')}</span><input value={state.values.cardTitle} onChange={(event) => update('cardTitle', event.target.value)} autoFocus />{fieldError('cardTitle')}</label>
-				</div>}
-				{state.step === 1 && <div className={styles.fields}>
-					<label><span><FiFlag aria-hidden='true' />{t('shell.createCard.longTitle')}</span><input value={state.values.longTermTitle} onChange={(event) => update('longTermTitle', event.target.value)} autoFocus />{fieldError('longTermTitle')}</label>
-					<label><span><FiTarget aria-hidden='true' />{t('shell.createCard.targetKm')}</span><input type='number' inputMode='decimal' value={state.values.longTermTargetDisplay} onChange={(event) => update('longTermTargetDisplay', event.target.value)} />{fieldError('longTermTargetDisplay')}</label>
-					<label><span><FiCalendar aria-hidden='true' />{t('shell.createCard.startDate')}</span><input type='date' value={state.values.startDate} onChange={(event) => update('startDate', event.target.value)} /></label>
-					<label><span><FiCalendar aria-hidden='true' />{t('shell.createCard.endDate')}</span><input type='date' value={state.values.endDate} min={state.values.startDate} onChange={(event) => update('endDate', event.target.value)} />{fieldError('endDate')}</label>
-				</div>}
-				{state.step === 2 && <div className={styles.fields}>
-					<label><span><FiFlag aria-hidden='true' />{t('shell.createCard.stageTitle')}</span><input value={state.values.stageTitle} onChange={(event) => update('stageTitle', event.target.value)} autoFocus />{fieldError('stageTitle')}</label>
-					<label><span><FiTarget aria-hidden='true' />{t('shell.createCard.stageKm')}</span><input type='number' inputMode='decimal' value={state.values.stageTargetDisplay} onChange={(event) => update('stageTargetDisplay', event.target.value)} />{fieldError('stageTargetDisplay')}</label>
-				</div>}
-				{state.step === 3 && <div className={styles.review}>
-					<div><small>{t('shell.createCard.card')}</small><strong>{state.values.cardTitle}</strong><span>{t('shell.createCard.running')}</span></div>
-					<div><small>{t('shell.createCard.longTerm')}</small><strong>{state.values.longTermTitle}</strong><span>{t('shell.createCard.kmValue', { value: state.values.longTermTargetDisplay })}</span></div>
-					<div><small>{t('shell.createCard.stage')}</small><strong>{state.values.stageTitle}</strong><span>{t('shell.createCard.kmValue', { value: state.values.stageTargetDisplay })}</span></div>
-					<p><FiCheck aria-hidden='true' />{t('shell.createCard.atomicNote')}</p>
-				</div>}
-				{state.status === 'error' && <p className={styles.saveError}>{t('shell.createCard.saveError')}</p>}
+			<section className={styles.content}>
+				<div className={styles.intro}><span><FiTarget aria-hidden='true' /></span><div><strong>{t('shell.createCard.chooseType')}</strong><small>{t('shell.createCard.chooseTypeHint')}</small></div></div>
+				<div className={styles.presets}>
+					{PRESETS.map(({ id, icon: Icon, labelKey, unitKey, accent }) => (
+						<button
+							type='button'
+							key={id}
+							className={`${styles.preset} ${styles[accent]} ${id === templateId ? styles.selected : ''}`}
+							aria-pressed={id === templateId}
+							onClick={() => { setTemplateId(id); setError(undefined); }}
+						>
+							<span><Icon aria-hidden='true' /></span>
+							<strong>{t(labelKey)}</strong>
+							<small>{t(unitKey)}</small>
+						</button>
+					))}
+				</div>
+
+				<label className={styles.nameField}>
+					<span><FiFlag aria-hidden='true' />{t('shell.createCard.habitName')}</span>
+					<input
+						value={cardTitle}
+						maxLength={40}
+						placeholder={t(`shell.createCard.placeholders.${selected.id}`)}
+						onChange={(event) => { setCardTitle(event.target.value); setError(undefined); }}
+					/>
+				</label>
+
+				<button type='button' className={styles.planToggle} aria-expanded={planning} onClick={() => setPlanning((value) => !value)}>
+					<span><FiTarget aria-hidden='true' /></span>
+					<div><strong>{t('shell.createCard.optionalPlans')}</strong><small>{t('shell.createCard.optionalPlansHint')}</small></div>
+					<FiChevronLeft className={styles.planToggleIcon} aria-hidden='true' />
+				</button>
+
+				{planning && (
+					<div className={styles.planFields}>
+						<div><small>{t('shell.createCard.longTerm')}</small><input value={longTitle} placeholder={t('shell.createCard.planName')} onChange={(event) => setLongTitle(event.target.value)} /><input type='number' min='1' inputMode='decimal' value={longTarget} placeholder={t('shell.createCard.planTarget')} onChange={(event) => setLongTarget(event.target.value)} /></div>
+						<div><small>{t('shell.createCard.stage')}</small><input value={stageTitle} placeholder={t('shell.createCard.planName')} onChange={(event) => setStageTitle(event.target.value)} /><input type='number' min='1' inputMode='decimal' value={stageTarget} placeholder={t('shell.createCard.planTarget')} onChange={(event) => setStageTarget(event.target.value)} /></div>
+					</div>
+				)}
+				{error && <p className={styles.error} role='alert'>{error}</p>}
 			</section>
+
 			<footer className={styles.actions}>
-				<button type='button' className={styles.secondary} onClick={back}><FiChevronLeft aria-hidden='true' />{state.step === 0 ? t('shell.createCard.cancel') : t('shell.createCard.previous')}</button>
-				<button type='button' className={styles.primary} disabled={state.status === 'submitting'} onClick={state.step === 3 ? submit : next}>{state.step === 3 ? <><FiCheck aria-hidden='true' />{t('shell.createCard.create')}</> : <>{t('shell.createCard.continue')}<FiArrowRight aria-hidden='true' /></>}</button>
+				<button type='button' className={styles.secondary} onClick={() => navigate(APP_ROUTES.DECK)}>{t('shell.createCard.cancel')}</button>
+				<button type='button' className={styles.primary} disabled={submitting} onClick={() => { void submit(); }}><FiCheck aria-hidden='true' />{t('shell.createCard.createHabit')}</button>
 			</footer>
 		</main>
 	);

@@ -1,0 +1,181 @@
+.page {
+	display: grid;
+	gap: 13px;
+	max-width: 620px;
+	margin: 0 auto;
+}
+
+.loading,
+.state {
+	display: grid;
+	gap: 10px;
+	place-items: center;
+	min-height: 240px;
+	font-size: 0.74rem;
+	color: var(--muted-color);
+	text-align: center;
+}
+
+.state > svg {
+	font-size: 1.45rem;
+	color: var(--accent-color);
+}
+
+.state button {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	min-height: 42px;
+	padding: 0 14px;
+	font-size: 0.7rem;
+	font-weight: 750;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 13px;
+}
+
+.metrics {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+}
+
+.metrics > div {
+	display: grid;
+	gap: 3px;
+	place-items: center;
+	min-width: 0;
+	padding: 11px 4px;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 17px;
+}
+
+.metrics span {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 9px;
+}
+
+.metrics strong {
+	font-size: 0.9rem;
+}
+
+.metrics small {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 0.57rem;
+	color: var(--muted-color);
+	white-space: nowrap;
+}
+
+.panel,
+.plans {
+	display: grid;
+	gap: 8px;
+}
+
+.panel > header,
+.plans > header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 2px;
+}
+
+.panel > header div,
+.plans > header div {
+	display: flex;
+	gap: 7px;
+	align-items: center;
+}
+
+.panel > header svg,
+.plans > header svg {
+	color: var(--accent-color);
+}
+
+.panel h2,
+.plans h2 {
+	font-size: 0.76rem;
+}
+
+.panel > header > span,
+.plans > header > span {
+	font-size: 0.62rem;
+	color: var(--muted-color);
+}
+
+.records {
+	overflow: hidden;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 17px;
+}
+
+.records article {
+	display: grid;
+	grid-template-columns: 34px minmax(0, 1fr) auto;
+	gap: 9px;
+	align-items: center;
+	min-height: 62px;
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.records article:last-child {
+	border-bottom: 0;
+}
+
+.records article > span {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	color: var(--sport-color);
+	background: color-mix(in srgb, var(--sport-color) 13%, transparent);
+	border-radius: 11px;
+}
+
+.records article div {
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+}
+
+.records strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 0.7rem;
+	white-space: nowrap;
+}
+
+.records small {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 0.59rem;
+	color: var(--muted-color);
+	white-space: nowrap;
+}
+
+.records b {
+	font-size: 0.7rem;
+}
+
+.empty {
+	display: grid;
+	place-items: center;
+	min-height: 76px;
+	margin: 0;
+	font-size: 0.65rem;
+	color: var(--muted-color);
+	text-align: center;
+	background: var(--surface-color);
+	border: 1px dashed var(--border-strong);
+	border-radius: 17px;
+}

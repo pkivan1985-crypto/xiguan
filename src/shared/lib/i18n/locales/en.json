@@ -408,6 +408,7 @@
 		},
 		"deck": {
 			"allCards": "All cards",
+			"cardCount": "{{count}} active habits",
 			"categoryMovement": "Movement",
 			"categoryOutput": "Output",
 			"categoryReading": "Reading",
@@ -417,6 +418,8 @@
 			"loading": "Loading your cards…",
 			"loadError": "Your cards could not be loaded.",
 			"longTerm": "Long-term goal",
+			"manageTitle": "Manage habits",
+			"newHabit": "New",
 			"retry": "Retry",
 			"stage": "Stage goal",
 			"todayActive": "Today's loop cards"
@@ -430,8 +433,32 @@
 			"close": "Close",
 			"continue": "Continue",
 			"create": "Create loop card",
+			"createHabit": "Create habit",
+			"chooseType": "Choose a tracking type",
+			"chooseTypeHint": "Pick the closest type for quick daily recording.",
 			"endDate": "End date (optional)",
 			"longTerm": "Long-term goal",
+			"habitName": "Habit name",
+			"nameRequired": "Give this habit a name first.",
+			"newHabit": "New habit",
+			"optionalPlans": "Goal plans (optional)",
+			"optionalPlansHint": "You can start recording without a goal.",
+			"planName": "Goal name",
+			"planTarget": "Target value",
+			"presets": {
+				"reading": "Reading",
+				"running": "Running",
+				"screenFree": "Less screen",
+				"sleep": "Sleep",
+				"water": "Water"
+			},
+			"placeholders": {
+				"reading-time": "e.g. Evening reading",
+				"running": "e.g. Morning run",
+				"screen-free": "e.g. No phone before bed",
+				"sleep": "e.g. Sleep before 11",
+				"water": "e.g. Drink water at work"
+			},
 			"longTitle": "Long-term goal name",
 			"kmValue": "{{value}} km",
 			"previous": "Previous",
@@ -447,6 +474,13 @@
 			"targetKm": "Target distance (km)",
 			"template": "Official template",
 			"title": "New running card",
+			"units": {
+				"avoid": "Avoid",
+				"check": "Check",
+				"count": "Count",
+				"distance": "Distance",
+				"duration": "Duration"
+			},
 			"steps": {
 				"card": { "title": "Name this loop card", "description": "Use a name you will recognize in today's six slots." },
 				"longTerm": { "title": "Set a long-term direction", "description": "This records direction without punishment or streak pressure." },
@@ -533,9 +567,11 @@
 		},
 		"nav": {
 			"deck": "My cards",
+			"habits": "Habits",
 			"history": "History",
 			"home": "Home",
 			"primary": "Primary navigation",
+			"progress": "Progress",
 			"settings": "Settings and data",
 			"today": "Today"
 		},
@@ -604,6 +640,19 @@
 			"updateNow": "Update now",
 			"updateTitle": "A new version is ready"
 		},
+		"progress": {
+			"calendar": "Outcome calendar",
+			"dailyRecord": "Daily record",
+			"loadError": "Progress cannot be read right now.",
+			"loading": "Reading real progress…",
+			"longPlans": "Long-term plans",
+			"noPlans": "No goals yet. You can start with daily records.",
+			"noRecords": "There are no real records for this date.",
+			"outcomeDays": "Outcome days",
+			"overview": "Progress overview",
+			"plans": "Plans",
+			"selectedRecords": "Selected records"
+		},
 		"dataManagement": {
 			"localTitle": "Local data",
 			"localDescription": "Data stays in this browser. There is no account or cloud sync.",
@@ -623,7 +672,18 @@
 			"errors": { "FILE_TOO_LARGE": "The backup is larger than 50 MiB.", "UNSUPPORTED_FILE": "Choose a JSON backup file.", "INVALID_JSON": "The file is not valid JSON.", "UNSUPPORTED_FORMAT": "This is not a Visible Repetition 3.0 backup.", "PASSWORD_OR_DATA_INVALID": "The password is wrong or the file is damaged.", "BACKUP_VERSION_TOO_NEW": "This backup needs a newer app version.", "CHECKSUM_MISMATCH": "File verification failed. Current data was not changed.", "RELATIONSHIP_INVALID": "Backup relationships are damaged. Current data was not changed.", "TEMPLATE_INCOMPATIBLE": "The backup uses an unsupported card template.", "UNKNOWN": "The action did not finish. Current data was not changed." }
 		},
 		"today": {
+			"completeHabit": "Complete {{title}}",
+			"createHabit": "New habit",
+			"dailyTarget": "Today {{value}} {{unit}}",
+			"decreaseHabit": "Decrease {{title}}",
+			"emptyDescription": "Create one small action you want to repeat.",
+			"emptyTitle": "No active habits yet",
 			"goalProgressLine": "{{goal}}: {{before}} → {{after}}",
+			"increaseHabit": "Increase {{title}}",
+			"itemSaveError": "This item was not saved. Try again.",
+			"listTitle": "Today's habits",
+			"loadError": "Today's habits cannot be read right now.",
+			"overview": "{{completed}} of {{total}} complete",
 			"savedOnDate": "{{date}} · Saved",
 			"slotCount": "{{count}} / 6",
 			"confirmAndSave": "Confirm and save",
@@ -637,6 +697,19 @@
 			"resumeDescription": "The outcomes are saved. Continue playback or open the summary.",
 			"resumeTitle": "An outcome batch is waiting",
 			"retry": "Retry",
+			"undoHabit": "Undo {{title}}",
+			"viewTodaySummary": "View today's record",
+			"viewTodaySummaryHint": "Calendar and goal progress are under Progress",
+			"weekLabel": "This week",
+			"weekdays": {
+				"friday": "F",
+				"monday": "M",
+				"saturday": "S",
+				"sunday": "S",
+				"thursday": "T",
+				"tuesday": "T",
+				"wednesday": "W"
+			},
 			"submitError": "The action did not finish. Your draft is still here; please retry.",
 			"submitting": "Saving the outcome batch…",
 			"backToEditor": "Back to today's outcomes",

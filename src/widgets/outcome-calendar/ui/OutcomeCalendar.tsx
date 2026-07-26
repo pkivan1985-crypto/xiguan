@@ -13,9 +13,11 @@ interface OutcomeCalendarProps {
 	onPreviousMonth: () => void;
 	onNextMonth: () => void;
 	canGoNext: boolean;
+	selectedDate?: string;
+	onSelectDate?: (localDate: string) => void;
 }
 
-function OutcomeCalendar({ year, monthIndex, outcomeDates, todayLocalDate, onPreviousMonth, onNextMonth, canGoNext }: OutcomeCalendarProps) {
+function OutcomeCalendar({ year, monthIndex, outcomeDates, todayLocalDate, onPreviousMonth, onNextMonth, canGoNext, selectedDate, onSelectDate }: OutcomeCalendarProps) {
 	const { t } = useTranslation();
 	const completed = new Set(outcomeDates);
 	const weekdays = Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(undefined, { weekday: 'narrow' }).format(new Date(2024, 0, index + 1)));
@@ -35,12 +37,16 @@ function OutcomeCalendar({ year, monthIndex, outcomeDates, todayLocalDate, onPre
 					if (!cell.localDate) return <span className={styles.day} key={cell.key} aria-hidden='true' />;
 					const isOutcome = completed.has(cell.localDate);
 					const isToday = cell.localDate === todayLocalDate;
-					return <span
+					return <button
+						type='button'
 						key={cell.key}
-						className={clsx(styles.day, isOutcome && styles.outcome, isToday && styles.today)}
+						className={clsx(styles.day, isOutcome && styles.outcome, isToday && styles.today, cell.localDate === selectedDate && styles.selected)}
 						aria-current={isToday ? 'date' : undefined}
 						aria-label={isOutcome ? t('shell.home.outcomeDay', { date: cell.localDate }) : undefined}
-					>{isOutcome ? '✓' : cell.day}</span>;
+						aria-pressed={cell.localDate === selectedDate}
+						disabled={!onSelectDate || cell.localDate > todayLocalDate}
+						onClick={() => onSelectDate?.(cell.localDate!)}
+					>{isOutcome ? '✓' : cell.day}</button>;
 				})}
 			</div>
 		</section>

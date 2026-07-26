@@ -1,27 +1,68 @@
 .page {
 	display: grid;
-	gap: 20px;
+	gap: 13px;
+	max-width: 620px;
+	margin: 0 auto;
 }
 
-.page h2 {
-	margin-bottom: 10px;
-	font-size: 0.82rem;
+.overview {
+	display: grid;
+	grid-template-columns: 42px minmax(0, 1fr) auto;
+	gap: 10px;
+	align-items: center;
+	padding: 11px;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 18px;
+}
+
+.overview > span {
+	display: grid;
+	place-items: center;
+	width: 42px;
+	height: 42px;
+	font-size: 1.05rem;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 14px;
+}
+
+.overview div {
+	display: grid;
+	gap: 3px;
+}
+
+.overview strong {
+	font-size: 0.76rem;
+}
+
+.overview small {
+	font-size: 0.61rem;
+	color: var(--muted-color);
+}
+
+.overview button,
+.status button {
+	display: inline-flex;
+	gap: 5px;
+	align-items: center;
+	justify-content: center;
+	min-height: 42px;
+	padding: 0 12px;
+	font-size: 0.68rem;
+	font-weight: 760;
+	color: #fff;
+	background: var(--accent-color);
+	border-radius: 13px;
 }
 
 .loading,
 .status {
-	padding: 32px 16px;
-	font-size: 0.82rem;
+	display: grid;
+	gap: 10px;
+	place-items: center;
+	min-height: 220px;
+	font-size: 0.74rem;
 	color: var(--muted-color);
 	text-align: center;
-}
-
-.status button {
-	min-height: 44px;
-	padding: 0 14px;
-	margin-top: 12px;
-	font-weight: 700;
-	color: var(--accent-color);
-	background: var(--accent-soft);
-	border-radius: 22px;
 }

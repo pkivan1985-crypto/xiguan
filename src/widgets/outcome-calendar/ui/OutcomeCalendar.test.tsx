@@ -43,4 +43,21 @@ describe('OutcomeCalendar', () => {
 		expect(html).not.toContain('>✓<');
 		expect(html).toContain('disabled=""');
 	});
+
+	it('renders selectable date buttons and marks the selected date', () => {
+		const html = renderToStaticMarkup(<OutcomeCalendar
+			year={2026}
+			monthIndex={6}
+			outcomeDates={['2026-07-02']}
+			todayLocalDate='2026-07-25'
+			selectedDate='2026-07-02'
+			onSelectDate={() => undefined}
+			onPreviousMonth={() => undefined}
+			onNextMonth={() => undefined}
+			canGoNext={false}
+		/>);
+
+		expect(html).toContain('aria-pressed="true"');
+		expect(html).toContain('type="button"');
+	});
 });

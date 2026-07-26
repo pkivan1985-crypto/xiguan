@@ -28,4 +28,14 @@ describe('parseQuantityToBase', () => {
 		expect(() => parseQuantityToBase('100.001', runningQuantity)).toThrow('QUANTITY_CONFIRMATION_REQUIRED');
 		expect(parseQuantityToBase('100.001', runningQuantity, { confirmedOverLimit: true })).toBe(100001);
 	});
+
+	it('supports integer-only tracking presets without constructing an invalid expression', () => {
+		expect(parseQuantityToBase('30', {
+			baseUnit: 'minute',
+			displayUnit: '分钟',
+			basePerDisplayUnit: 1,
+			maxDecimalPlaces: 0,
+			confirmationThresholdDisplay: 720,
+		})).toBe(30);
+	});
 });
