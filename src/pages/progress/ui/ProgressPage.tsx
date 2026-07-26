@@ -169,72 +169,74 @@ function ProgressPageContent({
 									<p className={styles.empty}>{t('shell.progress.noRecords')}</p>
 								) : (
 									<div className={styles.records}>
-										{selectedRecords.map((record) => (
-											<article key={record.id}>
-												<div className={styles.recordMain}>
-													<span><PiCheckCircle aria-hidden='true' /></span>
-													<div>
-														<strong>{record.cardTitle}</strong>
-														<small>
-															{record.stageGoalTitle
-																?? record.longTermGoalTitle
-																?? t('shell.progress.dailyRecord')}
-														</small>
-													</div>
-													<b>
-														{t('shell.progress.recordValue', {
-															value: record.displayValue,
-															unit: record.displayUnit,
-														})}
-													</b>
-												</div>
-												{(record.plannedQuantityBaseValue
-													|| record.durationSeconds
-													|| record.averagePaceSecondsPerKm
-													|| record.averageHeartRateBpm
-													|| record.note) && (
-													<div className={styles.recordFacts}>
-														{record.plannedQuantityBaseValue && (
-															<span>{t('shell.progress.plannedValue', {
-																value: recordBaseValue(
-																	record.plannedQuantityBaseValue,
-																	record.basePerDisplayUnit,
-																),
+										{selectedRecords.map((record) => {
+											const relatedGoalTitle = record.stageGoalTitle
+												?? record.longTermGoalTitle;
+											const showRelatedGoalTitle = relatedGoalTitle
+												&& relatedGoalTitle.trim() !== record.cardTitle.trim();
+											return (
+												<article key={record.id}>
+													<div className={styles.recordMain}>
+														<span><PiCheckCircle aria-hidden='true' /></span>
+														<div>
+															<strong>{record.cardTitle}</strong>
+															{showRelatedGoalTitle && <small>{relatedGoalTitle}</small>}
+														</div>
+														<b>
+															{t('shell.progress.recordValue', {
+																value: record.displayValue,
 																unit: record.displayUnit,
-															})}</span>
-														)}
-														{record.carryOutBaseValue !== undefined
-															&& record.carryOutBaseValue > 0 && (
-															<span data-accent='warning'>{t('shell.progress.carryForward', {
-																value: recordBaseValue(
-																	record.carryOutBaseValue,
-																	record.basePerDisplayUnit,
-																),
-																unit: record.displayUnit,
-															})}</span>
-														)}
-														{record.durationSeconds && (
-															<span>{t('shell.progress.durationValue', {
-																value: new Intl.NumberFormat(undefined, {
-																	maximumFractionDigits: 1,
-																}).format(record.durationSeconds / 60),
-															})}</span>
-														)}
-														{record.averagePaceSecondsPerKm && (
-															<span>{t('shell.progress.paceValue', {
-																value: paceValue(record.averagePaceSecondsPerKm),
-															})}</span>
-														)}
-														{record.averageHeartRateBpm && (
-															<span>{t('shell.progress.heartRateValue', {
-																value: record.averageHeartRateBpm,
-															})}</span>
-														)}
-														{record.note && <p>{record.note}</p>}
+															})}
+														</b>
 													</div>
-												)}
-											</article>
-										))}
+													{(record.plannedQuantityBaseValue
+														|| record.durationSeconds
+														|| record.averagePaceSecondsPerKm
+														|| record.averageHeartRateBpm
+														|| record.note) && (
+														<div className={styles.recordFacts}>
+															{record.plannedQuantityBaseValue && (
+																<span>{t('shell.progress.plannedValue', {
+																	value: recordBaseValue(
+																		record.plannedQuantityBaseValue,
+																		record.basePerDisplayUnit,
+																	),
+																	unit: record.displayUnit,
+																})}</span>
+															)}
+															{record.carryOutBaseValue !== undefined
+																&& record.carryOutBaseValue > 0 && (
+																<span data-accent='warning'>{t('shell.progress.carryForward', {
+																	value: recordBaseValue(
+																		record.carryOutBaseValue,
+																		record.basePerDisplayUnit,
+																	),
+																	unit: record.displayUnit,
+																})}</span>
+															)}
+															{record.durationSeconds && (
+																<span>{t('shell.progress.durationValue', {
+																	value: new Intl.NumberFormat(undefined, {
+																		maximumFractionDigits: 1,
+																	}).format(record.durationSeconds / 60),
+																})}</span>
+															)}
+															{record.averagePaceSecondsPerKm && (
+																<span>{t('shell.progress.paceValue', {
+																	value: paceValue(record.averagePaceSecondsPerKm),
+																})}</span>
+															)}
+															{record.averageHeartRateBpm && (
+																<span>{t('shell.progress.heartRateValue', {
+																	value: record.averageHeartRateBpm,
+																})}</span>
+															)}
+															{record.note && <p>{record.note}</p>}
+														</div>
+													)}
+												</article>
+											);
+										})}
 									</div>
 								)}
 								<Link

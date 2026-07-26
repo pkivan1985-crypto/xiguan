@@ -41,6 +41,7 @@ export interface DailyHabitView {
 	note?: string;
 	goalTitle?: string;
 	goalProgressRatio?: number;
+	recordedToday: boolean;
 }
 
 export interface DailyHabitsModel {
@@ -171,6 +172,7 @@ export async function loadDailyHabits(
 				note: todayRecord?.note,
 				goalTitle: primaryGoal?.title,
 				goalProgressRatio: progress?.ratio,
+				recordedToday: todayRecord !== undefined,
 			}];
 		});
 

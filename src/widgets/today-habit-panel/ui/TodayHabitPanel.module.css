@@ -189,6 +189,11 @@
 	opacity: 0.42;
 }
 
+.completeAction:disabled[data-recorded='true'] {
+	cursor: default;
+	opacity: 1;
+}
+
 .inlineError {
 	grid-column: 2 / -1;
 	padding-bottom: 8px;

@@ -57,6 +57,7 @@ function activeDaysProgressText(
 interface GoalProgressRowProps {
 	kind: 'longTerm' | 'stage';
 	title: string;
+	showTitle: boolean;
 	status: GoalStatus;
 	progress: GoalProgress;
 	valueTexts: readonly string[];
@@ -66,6 +67,7 @@ interface GoalProgressRowProps {
 function GoalProgressRow({
 	kind,
 	title,
+	showTitle,
 	status,
 	progress,
 	valueTexts,
@@ -85,23 +87,27 @@ function GoalProgressRow({
 			: 'shell.progress.stageProgressLabel',
 		{ title },
 	);
+	const showLabel = showTitle || completed;
 	return (
 		<span
 			className={styles.goalRow}
 			data-combined={combined || undefined}
+			data-title-hidden={!showLabel || undefined}
 		>
-			<span className={styles.goalLabel}>
-				{kind === 'longTerm'
-					? <PiTarget aria-hidden='true' />
-					: <PiFlagPennant aria-hidden='true' />}
-				<b>{title}</b>
-				{completed && (
-					<small>
-						<PiCheckCircle aria-hidden='true' />
-						{t('shell.goalDetails.status.completed')}
-					</small>
-				)}
-			</span>
+			{showLabel && (
+				<span className={styles.goalLabel}>
+					{kind === 'longTerm'
+						? <PiTarget aria-hidden='true' />
+						: <PiFlagPennant aria-hidden='true' />}
+					{showTitle && <b>{title}</b>}
+					{completed && (
+						<small>
+							<PiCheckCircle aria-hidden='true' />
+							{t('shell.goalDetails.status.completed')}
+						</small>
+					)}
+				</span>
+			)}
 			<span
 				className={styles.bar}
 				role='progressbar'
@@ -167,6 +173,7 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 						<GoalProgressRow
 							kind='stage'
 							title={stage.title}
+							showTitle={stage.title.trim() !== summary.cardTitle.trim()}
 							status={stage.status}
 							progress={stage.progress}
 							valueTexts={stageValueTexts}
@@ -177,6 +184,7 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 						<GoalProgressRow
 							kind='longTerm'
 							title={longTerm.title}
+							showTitle={longTerm.title.trim() !== summary.cardTitle.trim()}
 							status={longTerm.status}
 							progress={longTerm.progress}
 							valueTexts={[

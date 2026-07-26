@@ -308,11 +308,14 @@ function HabitControl({
 				<button
 					type='button'
 					className={styles.completeAction}
-					disabled={pending}
-					onClick={onComplete}
+					disabled={pending || habit.recordedToday}
+					data-recorded={habit.recordedToday || undefined}
+					onClick={habit.recordedToday ? undefined : onComplete}
 				>
 					<PiCheckCircle aria-hidden='true' />
-					<span>{t(completed ? 'shell.today.completedAction' : 'shell.today.completeAction')}</span>
+					<span>{t(habit.recordedToday
+						? 'shell.today.completedAction'
+						: 'shell.today.completeAction')}</span>
 				</button>
 				<button
 					type='button'

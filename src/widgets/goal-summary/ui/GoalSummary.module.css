@@ -133,6 +133,11 @@
 	white-space: nowrap;
 }
 
+.goalRow[data-title-hidden='true'] .bar,
+.goalRow[data-title-hidden='true'] .value {
+	grid-row: 1;
+}
+
 .goalRow[data-combined='true'] .value {
 	display: flex;
 	flex-wrap: wrap;

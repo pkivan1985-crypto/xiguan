@@ -121,10 +121,3 @@
 .today:not(.selected) .date {
 	background: color-mix(in srgb, var(--accent-color) 10%, transparent);
 }
-
-@media (min-width: 520px) {
-	.calendar {
-		max-width: 360px;
-		margin: 0 auto;
-	}
-}

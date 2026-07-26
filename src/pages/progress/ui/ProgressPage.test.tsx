@@ -341,4 +341,40 @@ describe('ProgressPage', () => {
 		expect(html).not.toContain('data-testid="progress-calendar-panel"');
 		expect(html).toContain('data-testid="progress-plan-panel"');
 	});
+
+	it('does not repeat a goal title beside the same selected-record title', () => {
+		const ProgressPageContent = progressContent();
+		expect(ProgressPageContent).toBeTypeOf('function');
+		if (!ProgressPageContent) return;
+		const repeatedHistory: HistoryModel = {
+			groups: [{
+				localDate: '2026-07-25',
+				records: [{
+					...history.groups[0]!.records[0]!,
+					cardTitle: '超级夜跑',
+					stageGoalTitle: undefined,
+					longTermGoalTitle: '超级夜跑',
+				}],
+			}],
+		};
+		const html = renderToStaticMarkup(
+			<MemoryRouter>
+				<ProgressPageContent
+					activeTab='calendar'
+					dashboard={dashboard}
+					history={repeatedHistory}
+					selectedDate='2026-07-25'
+					todayLocalDate='2026-07-25'
+					canGoNext={false}
+					onChangeTab={vi.fn()}
+					onNextMonth={vi.fn()}
+					onPreviousMonth={vi.fn()}
+					onSelectDate={vi.fn()}
+				/>
+			</MemoryRouter>,
+		);
+
+		expect(html).toContain('<strong>超级夜跑</strong>');
+		expect(html).not.toContain('<small>超级夜跑</small>');
+	});
 });

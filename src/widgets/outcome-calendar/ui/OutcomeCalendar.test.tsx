@@ -102,4 +102,11 @@ describe('OutcomeCalendar', () => {
 		expect(css).toMatch(/\.day\s*\{[^}]*height:\s*33px;/s);
 		expect(css).toMatch(/\.day::after\s*\{[^}]*inset:\s*-6px 0 -5px;/s);
 	});
+
+	it('uses the parent mobile content width instead of a narrower desktop-only cap', () => {
+		const css = readFileSync(new URL('./OutcomeCalendar.module.css', import.meta.url), 'utf8');
+
+		expect(css).toMatch(/\.calendar\s*\{[^}]*width:\s*100%;/s);
+		expect(css).not.toMatch(/\.calendar\s*\{[^}]*max-width:\s*360px;/s);
+	});
 });

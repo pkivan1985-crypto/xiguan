@@ -223,4 +223,28 @@ describe('GoalSummary', () => {
 		expect(html).toContain('This card has no goal yet');
 		expect(html).not.toContain('0%');
 	});
+
+	it('does not repeat an inherited goal title that is identical to the habit title', () => {
+		const repeatedTitle = {
+			...summary,
+			cardTitle: '超级夜跑',
+			stageGoal: null,
+			longTermGoal: {
+				...summary.longTermGoal!,
+				title: '超级夜跑',
+			},
+		};
+		const html = renderToStaticMarkup(
+			<MemoryRouter><GoalSummary summaries={[repeatedTitle]} /></MemoryRouter>,
+		);
+
+		expect(html).toContain('<strong>超级夜跑</strong>');
+		expect(html).not.toContain('<b>超级夜跑</b>');
+		expect(html).toContain('data-title-hidden="true"');
+		expect(html).toContain('aria-label="超级夜跑 long-term progress"');
+		const css = readFileSync(new URL('./GoalSummary.module.css', import.meta.url), 'utf8');
+		expect(css).toMatch(
+			/\.goalRow\[data-title-hidden='true'\] \.bar,\s*\.goalRow\[data-title-hidden='true'\] \.value\s*\{[^}]*grid-row:\s*1;/s,
+		);
+	});
 });

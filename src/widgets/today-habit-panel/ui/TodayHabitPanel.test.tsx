@@ -61,6 +61,7 @@ const habits: DailyHabitView[] = [
 		supportsTrainingDetails: true,
 		goalTitle: '累计 30 公里',
 		goalProgressRatio: 18.4 / 30,
+		recordedToday: true,
 	},
 	{
 		id: 'water',
@@ -80,6 +81,7 @@ const habits: DailyHabitView[] = [
 		totalQuantityBaseValue: 42,
 		activeDays: 6,
 		supportsTrainingDetails: false,
+		recordedToday: false,
 	},
 	{
 		id: 'read',
@@ -99,6 +101,7 @@ const habits: DailyHabitView[] = [
 		totalQuantityBaseValue: 240,
 		activeDays: 8,
 		supportsTrainingDetails: false,
+		recordedToday: false,
 	},
 	{
 		id: 'sleep',
@@ -118,6 +121,7 @@ const habits: DailyHabitView[] = [
 		totalQuantityBaseValue: 6,
 		activeDays: 6,
 		supportsTrainingDetails: false,
+		recordedToday: true,
 	},
 	{
 		id: 'avoid',
@@ -137,6 +141,7 @@ const habits: DailyHabitView[] = [
 		totalQuantityBaseValue: 4,
 		activeDays: 4,
 		supportsTrainingDetails: false,
+		recordedToday: true,
 	},
 ];
 
@@ -191,7 +196,7 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('data-tracking-type="duration"');
 		expect(html).toContain('data-tracking-type="check"');
 		expect(html).toContain('data-tracking-type="avoid"');
-		expect(html).toContain('>已完成</span>');
+		expect(html).toContain('>已记录</span>');
 		expect(html).toContain('>填实际</span>');
 		expect(html).toContain('aria-label="增加喝水"');
 		expect(html).toContain('aria-label="记录阅读"');
@@ -199,6 +204,15 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('aria-label="撤销不刷短视频"');
 		expect(html.match(/aria-hidden="true"/g)?.length).toBeGreaterThanOrEqual(5);
 		expect(html).not.toContain('role="img"');
+	});
+
+	it('turns a recorded quantity action into a disabled status while keeping actual editing available', () => {
+		const html = renderPanel({ renderedHabits: [habits[0]!] });
+
+		expect(html).toContain('data-recorded="true"');
+		expect(html).toMatch(/class="[^"]*completeAction[^"]*" disabled="" data-recorded="true"/);
+		expect(html).toContain('>已记录</span>');
+		expect(html).toContain('>填实际</span>');
 	});
 
 	it('keeps the unified panel and empty-state copy when there are no habits', () => {
@@ -244,7 +258,8 @@ describe('TodayHabitPanel', () => {
 		});
 
 		expect(html.match(/aria-busy="true"/g)).toHaveLength(1);
-		expect(html.match(/ disabled=""/g)).toHaveLength(1);
+		expect(html.match(/ disabled=""/g)).toHaveLength(2);
+		expect(html.match(/data-recorded="true"/g)).toHaveLength(1);
 		expect(html.match(/role="alert"/g)).toHaveLength(1);
 		expect(html).toContain('data-error-for="read"');
 		expect(html).not.toContain('data-error-for="water"');

@@ -48,6 +48,7 @@ describe('loadDailyHabits', () => {
 			displayUnit: 'km',
 			stepBase: 500,
 			dailyTargetBase: 5000,
+			recordedToday: true,
 		});
 		expect(result.habits[1]).toMatchObject({
 			id: 'water',
@@ -55,6 +56,7 @@ describe('loadDailyHabits', () => {
 			quantityBaseValue: 0,
 			displayValue: '0',
 			displayUnit: '杯',
+			recordedToday: false,
 		});
 	});
 

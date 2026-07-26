@@ -77,6 +77,7 @@ const model: DailyHabitsModel = {
 		totalQuantityBaseValue: 6,
 		activeDays: 6,
 		supportsTrainingDetails: false,
+		recordedToday: true,
 	}],
 };
 
