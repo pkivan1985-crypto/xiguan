@@ -2,6 +2,7 @@
 import { effectiveActionRecords, type ActionRecord } from '@entities/action-record';
 import {
 	calculateGoalProgress,
+	selectCurrentStageGoal,
 	type LongTermGoal,
 	type StageGoal,
 } from '@entities/goal';
@@ -50,16 +51,6 @@ function currentLongTermGoal(goals: readonly LongTermGoal[], userCardId: string)
 		})[0];
 }
 
-function currentStageGoal(goals: readonly StageGoal[], longTermGoalId: string): StageGoal | undefined {
-	return goals
-		.filter((goal) => goal.longTermGoalId === longTermGoalId)
-		.sort((left, right) => {
-			const leftActive = left.status === 'active' ? 0 : 1;
-			const rightActive = right.status === 'active' ? 0 : 1;
-			return leftActive - rightActive || right.updatedAt.localeCompare(left.updatedAt);
-		})[0];
-}
-
 export async function loadDailyHabits(
 	database: RepeatOutcomeDatabase,
 	localDate: LocalDate,
@@ -101,7 +92,9 @@ export async function loadDailyHabits(
 			const quantityBaseValue = todayRecords.get(card.id)?.quantityBaseValue ?? 0;
 			const trackingType = template.trackingType ?? 'quantity';
 			const longTermGoal = currentLongTermGoal(data.longTermGoals, card.id);
-			const stageGoal = longTermGoal ? currentStageGoal(data.stageGoals, longTermGoal.id) : undefined;
+			const stageGoal = longTermGoal
+				? selectCurrentStageGoal(data.stageGoals.filter(({ longTermGoalId }) => longTermGoalId === longTermGoal.id))
+				: undefined;
 			const primaryGoal = stageGoal ?? longTermGoal;
 			const goalRecords = primaryGoal
 				? effectiveRecords.filter((record) => (

@@ -72,6 +72,7 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 		if (!isRecord(goal) || !isText(goal.id) || !isText(goal.longTermGoalId) || !isText(goal.title)
 			|| !['quantity', 'activeDays', 'both'].includes(String(goal.mode)) || !isLocalDate(goal.startDate)
 			|| !isIso(goal.createdAt) || !isIso(goal.updatedAt)) fail('INVALID_BACKUP');
+		if (goal.sequence !== undefined && !isSafeNonNegative(goal.sequence)) fail('INVALID_BACKUP');
 		if (goal.mode !== 'activeDays' && !isSafePositive(goal.targetQuantityBase)) fail('INVALID_BACKUP');
 		if (goal.mode !== 'quantity' && !isSafePositive(goal.targetActiveDays)) fail('INVALID_BACKUP');
 	}
@@ -121,6 +122,12 @@ function assertRelationships(payload: BackupPayloadV1, refs: TemplateDefinitionR
 	const stageGoals = new Map(payload.stageGoals.map((item) => [item.id, item]));
 	if (payload.longTermGoals.some((goal) => !cards.has(goal.userCardId))) fail('RELATIONSHIP_INVALID');
 	if (payload.stageGoals.some((goal) => !longGoals.has(goal.longTermGoalId))) fail('RELATIONSHIP_INVALID');
+	const activeStageCounts = new Map<string, number>();
+	for (const goal of payload.stageGoals.filter(({ status }) => status === 'active')) {
+		const count = (activeStageCounts.get(goal.longTermGoalId) ?? 0) + 1;
+		if (count > 1) fail('RELATIONSHIP_INVALID');
+		activeStageCounts.set(goal.longTermGoalId, count);
+	}
 	for (const revision of payload.goalRevisions) {
 		if (revision.goalType === 'longTerm' ? !longGoals.has(revision.goalId) : !stageGoals.has(revision.goalId)) fail('RELATIONSHIP_INVALID');
 	}

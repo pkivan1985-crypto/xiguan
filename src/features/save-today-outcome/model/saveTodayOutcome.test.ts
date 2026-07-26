@@ -127,6 +127,21 @@ describe('saveTodayOutcome', () => {
 		expect(batch.items[0]).toMatchObject({ longTermChange: { goalId: 'long-a', after: { completed: true } }, stageChange: { goalId: 'stage-a', after: { completed: true } } });
 	});
 
+	it('activates the next planned stage after the current stage completes', async () => {
+		await arrangeDraft('5');
+		await table('longTermGoals').add({ id: 'long-a', userCardId: 'card-a', title: '累计 10 公里', targetQuantityBase: 10000, status: 'active', startDate: '2026-07-01', createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' });
+		await table('stageGoals').bulkAdd([
+			{ id: 'stage-a', longTermGoalId: 'long-a', sequence: 0, title: '先跑 5 公里', mode: 'quantity', targetQuantityBase: 5000, status: 'active', startDate: '2026-07-01', createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' },
+			{ id: 'stage-b', longTermGoalId: 'long-a', sequence: 1, title: '再跑 5 公里', mode: 'quantity', targetQuantityBase: 5000, status: 'planned', startDate: '2026-07-01', createdAt: '2026-07-01T00:00:00.001Z', updatedAt: '2026-07-01T00:00:00.001Z' },
+		]);
+
+		await saveTodayOutcome(database, validInput('submission-stage-next'));
+
+		expect(await table('stageGoals').get('stage-a')).toMatchObject({ status: 'completed' });
+		expect(await table('stageGoals').get('stage-b')).toMatchObject({ status: 'active' });
+		expect(await table('longTermGoals').get('long-a')).toMatchObject({ status: 'active' });
+	});
+
 	it('freezes before and after progress plus display units', async () => {
 		await arrangeDraft('5');
 		await table('longTermGoals').add({ id: 'long-a', userCardId: 'card-a', title: '累计 100 公里', targetQuantityBase: 100000, status: 'active', startDate: '2026-07-01', createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' });

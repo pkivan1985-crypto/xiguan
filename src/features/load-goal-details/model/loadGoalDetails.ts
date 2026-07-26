@@ -1,7 +1,11 @@
 /* eslint-disable i18next/no-literal-string -- Table names, statuses, and domain errors are stable identifiers. */
 import { effectiveActionRecords, groupActionRecordsByLocalDate, type ActionRecord } from '@entities/action-record';
 import { formatQuantityFromBase, type CardTemplate, type StageCompletionMode } from '@entities/card-template';
-import { calculateGoalProgress } from '@entities/goal';
+import {
+	calculateGoalProgress,
+	compareStageGoals,
+	selectCurrentStageGoal,
+} from '@entities/goal';
 import type { GoalCompletionSnapshot, GoalProgress, GoalStatus, LongTermGoal, StageGoal } from '@entities/goal';
 import type { UserCard, UserCardStatus } from '@entities/user-card';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
@@ -51,6 +55,7 @@ export interface GoalDetailsModel {
 	card: GoalDetailsCard;
 	longTermGoal: GoalDetailsLongTermGoal | null;
 	stageGoal: GoalDetailsStageGoal | null;
+	stageGoals: GoalDetailsStageGoal[];
 	activeDays: number;
 	recentRecords: GoalDetailsRecord[];
 }
@@ -79,10 +84,28 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 	const template = data.templates.find(({ id }) => id === data.card?.officialCardId);
 	if (!template) throw new Error('GOAL_DETAILS_RELATIONSHIP_INVALID');
 	const longGoal = selectCurrent(data.longGoals);
-	const stage = longGoal ? selectCurrent(data.stageGoals.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id)) : undefined;
+	const relatedStageGoals = longGoal
+		? data.stageGoals.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id).sort(compareStageGoals)
+		: [];
+	const stage = selectCurrentStageGoal(relatedStageGoals);
 	const effectiveRecords = effectiveActionRecords(data.records);
 	const longProgress = longGoal ? calculateGoalProgress(effectiveRecords.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id), { mode: 'quantity', targetQuantityBase: longGoal.targetQuantityBase }) : null;
-	const stageProgress = stage ? calculateGoalProgress(effectiveRecords.filter(({ stageGoalId }) => stageGoalId === stage.id), { mode: stage.mode, targetQuantityBase: stage.targetQuantityBase, targetActiveDays: stage.targetActiveDays }) : null;
+	const mappedStageGoals = relatedStageGoals.map((goal): GoalDetailsStageGoal => ({
+		id: goal.id,
+		title: goal.title,
+		status: goal.status,
+		mode: goal.mode,
+		targetQuantityBase: goal.targetQuantityBase,
+		targetActiveDays: goal.targetActiveDays,
+		startDate: goal.startDate,
+		endDate: goal.endDate,
+		progress: calculateGoalProgress(
+			effectiveRecords.filter(({ stageGoalId }) => stageGoalId === goal.id),
+			{ mode: goal.mode, targetQuantityBase: goal.targetQuantityBase, targetActiveDays: goal.targetActiveDays },
+		)!,
+		completionSnapshot: goal.completionSnapshot,
+	}));
+	const stageDetails = stage ? mappedStageGoals.find(({ id }) => id === stage.id) : undefined;
 	const recentRecords = groupActionRecordsByLocalDate(effectiveRecords).flatMap(({ records: group }) => group).slice(0, 5).map((record) => ({
 		id: record.id,
 		localDate: record.localDate,
@@ -103,12 +126,8 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 			targetQuantityBase: longGoal.targetQuantityBase, startDate: longGoal.startDate,
 			endDate: longGoal.endDate, progress: longProgress, completionSnapshot: longGoal.completionSnapshot,
 		} : null,
-		stageGoal: stage && stageProgress ? {
-			id: stage.id, title: stage.title, status: stage.status, mode: stage.mode,
-			targetQuantityBase: stage.targetQuantityBase, targetActiveDays: stage.targetActiveDays,
-			startDate: stage.startDate, endDate: stage.endDate, progress: stageProgress,
-			completionSnapshot: stage.completionSnapshot,
-		} : null,
+		stageGoal: stageDetails ?? null,
+		stageGoals: mappedStageGoals,
 		activeDays: new Set(effectiveRecords.map(({ localDate }) => localDate)).size,
 		recentRecords,
 	};

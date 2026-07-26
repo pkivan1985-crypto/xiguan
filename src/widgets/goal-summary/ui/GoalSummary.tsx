@@ -163,6 +163,16 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 					role='group'
 					aria-label={summary.cardTitle}
 				>
+					{stage && (
+						<GoalProgressRow
+							kind='stage'
+							title={stage.title}
+							status={stage.status}
+							progress={stage.progress}
+							valueTexts={stageValueTexts}
+							t={t}
+						/>
+					)}
 					{longTerm && (
 						<GoalProgressRow
 							kind='longTerm'
@@ -177,16 +187,6 @@ function GoalSummary({ summaries }: GoalSummaryProps) {
 									t,
 								),
 							]}
-							t={t}
-						/>
-					)}
-					{stage && (
-						<GoalProgressRow
-							kind='stage'
-							title={stage.title}
-							status={stage.status}
-							progress={stage.progress}
-							valueTexts={stageValueTexts}
 							t={t}
 						/>
 					)}

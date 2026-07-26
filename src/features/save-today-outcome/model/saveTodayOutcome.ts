@@ -3,7 +3,7 @@ import type { ActionRecord } from '@entities/action-record';
 import { parseQuantityToBase } from '@entities/card-template';
 import type { CardTemplate } from '@entities/card-template';
 import type { StageCompletionMode } from '@entities/card-template';
-import { calculateGoalProgress } from '@entities/goal';
+import { calculateGoalProgress, selectNextPlannedStageGoal } from '@entities/goal';
 import type { GoalCompletionSnapshot, GoalProgress, GoalRevision, LongTermGoal, StageGoal } from '@entities/goal';
 import type { OutcomeBatch, OutcomeBatchItem, OutcomeGoalChange, OutcomeProgressSnapshot } from '@entities/outcome-batch';
 import { filledSlotsInOrder, validateTodayDraft } from '@entities/today-draft';
@@ -188,6 +188,17 @@ export async function saveTodayOutcome(
 					await tables.goalRevisions.add(completionRevision('stage', stageGoal.id, stageGoal.status, input));
 					stageGoal = { ...stageGoal, status: 'completed', updatedAt: input.nowIso, completionSnapshot: completionSnapshot(stageProgress, stageGoal, input.nowIso) };
 					await tables.stageGoals.put(stageGoal);
+					if (longTermGoal?.status === 'active') {
+						const siblings = await tables.stageGoals.where('longTermGoalId').equals(longTermGoal.id).toArray();
+						const nextStageGoal = selectNextPlannedStageGoal(siblings);
+						if (nextStageGoal) {
+							await tables.stageGoals.put({
+								...nextStageGoal,
+								status: 'active',
+								updatedAt: input.nowIso,
+							});
+						}
+					}
 				}
 			}
 

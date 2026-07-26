@@ -49,7 +49,7 @@ describe('GoalSummary', () => {
 	it('uses source targets and exposes long-term and stage as independent labelled progressbars', () => {
 		const html = renderToStaticMarkup(<MemoryRouter><GoalSummary summaries={[summary]} /></MemoryRouter>);
 
-		expect(html.indexOf('长期 100 km')).toBeLessThan(html.indexOf('阶段 20 km'));
+		expect(html.indexOf('阶段 20 km')).toBeLessThan(html.indexOf('长期 100 km'));
 		expect(html).toContain('27.50 / 100.00 km');
 		expect(html).toContain('7.50 / 20.00 km');
 		expect(html).toContain('role="group"');
@@ -58,9 +58,9 @@ describe('GoalSummary', () => {
 		expect(html).toContain('aria-valuenow="28"');
 		expect(html).toContain('aria-valuenow="38"');
 		const longProgressStart = html.indexOf('role="progressbar" aria-label="长期 100 km long-term progress"');
-		const longProgressEnd = html.indexOf('</span>', longProgressStart);
 		const stageProgressStart = html.indexOf('role="progressbar" aria-label="阶段 20 km stage progress"');
-		expect(longProgressEnd).toBeLessThan(stageProgressStart);
+		const stageProgressEnd = html.indexOf('</span>', stageProgressStart);
+		expect(stageProgressEnd).toBeLessThan(longProgressStart);
 		expect(html).toContain('/goals/card-1');
 	});
 

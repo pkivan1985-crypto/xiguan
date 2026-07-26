@@ -80,6 +80,18 @@ describe('backup V1 validation', () => {
 		await expect(validatePlainBackup(await envelope(), [{ id: 'running', version: 2 }], digest)).rejects.toMatchObject({ code: 'TEMPLATE_INCOMPATIBLE' });
 	});
 
+	it('rejects multiple active stages for one long-term goal', async () => {
+		const broken = structuredClone(payload);
+		broken.stageGoals.push({
+			...broken.stageGoals[0],
+			id: 'stage-2',
+			sequence: 1,
+			title: '阶段30公里',
+		});
+		const invalid = await envelope({ data: broken, checksum: { algorithm: 'SHA-256', value: await backupFingerprint(broken, digest) } });
+		await expect(validatePlainBackup(invalid, definitions, digest)).rejects.toMatchObject({ code: 'RELATIONSHIP_INVALID' });
+	});
+
 	it('uses stable error objects instead of translated entity messages', () => {
 		const error = new BackupValidationError('INVALID_BACKUP');
 		expect(error.code).toBe('INVALID_BACKUP');

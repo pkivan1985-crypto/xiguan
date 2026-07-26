@@ -140,6 +140,31 @@ describe('correctActionRecord', () => {
 		expect((await database.tableFor<GoalRevision>('goalRevisions').toArray()).map(({ reason }) => reason)).toEqual(['correction', 'correction']);
 	});
 
+	it('reopens the corrected stage and returns its active successor to planned', async () => {
+		await seed(
+			[record()],
+			[longTermGoal({ status: 'active', targetQuantityBase: 20_000, completionSnapshot: undefined })],
+			[
+				stageGoal({ sequence: 0 }),
+				stageGoal({
+					id: 'stage-2',
+					sequence: 1,
+					title: '下一阶段',
+					status: 'active',
+					targetQuantityBase: 10_000,
+					completionSnapshot: undefined,
+					createdAt: '2026-07-01T00:00:00.001Z',
+					updatedAt: '2026-07-12T09:00:00.000Z',
+				}),
+			],
+		);
+
+		await correctActionRecord(database, updateInput);
+
+		expect(await database.tableFor<StageGoal>('stageGoals').get('stage-1')).toMatchObject({ status: 'active', completionSnapshot: undefined });
+		expect(await database.tableFor<StageGoal>('stageGoals').get('stage-2')).toMatchObject({ status: 'planned' });
+	});
+
 	it('recalculates activeDays after deleting one of two outcome dates', async () => {
 		await seed(
 			[

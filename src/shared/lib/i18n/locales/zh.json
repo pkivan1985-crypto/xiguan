@@ -471,6 +471,13 @@
 			"newHabit": "新建习惯",
 			"optionalPlans": "目标规划（可选）",
 			"optionalPlansHint": "不填写也可以先开始每天记录。",
+			"addStage": "添加下一个阶段",
+			"incompletePlan": "目标名称和目标数值需要一起填写。",
+			"longTermHint": "这项习惯最终想积累到哪里",
+			"removeStage": "删除阶段 {{number}}",
+			"stageHint": "先拆出最近能完成的小目标，完成后自动接续",
+			"stageNeedsLongTerm": "添加阶段目标时，也需要填写下方的长期目标。",
+			"stageNumber": "阶段 {{number}}",
 			"planName": "目标名称",
 			"planTarget": "目标数值",
 			"presets": {
@@ -574,6 +581,7 @@
 			"todayActionDescription": "继续填写今天的累计值"
 		},
 		"goalDetails": {
+			"addStage": "新增阶段",
 			"activeDays": "有效成果日",
 			"activeDaysFact": "有效天数",
 			"allHistory": "全部历史",
@@ -589,6 +597,10 @@
 			"notFound": "这张循环卡或目标无法读取",
 			"quantityFact": "累计成果",
 			"recent": "最近成果",
+			"saveStage": "保存阶段",
+			"stageCount": "共 {{count}} 个阶段",
+			"stageRoute": "阶段路线",
+			"stageSaveError": "阶段目标未保存，请检查名称和目标数值。",
 			"status": { "abandoned": "已放弃", "active": "进行中", "completed": "已完成", "expired": "已到期", "planned": "未开始" },
 			"title": "目标详情",
 			"totalOutcome": "长期累计"

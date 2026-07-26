@@ -261,6 +261,7 @@ describe('CardDeck', () => {
 		expect(html).toContain('data-layout="compact"');
 		expect(html).toContain('累计 100 km');
 		expect(html).toContain('7 月完成 30 km');
+		expect(html.indexOf('7 月完成 30 km')).toBeLessThan(html.indexOf('累计 100 km'));
 		expect(html).toContain('18.4 / 100 km');
 		expect(html).toContain('18.4 / 30 km');
 		expect(html).toContain('计划');

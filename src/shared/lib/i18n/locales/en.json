@@ -466,6 +466,13 @@
 			"newHabit": "New habit",
 			"optionalPlans": "Goal plans (optional)",
 			"optionalPlansHint": "You can start recording without a goal.",
+			"addStage": "Add the next stage",
+			"incompletePlan": "Enter both the goal name and target value.",
+			"longTermHint": "Where this habit is ultimately heading",
+			"removeStage": "Remove stage {{number}}",
+			"stageHint": "Start with a nearby milestone; the next stage begins automatically",
+			"stageNeedsLongTerm": "Add the long-term goal below when you create stage goals.",
+			"stageNumber": "Stage {{number}}",
 			"planName": "Goal name",
 			"planTarget": "Target value",
 			"presets": {
@@ -569,6 +576,7 @@
 			"todayActionDescription": "Continue entering today's accumulated values"
 		},
 		"goalDetails": {
+			"addStage": "Add stage",
 			"activeDays": "Outcome days",
 			"activeDaysFact": "Active days",
 			"allHistory": "All history",
@@ -584,6 +592,10 @@
 			"notFound": "This loop card or goal could not be read",
 			"quantityFact": "Accumulated outcome",
 			"recent": "Recent outcomes",
+			"saveStage": "Save stage",
+			"stageCount": "{{count}} stages",
+			"stageRoute": "Stage route",
+			"stageSaveError": "The stage was not saved. Check its name and target value.",
 			"status": { "abandoned": "Abandoned", "active": "Active", "completed": "Completed", "expired": "Expired", "planned": "Planned" },
 			"title": "Goal details",
 			"totalOutcome": "Long-term total"

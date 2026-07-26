@@ -119,7 +119,7 @@ function GoalLine(props: GoalLineProps) {
 	const percentage = Math.round(progress.ratio * 100);
 
 	return (
-		<div className={styles.goal}>
+		<div className={styles.goal} data-kind={kind}>
 			<span className={styles.goalIcon}><GoalIcon aria-hidden='true' /></span>
 			<span className={styles.goalCopy}>
 				<small>{label}</small>
@@ -184,6 +184,16 @@ function ExpandedHabitCard({
 
 			{hasGoal ? (
 				<div className={styles.goalPanel} role='group' aria-label={card.title}>
+					{card.stageGoal && card.stageProgress && (
+						<GoalLine
+							card={card}
+							copy={copy}
+							goal={card.stageGoal}
+							kind='stage'
+							label={card.stagePosition ? `${copy.stage} · ${card.stagePosition.current}/${card.stagePosition.total}` : copy.stage}
+							progress={card.stageProgress}
+						/>
+					)}
 					{card.longTermGoal && card.longTermProgress && (
 						<GoalLine
 							card={card}
@@ -192,16 +202,6 @@ function ExpandedHabitCard({
 							kind='longTerm'
 							label={copy.longTerm}
 							progress={card.longTermProgress}
-						/>
-					)}
-					{card.stageGoal && card.stageProgress && (
-						<GoalLine
-							card={card}
-							copy={copy}
-							goal={card.stageGoal}
-							kind='stage'
-							label={copy.stage}
-							progress={card.stageProgress}
 						/>
 					)}
 				</div>

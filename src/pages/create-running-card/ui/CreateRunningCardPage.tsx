@@ -9,8 +9,10 @@ import {
 	FiDroplet,
 	FiFlag,
 	FiMoon,
+	FiPlus,
 	FiShield,
 	FiTarget,
+	FiTrash2,
 	FiX,
 } from 'react-icons/fi';
 import type { IconType } from 'react-icons';
@@ -41,11 +43,9 @@ function CreateRunningCardPage() {
 	const navigate = useNavigate();
 	const [templateId, setTemplateId] = useState('running');
 	const [cardTitle, setCardTitle] = useState('');
-	const [planning, setPlanning] = useState(false);
 	const [longTitle, setLongTitle] = useState('');
 	const [longTarget, setLongTarget] = useState('');
-	const [stageTitle, setStageTitle] = useState('');
-	const [stageTarget, setStageTarget] = useState('');
+	const [stages, setStages] = useState([{ key: crypto.randomUUID(), title: '', target: '' }]);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string>();
 	const selected = PRESETS.find((preset) => preset.id === templateId)!;
@@ -55,8 +55,15 @@ function CreateRunningCardPage() {
 			if (!cardTitle.trim()) setError(t('shell.createCard.nameRequired'));
 			return;
 		}
-		const hasLong = planning && longTitle.trim() && longTarget.trim();
-		const hasStage = hasLong && stageTitle.trim() && stageTarget.trim();
+		const longStarted = Boolean(longTitle.trim() || longTarget.trim());
+		const hasLong = Boolean(longTitle.trim() && longTarget.trim());
+		const stageStarted = stages.some(({ title, target }) => title.trim() || target.trim());
+		const completeStages = stages.filter(({ title, target }) => title.trim() && target.trim());
+		const hasIncompleteStage = stages.some(({ title, target }) => Boolean(title.trim()) !== Boolean(target.trim()));
+		if ((longStarted && !hasLong) || hasIncompleteStage || (stageStarted && !hasLong)) {
+			setError(t(stageStarted && !hasLong ? 'shell.createCard.stageNeedsLongTerm' : 'shell.createCard.incompletePlan'));
+			return;
+		}
 		setSubmitting(true);
 		setError(undefined);
 		try {
@@ -65,12 +72,13 @@ function CreateRunningCardPage() {
 				cardTitle,
 				startDate: formatLocalDate(new Date()),
 				longTerm: hasLong ? { title: longTitle, targetDisplay: longTarget } : undefined,
-				stage: hasStage ? { title: stageTitle, targetDisplay: stageTarget } : undefined,
+				stages: completeStages.map(({ title, target }) => ({ title, targetDisplay: target })),
 				nowIso: new Date().toISOString(),
 				ids: {
 					userCardId: crypto.randomUUID(),
 					longTermGoalId: crypto.randomUUID(),
 					stageGoalId: crypto.randomUUID(),
+					stageGoalIds: completeStages.map(() => crypto.randomUUID()),
 				},
 			});
 			navigate(APP_ROUTES.DECK, { replace: true, state: { created: true } });
@@ -117,18 +125,42 @@ function CreateRunningCardPage() {
 					/>
 				</label>
 
-				<button type='button' className={styles.planToggle} aria-expanded={planning} onClick={() => setPlanning((value) => !value)}>
-					<span><FiTarget aria-hidden='true' /></span>
-					<div><strong>{t('shell.createCard.optionalPlans')}</strong><small>{t('shell.createCard.optionalPlansHint')}</small></div>
-					<FiChevronLeft className={styles.planToggleIcon} aria-hidden='true' />
-				</button>
-
-				{planning && (
-					<div className={styles.planFields}>
-						<div><small>{t('shell.createCard.longTerm')}</small><input value={longTitle} placeholder={t('shell.createCard.planName')} onChange={(event) => setLongTitle(event.target.value)} /><input type='number' min='1' inputMode='decimal' value={longTarget} placeholder={t('shell.createCard.planTarget')} onChange={(event) => setLongTarget(event.target.value)} /></div>
-						<div><small>{t('shell.createCard.stage')}</small><input value={stageTitle} placeholder={t('shell.createCard.planName')} onChange={(event) => setStageTitle(event.target.value)} /><input type='number' min='1' inputMode='decimal' value={stageTarget} placeholder={t('shell.createCard.planTarget')} onChange={(event) => setStageTarget(event.target.value)} /></div>
+				<section className={styles.planSection}>
+					<header><span><FiFlag aria-hidden='true' /></span><div><strong>{t('shell.createCard.stage')}</strong><small>{t('shell.createCard.stageHint')}</small></div></header>
+					<div className={styles.stageList}>
+						{stages.map((stage, index) => (
+							<div className={styles.stageFields} key={stage.key}>
+								<span className={styles.stageMeta}>
+									<b>{t('shell.createCard.stageNumber', { number: index + 1 })}</b>
+									<small>{t(index === 0 ? 'shell.goalDetails.status.active' : 'shell.goalDetails.status.planned')}</small>
+								</span>
+								<input
+									value={stage.title}
+									placeholder={t('shell.createCard.planName')}
+									onChange={(event) => setStages((current) => current.map((item) => item.key === stage.key ? { ...item, title: event.target.value } : item))}
+								/>
+								<input
+									type='number'
+									min='1'
+									inputMode='decimal'
+									value={stage.target}
+									placeholder={t('shell.createCard.planTarget')}
+									onChange={(event) => setStages((current) => current.map((item) => item.key === stage.key ? { ...item, target: event.target.value } : item))}
+								/>
+								{stages.length > 1 && <button type='button' className={styles.removeStage} aria-label={t('shell.createCard.removeStage', { number: index + 1 })} onClick={() => setStages((current) => current.filter((item) => item.key !== stage.key))}><FiTrash2 aria-hidden='true' /></button>}
+							</div>
+						))}
 					</div>
-				)}
+					<button type='button' className={styles.addStage} onClick={() => setStages((current) => [...current, { key: crypto.randomUUID(), title: '', target: '' }])}><FiPlus aria-hidden='true' />{t('shell.createCard.addStage')}</button>
+				</section>
+
+				<section className={styles.planSection}>
+					<header><span><FiTarget aria-hidden='true' /></span><div><strong>{t('shell.createCard.longTerm')}</strong><small>{t('shell.createCard.longTermHint')}</small></div></header>
+					<div className={styles.longFields}>
+						<input value={longTitle} placeholder={t('shell.createCard.planName')} onChange={(event) => setLongTitle(event.target.value)} />
+						<input type='number' min='1' inputMode='decimal' value={longTarget} placeholder={t('shell.createCard.planTarget')} onChange={(event) => setLongTarget(event.target.value)} />
+					</div>
+				</section>
 				{error && <p className={styles.error} role='alert'>{error}</p>}
 			</section>
 

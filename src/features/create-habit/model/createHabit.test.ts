@@ -48,6 +48,35 @@ describe('createHabit', () => {
 		expect(result.stageGoal).toMatchObject({ targetQuantityBase: 100 });
 	});
 
+	it('creates ordered stages with only the first stage active', async () => {
+		const result = await createHabit(database, {
+			templateId: 'reading-time',
+			cardTitle: '读完整本书',
+			startDate: '2026-07-25',
+			longTerm: { title: '本能书', targetDisplay: '500' },
+			stages: [
+				{ title: '第一章', targetDisplay: '100' },
+				{ title: '第二章', targetDisplay: '120' },
+				{ title: '第三章', targetDisplay: '80' },
+			],
+			nowIso: '2026-07-25T01:00:00.000Z',
+			ids: {
+				userCardId: 'card-book',
+				longTermGoalId: 'long-book',
+				stageGoalId: 'unused-stage',
+				stageGoalIds: ['stage-1', 'stage-2', 'stage-3'],
+			},
+		});
+
+		expect(result.stageGoals).toHaveLength(3);
+		expect(result.stageGoals.map(({ id, sequence, status }) => ({ id, sequence, status }))).toEqual([
+			{ id: 'stage-1', sequence: 0, status: 'active' },
+			{ id: 'stage-2', sequence: 1, status: 'planned' },
+			{ id: 'stage-3', sequence: 2, status: 'planned' },
+		]);
+		expect(await database.table('stageGoals').count()).toBe(3);
+	});
+
 	it('rejects a stage plan without a long-term plan', async () => {
 		await expect(createHabit(database, {
 			templateId: 'sleep',

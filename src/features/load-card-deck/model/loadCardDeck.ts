@@ -3,7 +3,14 @@ import type { ActionRecord } from '@entities/action-record';
 import type { CardTemplate } from '@entities/card-template';
 import { seedSystemDefinitions, SYSTEM_CARD_TEMPLATES } from '@entities/card-template';
 import type { CategoryDefinition } from '@entities/category';
-import { calculateGoalProgress, type GoalProgress, type LongTermGoal, type StageGoal } from '@entities/goal';
+import {
+	calculateGoalProgress,
+	compareStageGoals,
+	selectCurrentStageGoal,
+	type GoalProgress,
+	type LongTermGoal,
+	type StageGoal,
+} from '@entities/goal';
 import type { TodayDraft } from '@entities/today-draft';
 import type { UserCard } from '@entities/user-card';
 import type { LocalDate } from '@shared/lib/date';
@@ -21,6 +28,7 @@ export interface DeckCardView {
 	template: CardTemplate;
 	longTermGoal?: LongTermGoal;
 	stageGoal?: StageGoal;
+	stagePosition?: { current: number; total: number };
 	longTermProgress?: GoalProgress;
 	stageProgress?: GoalProgress;
 }
@@ -55,7 +63,7 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 		templates: await templatesTable.toArray(),
 		cards: await cardsTable.toArray(),
 		longTermGoals: await longTermGoalsTable.where('status').equals('active').toArray(),
-		stageGoals: await stageGoalsTable.where('status').equals('active').toArray(),
+		stageGoals: await stageGoalsTable.toArray(),
 		records: await recordsTable.toArray(),
 		draft: await draftsTable.get(localDate),
 	}));
@@ -64,14 +72,17 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 	const activeCards = data.cards.filter((card) => card.status === 'active');
 	const cardsById = new Map(activeCards.map((card) => [card.id, card]));
 	const longTermByCard = new Map(data.longTermGoals.map((goal) => [goal.userCardId, goal]));
-	const stageByLongTerm = new Map(data.stageGoals.map((goal) => [goal.longTermGoalId, goal]));
 	const cardViews = activeCards
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DeckCardView[] => {
 			const template = templatesById.get(card.officialCardId);
 			if (!template) return [];
 			const longTermGoal = longTermByCard.get(card.id);
-			const stageGoal = longTermGoal ? stageByLongTerm.get(longTermGoal.id) : undefined;
+			const relatedStageGoals = longTermGoal
+				? data.stageGoals.filter(({ longTermGoalId }) => longTermGoalId === longTermGoal.id).sort(compareStageGoals)
+				: [];
+			const stageGoal = selectCurrentStageGoal(relatedStageGoals);
+			const stageIndex = stageGoal ? relatedStageGoals.findIndex(({ id }) => id === stageGoal.id) : -1;
 			const longTermRecords = longTermGoal
 				? data.records.filter((record) => record.userCardId === card.id && record.longTermGoalId === longTermGoal.id)
 				: [];
@@ -84,7 +95,16 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 			const stageProgress = stageGoal
 				? calculateGoalProgress(stageRecords, { mode: stageGoal.mode, targetQuantityBase: stageGoal.targetQuantityBase, targetActiveDays: stageGoal.targetActiveDays }) ?? undefined
 				: undefined;
-			return [{ id: card.id, title: card.title, template, longTermGoal, stageGoal, longTermProgress, stageProgress }];
+			return [{
+				id: card.id,
+				title: card.title,
+				template,
+				longTermGoal,
+				stageGoal,
+				stagePosition: stageGoal && stageIndex >= 0 ? { current: stageIndex + 1, total: relatedStageGoals.length } : undefined,
+				longTermProgress,
+				stageProgress,
+			}];
 		});
 
 	const cardsByCategory = new Map<string, DeckCardView[]>();

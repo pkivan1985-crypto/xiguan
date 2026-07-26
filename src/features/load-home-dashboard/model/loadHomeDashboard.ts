@@ -1,7 +1,7 @@
 /* eslint-disable i18next/no-literal-string -- Table names and domain statuses are stable identifiers. */
 import { outcomeDatesForMonth, type ActionRecord } from '@entities/action-record';
 import type { CardTemplate, StageCompletionMode } from '@entities/card-template';
-import { calculateGoalProgress } from '@entities/goal';
+import { calculateGoalProgress, selectCurrentStageGoal } from '@entities/goal';
 import type { GoalProgress, GoalStatus, LongTermGoal, StageGoal } from '@entities/goal';
 import type { UserCard } from '@entities/user-card';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
@@ -95,7 +95,7 @@ export async function loadHomeDashboard(
 			if (!template) throw new Error('HOME_RELATIONSHIP_INVALID');
 			const longGoal = selectCurrentGoal(data.longGoals.filter(({ userCardId }) => userCardId === card.id));
 			const stage = longGoal
-				? selectCurrentGoal(data.stages.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id))
+				? selectCurrentStageGoal(data.stages.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id))
 				: undefined;
 			const longProgress = longGoal
 				? calculateGoalProgress(

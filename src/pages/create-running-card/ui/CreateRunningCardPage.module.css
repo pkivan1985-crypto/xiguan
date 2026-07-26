@@ -43,8 +43,7 @@
 	align-items: center;
 }
 
-.intro > span,
-.planToggle > span {
+.intro > span {
 	display: grid;
 	flex: 0 0 40px;
 	place-items: center;
@@ -55,19 +54,16 @@
 	border-radius: 13px;
 }
 
-.intro div,
-.planToggle div {
+.intro div {
 	display: grid;
 	gap: 3px;
 }
 
-.intro strong,
-.planToggle strong {
+.intro strong {
 	font-size: 0.76rem;
 }
 
-.intro small,
-.planToggle small {
+.intro small {
 	font-size: 0.62rem;
 	color: var(--muted-color);
 }
@@ -139,7 +135,8 @@
 }
 
 .nameField input,
-.planFields input {
+.stageFields input,
+.longFields input {
 	width: 100%;
 	min-height: 48px;
 	padding: 0 13px;
@@ -152,49 +149,112 @@
 }
 
 .nameField input:focus,
-.planFields input:focus {
+.stageFields input:focus,
+.longFields input:focus {
 	border-color: var(--accent-color);
 	box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.planToggle {
-	display: grid;
-	grid-template-columns: 40px 1fr 20px;
+.planSection > header {
+	display: flex;
 	gap: 10px;
 	align-items: center;
-	padding: 11px;
-	text-align: left;
+}
+
+.planSection {
+	display: grid;
+	gap: 10px;
+	padding: 12px;
 	background: var(--surface-color);
 	border: 1px solid var(--border-color);
 	border-radius: 17px;
 }
 
-.planToggleIcon {
-	color: var(--muted-color);
-	transform: rotate(-90deg);
-	transition: transform 160ms ease;
-}
-
-.planToggle[aria-expanded='true'] .planToggleIcon {
-	transform: rotate(90deg);
-}
-
-.planFields {
+.stageList {
 	display: grid;
 	gap: 10px;
 }
 
-.planFields > div {
+.stageFields {
 	display: grid;
-	grid-template-columns: 1fr 112px;
+	grid-template-columns: minmax(0, 1fr) 112px 44px;
 	gap: 7px;
+	align-items: end;
 }
 
-.planFields small {
+.stageMeta {
+	display: flex;
 	grid-column: 1 / -1;
-	font-size: 0.62rem;
-	font-weight: 720;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 20px;
+}
+
+.stageMeta b {
+	font-size: 0.65rem;
+}
+
+.stageMeta small {
+	padding: 2px 7px;
+	font-size: 0.56rem;
 	color: var(--muted-color);
+	background: var(--surface-raised);
+	border-radius: 999px;
+}
+
+.planSection > header > span {
+	display: grid;
+	flex: 0 0 40px;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 13px;
+}
+
+.planSection > header > div {
+	display: grid;
+	gap: 3px;
+}
+
+.planSection > header strong {
+	font-size: 0.76rem;
+}
+
+.planSection > header small {
+	font-size: 0.62rem;
+	color: var(--muted-color);
+}
+
+.removeStage,
+.addStage {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 13px;
+}
+
+.removeStage {
+	font-size: 1rem;
+	color: var(--error-color);
+	background: color-mix(in srgb, var(--error-color) 12%, transparent);
+}
+
+.addStage {
+	gap: 7px;
+	width: 100%;
+	font-size: 0.67rem;
+	font-weight: 750;
+}
+
+.longFields {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 112px;
+	gap: 7px;
 }
 
 .error {
@@ -249,7 +309,11 @@
 		grid-template-columns: repeat(2, 1fr);
 	}
 
-	.planFields > div {
-		grid-template-columns: 1fr 96px;
+	.stageFields {
+		grid-template-columns: minmax(0, 1fr) 96px 44px;
+	}
+
+	.longFields {
+		grid-template-columns: minmax(0, 1fr) 96px;
 	}
 }

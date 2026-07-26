@@ -170,7 +170,7 @@
 	color: var(--accent-color);
 }
 
-.goal:nth-child(2) .goalIcon {
+.goal[data-kind='stage'] .goalIcon {
 	color: var(--achievement-color);
 }
 
@@ -213,7 +213,7 @@
 	white-space: nowrap;
 }
 
-.goal:nth-child(2) .goalValues b {
+.goal[data-kind='stage'] .goalValues b {
 	color: var(--achievement-color);
 }
 
@@ -233,7 +233,7 @@
 	border-radius: inherit;
 }
 
-.goal:nth-child(2) .goalTrack i {
+.goal[data-kind='stage'] .goalTrack i {
 	background: var(--achievement-color);
 }
 
