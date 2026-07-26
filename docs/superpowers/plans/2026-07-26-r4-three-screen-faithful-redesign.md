@@ -46,7 +46,7 @@
 
 **Step 1: RED**
 
-- 在 `AppShell.test.tsx` 断言三个主路由只显示页面自己的头部占位区域，不再叠加旧粘性标题；底部导航仍只有“今天 / 进展 / 习惯”，选中项可识别。
+- 在 `AppShell.test.tsx` 用真实 `Outlet` 内容断言三个主路由不再叠加旧粘性标题；底部导航仍只有“今天 / 进展 / 习惯”，选中项可识别。此任务只建立 `MobilePageHeader`；今天、进展、习惯三页分别在 Tasks 3—5 接入并由各自页面测试负责。
 - 在 `HabitGlyph.test.tsx` 用五种真实 `iconKey + accent` 断言生成可访问的 Phosphor 图标容器，不输出 Emoji 或文字符号。
 - 运行：
   `powershell -ExecutionPolicy Bypass -File .\scripts\invoke-toolchain.ps1 npm test -- --run src/widgets/app-shell/ui/AppShell.test.tsx src/widgets/habit-glyph/ui/HabitGlyph.test.tsx`
