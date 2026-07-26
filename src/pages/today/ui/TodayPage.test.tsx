@@ -28,6 +28,7 @@ const translations: Record<string, string> = {
 	'shell.today.overviewProgressLabel': '今日完成进度',
 	'shell.today.overviewProgressValue': '{{completed}} / {{total}}',
 	'shell.today.recordHabit': '记录{{title}}',
+	'shell.today.restDay': '今日休息',
 	'shell.today.todayCompleted': '今日已确认',
 	'shell.today.todayPending': '今日待确认',
 	'shell.today.undoHabit': '撤销{{title}}',
@@ -59,6 +60,7 @@ const model: DailyHabitsModel = {
 	localDate: '2026-07-25',
 	outcomeDates: ['2026-07-20', '2026-07-21', '2026-07-24', '2026-07-25'],
 	completedCount: 1,
+	scheduledCount: 1,
 	habits: [{
 		id: 'sleep',
 		title: '早睡',
@@ -77,6 +79,7 @@ const model: DailyHabitsModel = {
 		totalQuantityBaseValue: 6,
 		activeDays: 6,
 		supportsTrainingDetails: false,
+		scheduledToday: true,
 		recordedToday: true,
 	}],
 };
@@ -138,6 +141,44 @@ describe('TodayPage', () => {
 		expect(html).toContain('查看今日汇总');
 		expect(html).toContain('href="/deck/new"');
 		expect(html).toContain('新建习惯');
+	});
+
+	it('excludes a visible rest-day habit from the overview total', () => {
+		const restHabit = {
+			...model.habits[0]!,
+			id: 'rest-run',
+			title: '晨跑',
+			quantityBaseValue: 0,
+			displayValue: '0',
+			recordedToday: false,
+			scheduledToday: false,
+		};
+		const restAwareModel = {
+			...model,
+			habits: [model.habits[0]!, restHabit],
+			scheduledCount: 1,
+		};
+		const html = renderToStaticMarkup(
+			<MemoryRouter>
+				<TodayPageContent
+					model={restAwareModel}
+					todayLocalDate='2026-07-25'
+					completedExpanded={true}
+					pendingIds={new Set()}
+					saveErrorIds={new Set()}
+					onChangeHabit={vi.fn()}
+					onCompleteHabit={vi.fn()}
+					onSaveActual={vi.fn()}
+					onSelectDate={vi.fn()}
+					onToggleCompleted={vi.fn()}
+				/>
+			</MemoryRouter>,
+		);
+
+		expect(html).toContain('已完成 1 / 1');
+		expect(html).toContain('data-habit-id="rest-run"');
+		expect(html).toContain('今日休息');
+		expect(html).not.toContain('已完成 1 / 2');
 	});
 
 	it('serializes deferred saves while keeping queued rows pending and errors isolated', async () => {

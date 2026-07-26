@@ -840,6 +840,7 @@
 			"overviewProgressValue": "{{completed}} / {{total}}",
 			"primaryActions": "今天页面操作",
 			"recordHabit": "记录{{title}}",
+			"restDay": "今日休息",
 			"savedOnDate": "{{date}} · 已保存",
 			"slotCount": "{{count}} / 6",
 			"confirmAndSave": "确认并保存",

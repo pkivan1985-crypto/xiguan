@@ -835,6 +835,7 @@
 			"overviewProgressValue": "{{completed}} / {{total}}",
 			"primaryActions": "Today actions",
 			"recordHabit": "Record {{title}}",
+			"restDay": "Rest day",
 			"savedOnDate": "{{date}} · Saved",
 			"slotCount": "{{count}} / 6",
 			"confirmAndSave": "Confirm and save",

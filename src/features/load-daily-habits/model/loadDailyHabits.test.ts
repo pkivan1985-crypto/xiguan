@@ -48,6 +48,7 @@ describe('loadDailyHabits', () => {
 			displayUnit: 'km',
 			stepBase: 500,
 			dailyTargetBase: 5000,
+			scheduledToday: true,
 			recordedToday: true,
 		});
 		expect(result.habits[1]).toMatchObject({
@@ -56,8 +57,10 @@ describe('loadDailyHabits', () => {
 			quantityBaseValue: 0,
 			displayValue: '0',
 			displayUnit: '杯',
+			scheduledToday: true,
 			recordedToday: false,
 		});
+		expect(result.scheduledCount).toBe(2);
 	});
 
 	it('returns goal progress derived from real records', async () => {
@@ -73,7 +76,7 @@ describe('loadDailyHabits', () => {
 		});
 	});
 
-	it('uses the planned weekday target and omits a habit on a rest day', async () => {
+	it('uses the planned weekday target and keeps a habit visible but inactive on a rest day', async () => {
 		await database.table('userCards').add({
 			id: 'run',
 			officialCardId: 'running',
@@ -91,8 +94,19 @@ describe('loadDailyHabits', () => {
 		await database.table('longTermGoals').add({ id: 'long', userCardId: 'run', title: '晨跑', targetQuantityBase: 100_000, status: 'active', startDate: '2026-07-27', endDate: '2026-10-24', createdAt: '2026-07-27T00:00:00.000Z', updatedAt: '2026-07-27T00:00:00.000Z' });
 		await database.table('stageGoals').add({ id: 'stage', longTermGoalId: 'long', title: '阶段 1', mode: 'quantity', dailyTargetBase: 1_250, targetQuantityBase: 100_000, status: 'active', startDate: '2026-07-27', endDate: '2026-10-24', createdAt: '2026-07-27T00:00:00.000Z', updatedAt: '2026-07-27T00:00:00.000Z' });
 
-		expect((await loadDailyHabits(database, '2026-07-27')).habits[0]).toMatchObject({ dailyTargetBase: 2_000 });
-		expect((await loadDailyHabits(database, '2026-07-28')).habits).toHaveLength(0);
+		expect((await loadDailyHabits(database, '2026-07-27')).habits[0]).toMatchObject({
+			dailyTargetBase: 2_000,
+			scheduledToday: true,
+		});
+		const restDay = await loadDailyHabits(database, '2026-07-28');
+		expect(restDay.habits).toHaveLength(1);
+		expect(restDay.habits[0]).toMatchObject({
+			id: 'run',
+			recordedToday: false,
+			scheduledToday: false,
+		});
+		expect(restDay.scheduledCount).toBe(0);
+		expect(restDay.completedCount).toBe(0);
 	});
 
 	it('uses the saved average target when a long-term plan has no stages', async () => {
@@ -122,8 +136,12 @@ describe('loadDailyHabits', () => {
 			baseDailyTargetBase: 2_500,
 			dailyTargetBase: 2_500,
 			goalTitle: 'Direct run',
+			scheduledToday: true,
 		});
-		expect((await loadDailyHabits(database, '2026-07-28')).habits).toHaveLength(0);
+		expect((await loadDailyHabits(database, '2026-07-28')).habits[0]).toMatchObject({
+			id: 'direct-run',
+			scheduledToday: false,
+		});
 	});
 
 	it('adds the latest shortfall to the next scheduled target without reducing it for surplus', async () => {
@@ -150,11 +168,15 @@ describe('loadDailyHabits', () => {
 			lastSubmissionId: 'monday-run',
 		});
 
-		expect((await loadDailyHabits(database, '2026-07-28')).habits).toHaveLength(0);
+		expect((await loadDailyHabits(database, '2026-07-28')).habits[0]).toMatchObject({
+			id: 'run',
+			scheduledToday: false,
+		});
 		expect((await loadDailyHabits(database, '2026-07-29')).habits[0]).toMatchObject({
 			baseDailyTargetBase: 5_000,
 			carryInBaseValue: 2_000,
 			dailyTargetBase: 7_000,
+			scheduledToday: true,
 		});
 	});
 

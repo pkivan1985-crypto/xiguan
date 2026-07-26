@@ -7,6 +7,7 @@ import {
 	PiCheckCircle,
 	PiClock,
 	PiHeartbeat,
+	PiMoon,
 	PiNotePencil,
 	PiPencilSimple,
 	PiPlayFill,
@@ -59,7 +60,8 @@ export function nextHabitQuantity(
 }
 
 function isCompleted(habit: DailyHabitView): boolean {
-	return habit.quantityBaseValue >= habit.dailyTargetBase;
+	return habit.scheduledToday
+		&& habit.quantityBaseValue >= habit.dailyTargetBase;
 }
 
 function number(value: number, maximumFractionDigits = 2): string {
@@ -253,6 +255,9 @@ function HabitSupportingCopy({ habit }: { habit: DailyHabitView }) {
 	const { t } = useTranslation();
 	const completed = isCompleted(habit);
 
+	if (!habit.scheduledToday) {
+		return <small>{t('shell.today.restDay')}</small>;
+	}
 	if (habit.trackingType === 'check') {
 		return <small>{t('shell.today.activeDayCount', { count: habit.activeDays })}</small>;
 	}
@@ -302,6 +307,13 @@ function HabitControl({
 	const { t } = useTranslation();
 	const completed = isCompleted(habit);
 
+	if (!habit.scheduledToday) {
+		return (
+			<span className={styles.restStatus} aria-label={t('shell.today.restDay')}>
+				<PiMoon aria-hidden='true' />
+			</span>
+		);
+	}
 	if (habit.trackingType === 'quantity') {
 		return (
 			<div className={styles.quantityActions}>
@@ -415,6 +427,7 @@ function HabitRow({
 			data-tracking-type={habit.trackingType}
 			data-accent={habit.accent}
 			data-completed={isCompleted(habit)}
+			data-scheduled={habit.scheduledToday}
 			aria-busy={pending || undefined}
 			role='listitem'
 		>

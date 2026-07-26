@@ -23,6 +23,7 @@ const translations: Record<string, string> = {
 	'shell.today.increaseHabit': '增加{{title}}',
 	'shell.today.itemSaveError': '这项没有保存，请再试一次。',
 	'shell.today.recordHabit': '记录{{title}}',
+	'shell.today.restDay': '今日休息',
 	'shell.today.todayCompleted': '今日已确认',
 	'shell.today.todayPending': '今日待确认',
 	'shell.today.undoHabit': '撤销{{title}}',
@@ -61,6 +62,7 @@ const habits: DailyHabitView[] = [
 		supportsTrainingDetails: true,
 		goalTitle: '累计 30 公里',
 		goalProgressRatio: 18.4 / 30,
+		scheduledToday: true,
 		recordedToday: true,
 	},
 	{
@@ -81,6 +83,7 @@ const habits: DailyHabitView[] = [
 		totalQuantityBaseValue: 42,
 		activeDays: 6,
 		supportsTrainingDetails: false,
+		scheduledToday: true,
 		recordedToday: false,
 	},
 	{
@@ -101,6 +104,7 @@ const habits: DailyHabitView[] = [
 		totalQuantityBaseValue: 240,
 		activeDays: 8,
 		supportsTrainingDetails: false,
+		scheduledToday: true,
 		recordedToday: false,
 	},
 	{
@@ -121,6 +125,7 @@ const habits: DailyHabitView[] = [
 		totalQuantityBaseValue: 6,
 		activeDays: 6,
 		supportsTrainingDetails: false,
+		scheduledToday: true,
 		recordedToday: true,
 	},
 	{
@@ -141,6 +146,7 @@ const habits: DailyHabitView[] = [
 		totalQuantityBaseValue: 4,
 		activeDays: 4,
 		supportsTrainingDetails: false,
+		scheduledToday: true,
 		recordedToday: true,
 	},
 ];
@@ -213,6 +219,27 @@ describe('TodayHabitPanel', () => {
 		expect(html).toMatch(/class="[^"]*completeAction[^"]*" disabled="" data-recorded="true"/);
 		expect(html).toContain('>已记录</span>');
 		expect(html).toContain('>填实际</span>');
+	});
+
+	it('keeps a rest-day habit visible without exposing recording controls', () => {
+		const restHabit = {
+			...habits[0]!,
+			id: 'rest-run',
+			title: '晨跑',
+			quantityBaseValue: 0,
+			displayValue: '0.00',
+			recordedToday: false,
+			scheduledToday: false,
+		};
+		const html = renderPanel({ renderedHabits: [restHabit] });
+
+		expect(html).toContain('data-habit-id="rest-run"');
+		expect(html).toContain('data-scheduled="false"');
+		expect(html).toContain('>今日休息</small>');
+		expect(html).toContain('aria-label="今日休息"');
+		expect(html).not.toContain('>已完成</span>');
+		expect(html).not.toContain('>填实际</span>');
+		expect(html).not.toContain('<button');
 	});
 
 	it('keeps the unified panel and empty-state copy when there are no habits', () => {

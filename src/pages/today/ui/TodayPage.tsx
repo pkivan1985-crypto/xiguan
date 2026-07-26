@@ -64,9 +64,9 @@ function TodayPageContent({
 	onToggleCompleted,
 }: TodayPageContentProps) {
 	const { t, i18n } = useTranslation();
-	const completedRatio = model.habits.length === 0
+	const completedRatio = model.scheduledCount === 0
 		? 0
-		: model.completedCount / model.habits.length;
+		: model.completedCount / model.scheduledCount;
 
 	return (
 		<div className={styles.page}>
@@ -98,7 +98,7 @@ function TodayPageContent({
 				<strong>
 					{t('shell.today.overview', {
 						completed: model.completedCount,
-						total: model.habits.length,
+						total: model.scheduledCount,
 					})}
 				</strong>
 				<span
@@ -106,11 +106,11 @@ function TodayPageContent({
 					role='progressbar'
 					aria-label={t('shell.today.overviewProgressLabel')}
 					aria-valuemin={0}
-					aria-valuemax={Math.max(model.habits.length, 1)}
+					aria-valuemax={Math.max(model.scheduledCount, 1)}
 					aria-valuenow={model.completedCount}
 					aria-valuetext={t('shell.today.overviewProgressValue', {
 						completed: model.completedCount,
-						total: model.habits.length,
+						total: model.scheduledCount,
 					})}
 				>
 					<i style={{ width: `${completedRatio * 100}%` }} />
@@ -181,6 +181,7 @@ function TodayPage() {
 		quantityBaseValue: number,
 		details?: HabitActualEntry & { entryMethod: 'completed' | 'actual' },
 	): Promise<void> {
+		if (!habit.scheduledToday) return;
 		const queuedSave = saveQueueRef.current!.enqueue(habit.id, async () => {
 			await saveDailyHabitInApp({
 				userCardId: habit.id,

@@ -41,6 +41,7 @@ export interface DailyHabitView {
 	note?: string;
 	goalTitle?: string;
 	goalProgressRatio?: number;
+	scheduledToday: boolean;
 	recordedToday: boolean;
 }
 
@@ -49,6 +50,7 @@ export interface DailyHabitsModel {
 	outcomeDates: LocalDate[];
 	habits: DailyHabitView[];
 	completedCount: number;
+	scheduledCount: number;
 }
 
 function currentLongTermGoal(goals: readonly LongTermGoal[], userCardId: string): LongTermGoal | undefined {
@@ -99,15 +101,17 @@ export async function loadDailyHabits(
 		cardRecords.push(record);
 		recordsByCard.set(record.userCardId, cardRecords);
 	}
+	const todayWeekday = weekday(localDate);
 	const habits = data.cards
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DailyHabitView[] => {
 			const template = templatesById.get(card.officialCardId);
 			if (!template?.enabled) return [];
-			const todayWeekday = weekday(localDate);
-			if (card.dailyPlan && !card.dailyPlan.weekdays.includes(todayWeekday)) return [];
 			const cardRecords = recordsByCard.get(card.id) ?? [];
 			const todayRecord = todayRecords.get(card.id);
+			const scheduledByPlan = !card.dailyPlan
+				|| card.dailyPlan.weekdays.includes(todayWeekday);
+			const scheduledToday = scheduledByPlan || todayRecord !== undefined;
 			const quantityBaseValue = todayRecord?.quantityBaseValue ?? 0;
 			const trackingType = template.trackingType ?? 'quantity';
 			const longTermGoal = currentLongTermGoal(data.longTermGoals, card.id);
@@ -172,15 +176,20 @@ export async function loadDailyHabits(
 				note: todayRecord?.note,
 				goalTitle: primaryGoal?.title,
 				goalProgressRatio: progress?.ratio,
+				scheduledToday,
 				recordedToday: todayRecord !== undefined,
 			}];
 		});
+	const scheduledHabits = habits.filter((habit) => habit.scheduledToday);
 
 	return {
 		localDate,
 		outcomeDates: [...new Set(effectiveRecords.map((record) => record.localDate))].sort(),
 		habits,
-		completedCount: habits.filter((habit) => habit.quantityBaseValue >= habit.dailyTargetBase).length,
+		completedCount: scheduledHabits.filter(
+			(habit) => habit.quantityBaseValue >= habit.dailyTargetBase,
+		).length,
+		scheduledCount: scheduledHabits.length,
 	};
 }
 
