@@ -25,6 +25,6 @@ describe('HabitGlyph', () => {
 		expect(html).toContain(`aria-label="${label}"`);
 		expect(html).toContain(`data-accent="${accent}"`);
 		expect(html).toContain(`data-phosphor-icon="${phosphorIcon}"`);
-		expect(html).not.toMatch(/[🏃💧📚🌙🛡️]/u);
+		expect(html).not.toMatch(/🏃|💧|📚|🌙|🛡️/u);
 	});
 });
