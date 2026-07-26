@@ -331,6 +331,11 @@ function CreateRunningCardPage() {
 		setError(undefined);
 	}
 
+	function useAverageDailyPlan(): void {
+		setPlanMode('average');
+		setError(undefined);
+	}
+
 	function useCustomPlan(): void {
 		const fallback = stages[0]?.dailyTarget ?? '';
 		setCustomTargets(Object.fromEntries(weekdays.map((day) => [day, customTargets[day] ?? fallback])));
@@ -441,7 +446,7 @@ function CreateRunningCardPage() {
 							<div><strong>{t('shell.createCard.longTerm')}</strong><small>{t('shell.createCard.longTermInherited', { title: cardTitle || t(selected.labelKey) })}</small></div>
 						</header>
 						<div className={styles.longFields}>
-							<label><span>{t('shell.createCard.totalTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={longTarget} placeholder='100' onChange={(event) => { setLongTarget(event.target.value); setAutoDistribution(true); setError(undefined); }} /><small>{selectedUnit}</small></span></label>
+							<label><span>{t('shell.createCard.totalTarget')}</span><span className={styles.inputWithUnit}><input type='number' min='1' inputMode='decimal' value={longTarget} placeholder={t('shell.createCard.longTargetPlaceholder')} onChange={(event) => { setLongTarget(event.target.value); setAutoDistribution(true); setError(undefined); }} /><small>{selectedUnit}</small></span></label>
 							<label><span>{t('shell.createCard.planDuration')}</span><span className={`${styles.inputWithUnit} ${styles.durationInput}`}><input type='number' min={stages.length} inputMode='numeric' value={longDurationDays} onChange={(event) => updateLongDuration(event.target.value)} /><small>{t('shell.createCard.daysUnit')}</small></span></label>
 							<label><span>{t('shell.createCard.targetDate')}</span><span className={styles.inputWithIcon}><FiCalendar aria-hidden='true' /><input type='date' min={endDateFromDuration(today, stages.length)} value={longEndDate} onChange={(event) => updateLongEndDate(event.target.value)} /></span></label>
 						</div>
@@ -492,13 +497,15 @@ function CreateRunningCardPage() {
 							{WEEKDAYS.map((day) => <button type='button' key={day} aria-pressed={weekdays.includes(day)} onClick={() => toggleWeekday(day)}>{t(`shell.createCard.weekdays.${day}`)}</button>)}
 						</div>
 						<div className={styles.planModes}>
-							<button type='button' aria-pressed={planMode === 'average'} onClick={useAveragePlan}>{t('shell.createCard.averageMode')}</button>
+							<button type='button' aria-pressed={planMode === 'average'} onClick={useAverageDailyPlan}>{t('shell.createCard.averageMode')}</button>
 							<button type='button' aria-pressed={planMode === 'custom'} onClick={useCustomPlan}>{t('shell.createCard.customMode')}</button>
 						</div>
 						{planMode === 'average' ? (
-							<div className={styles.averageSummary}>
+							<div className={styles.averageSummary} data-ready={Boolean(stages[0]?.dailyTarget)}>
 								<strong>{stages[0]?.dailyTarget || '—'} <small>{selectedUnit}</small></strong>
-								<span>{t('shell.createCard.averageSummary', { days: weekdays.length })}</span>
+								<span>{stages[0]?.dailyTarget
+									? t('shell.createCard.averageSummary', { days: weekdays.length })
+									: t('shell.createCard.dailyPlanNeedsTarget')}</span>
 							</div>
 						) : (
 							<div className={styles.customDailyGrid}>

@@ -440,13 +440,15 @@
 }
 
 .planModes button[aria-pressed='true'] {
-	color: var(--text-color);
-	background: var(--surface-color);
-	box-shadow: 0 3px 10px rgb(0 0 0 / 14%);
+	font-weight: 730;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 28%, transparent);
 }
 
 .averageSummary {
 	display: flex;
+	gap: 12px;
 	align-items: baseline;
 	justify-content: space-between;
 	padding: 10px 12px;
@@ -465,6 +467,16 @@
 
 .averageSummary span {
 	font-size: 0.56rem;
+	line-height: 1.45;
+	color: var(--muted-color);
+	text-align: right;
+}
+
+.averageSummary[data-ready='false'] {
+	background: var(--surface-raised);
+}
+
+.averageSummary[data-ready='false'] strong {
 	color: var(--muted-color);
 }
 
