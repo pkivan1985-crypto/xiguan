@@ -75,6 +75,53 @@ describe('saveDailyHabit', () => {
 		});
 	});
 
+	it('stores the actual run, training details, and only carries a shortfall forward', async () => {
+		await saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: LOCAL_DATE,
+			currentLocalDate: LOCAL_DATE,
+			quantityBaseValue: 3_000,
+			entryMethod: 'actual',
+			plannedQuantityBaseValue: 5_000,
+			carryInBaseValue: 0,
+			durationSeconds: 1_560,
+			averagePaceSecondsPerKm: 520,
+			averageHeartRateBpm: 148,
+			note: '河边慢跑',
+			nowIso: '2026-07-25T02:30:00.000Z',
+			submissionId: 'save-training',
+		});
+
+		expect(await database.table('actionRecords').get(`card-a:${LOCAL_DATE}`)).toMatchObject({
+			quantityBaseValue: 3_000,
+			entryMethod: 'actual',
+			plannedQuantityBaseValue: 5_000,
+			carryInBaseValue: 0,
+			carryOutBaseValue: 2_000,
+			durationSeconds: 1_560,
+			averagePaceSecondsPerKm: 520,
+			averageHeartRateBpm: 148,
+			note: '河边慢跑',
+		});
+
+		await saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: LOCAL_DATE,
+			currentLocalDate: LOCAL_DATE,
+			quantityBaseValue: 6_000,
+			entryMethod: 'actual',
+			plannedQuantityBaseValue: 5_000,
+			carryInBaseValue: 0,
+			nowIso: '2026-07-25T03:00:00.000Z',
+			submissionId: 'save-surplus',
+		});
+
+		expect(await database.table('actionRecords').get(`card-a:${LOCAL_DATE}`)).toMatchObject({
+			quantityBaseValue: 6_000,
+			carryOutBaseValue: 0,
+		});
+	});
+
 	it('overwrites the same day and deletes it when the value returns to zero', async () => {
 		await saveDailyHabit(database, {
 			userCardId: 'card-a',

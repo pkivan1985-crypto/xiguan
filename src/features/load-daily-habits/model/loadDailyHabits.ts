@@ -27,9 +27,18 @@ export interface DailyHabitView {
 	displayValue: string;
 	displayUnit: string;
 	stepBase: number;
+	basePerDisplayUnit: number;
+	maxDecimalPlaces: number;
+	baseDailyTargetBase: number;
 	dailyTargetBase: number;
+	carryInBaseValue: number;
 	totalQuantityBaseValue: number;
 	activeDays: number;
+	supportsTrainingDetails: boolean;
+	durationSeconds?: number;
+	averagePaceSecondsPerKm?: number;
+	averageHeartRateBpm?: number;
+	note?: string;
 	goalTitle?: string;
 	goalProgressRatio?: number;
 }
@@ -97,7 +106,8 @@ export async function loadDailyHabits(
 			const todayWeekday = weekday(localDate);
 			if (card.dailyPlan && !card.dailyPlan.weekdays.includes(todayWeekday)) return [];
 			const cardRecords = recordsByCard.get(card.id) ?? [];
-			const quantityBaseValue = todayRecords.get(card.id)?.quantityBaseValue ?? 0;
+			const todayRecord = todayRecords.get(card.id);
+			const quantityBaseValue = todayRecord?.quantityBaseValue ?? 0;
 			const trackingType = template.trackingType ?? 'quantity';
 			const longTermGoal = currentLongTermGoal(data.longTermGoals, card.id);
 			const stageGoal = longTermGoal
@@ -121,9 +131,19 @@ export async function loadDailyHabits(
 						targetQuantityBase: longTermGoal.targetQuantityBase,
 					})
 					: null;
-			const dailyTargetBase = card.dailyPlan?.mode === 'custom'
+			const baseDailyTargetBase = card.dailyPlan?.mode === 'custom'
 				? card.dailyPlan.customTargetsBaseByWeekday?.[todayWeekday]
 				: stageGoal?.dailyTargetBase;
+			const previousRecord = cardRecords
+				.filter((record) => record.localDate < localDate)
+				.sort((left, right) => right.localDate.localeCompare(left.localDate))[0];
+			const carryInBaseValue = todayRecord?.carryInBaseValue
+				?? previousRecord?.carryOutBaseValue
+				?? 0;
+			const resolvedBaseDailyTarget = baseDailyTargetBase
+				?? stageGoal?.dailyTargetBase
+				?? template.defaultDailyTargetBase
+				?? template.quantity.basePerDisplayUnit;
 			return [{
 				id: card.id,
 				title: card.title,
@@ -136,12 +156,19 @@ export async function loadDailyHabits(
 					: String(quantityBaseValue / template.quantity.basePerDisplayUnit),
 				displayUnit: template.quantity.displayUnit,
 				stepBase: template.stepBase ?? template.quantity.basePerDisplayUnit,
-				dailyTargetBase: dailyTargetBase
-					?? stageGoal?.dailyTargetBase
-					?? template.defaultDailyTargetBase
-					?? template.quantity.basePerDisplayUnit,
+				basePerDisplayUnit: template.quantity.basePerDisplayUnit,
+				maxDecimalPlaces: template.quantity.maxDecimalPlaces,
+				baseDailyTargetBase: resolvedBaseDailyTarget,
+				dailyTargetBase: todayRecord?.plannedQuantityBaseValue
+					?? resolvedBaseDailyTarget + carryInBaseValue,
+				carryInBaseValue,
 				totalQuantityBaseValue: cardRecords.reduce((total, record) => total + record.quantityBaseValue, 0),
 				activeDays: new Set(cardRecords.map((record) => record.localDate)).size,
+				supportsTrainingDetails: card.officialCardId === 'running',
+				durationSeconds: todayRecord?.durationSeconds,
+				averagePaceSecondsPerKm: todayRecord?.averagePaceSecondsPerKm,
+				averageHeartRateBpm: todayRecord?.averageHeartRateBpm,
+				note: todayRecord?.note,
 				goalTitle: primaryGoal?.title,
 				goalProgressRatio: progress?.ratio,
 			}];

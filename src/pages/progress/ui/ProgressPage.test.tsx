@@ -31,6 +31,11 @@ const translations: Record<string, string> = {
 	'shell.progress.goalsTab': '目标',
 	'shell.progress.noRecords': '这一天还没有真实记录。',
 	'shell.progress.plans': '总规划',
+	'shell.progress.plannedValue': '计划 {{value}} {{unit}}',
+	'shell.progress.carryForward': '顺延 {{value}} {{unit}}',
+	'shell.progress.durationValue': '时长 {{value}} 分钟',
+	'shell.progress.paceValue': '平均配速 {{value}} /km',
+	'shell.progress.heartRateValue': '平均心率 {{value}} bpm',
 	'shell.progress.recordValue': '{{value}} {{unit}}',
 	'shell.progress.selectedDayHint': '点击日期查看当天记录',
 	'shell.progress.selectedDayTitle': '{{date}} · {{count}} 项成果',
@@ -164,6 +169,13 @@ const history: HistoryModel = {
 			maxDecimalPlaces: 2,
 			confirmationThresholdDisplay: 100,
 			lastSavedAt: '2026-07-25T08:00:00.000Z',
+			entryMethod: 'actual',
+			plannedQuantityBaseValue: 5_000,
+			carryOutBaseValue: 1_800,
+			durationSeconds: 1_560,
+			averagePaceSecondsPerKm: 488,
+			averageHeartRateBpm: 148,
+			note: '河边慢跑',
 			longTermGoalTitle: '累计 100 km',
 			stageGoalTitle: '7 月完成 30 km',
 			canCorrect: true,
@@ -287,6 +299,12 @@ describe('ProgressPage', () => {
 		expect(html).toContain('7月25日 · 1 项成果');
 		expect(html).toContain('跑步');
 		expect(html).toContain('3.2');
+		expect(html).toContain('计划 5 km');
+		expect(html).toContain('顺延 1.8 km');
+		expect(html).toContain('时长 26 分钟');
+		expect(html).toContain('平均配速 8:08 /km');
+		expect(html).toContain('平均心率 148 bpm');
+		expect(html).toContain('河边慢跑');
 		expect(html).toContain('查看详情');
 		expect(html).toContain('data-testid="progress-plan-panel"');
 		expect(html).toContain('5 个习惯正在推进 · 本月 2 个成果日');

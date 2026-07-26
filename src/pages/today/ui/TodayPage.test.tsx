@@ -69,9 +69,14 @@ const model: DailyHabitsModel = {
 		displayValue: '1',
 		displayUnit: '次',
 		stepBase: 1,
+		basePerDisplayUnit: 1,
+		maxDecimalPlaces: 0,
+		baseDailyTargetBase: 1,
 		dailyTargetBase: 1,
+		carryInBaseValue: 0,
 		totalQuantityBaseValue: 6,
 		activeDays: 6,
+		supportsTrainingDetails: false,
 	}],
 };
 
@@ -111,6 +116,8 @@ describe('TodayPage', () => {
 					pendingIds={new Set()}
 					saveErrorIds={new Set()}
 					onChangeHabit={vi.fn()}
+					onCompleteHabit={vi.fn()}
+					onSaveActual={vi.fn()}
 					onSelectDate={vi.fn()}
 					onToggleCompleted={vi.fn()}
 				/>

@@ -19,6 +19,14 @@ export interface HistoryRecordModel {
 	lastSavedAt: string;
 	longTermGoalTitle?: string;
 	stageGoalTitle?: string;
+	entryMethod?: ActionRecord['entryMethod'];
+	plannedQuantityBaseValue?: number;
+	carryInBaseValue?: number;
+	carryOutBaseValue?: number;
+	durationSeconds?: number;
+	averagePaceSecondsPerKm?: number;
+	averageHeartRateBpm?: number;
+	note?: string;
 	canCorrect: boolean;
 	relationAvailable: boolean;
 }
@@ -78,6 +86,14 @@ export async function loadHistory(
 					lastSavedAt: record.lastSavedAt,
 					longTermGoalTitle: record.longTermGoalId ? longGoalsById.get(record.longTermGoalId)?.title : undefined,
 					stageGoalTitle: record.stageGoalId ? stageGoalsById.get(record.stageGoalId)?.title : undefined,
+					entryMethod: record.entryMethod,
+					plannedQuantityBaseValue: record.plannedQuantityBaseValue,
+					carryInBaseValue: record.carryInBaseValue,
+					carryOutBaseValue: record.carryOutBaseValue,
+					durationSeconds: record.durationSeconds,
+					averagePaceSecondsPerKm: record.averagePaceSecondsPerKm,
+					averageHeartRateBpm: record.averageHeartRateBpm,
+					note: record.note,
 					canCorrect: relationAvailable && record.localDate === currentLocalDate,
 					relationAvailable,
 				};

@@ -1,3 +1,4 @@
+/* stylelint-disable no-descending-specificity -- Nested row/editor controls intentionally share base button and icon rules. */
 .panel {
 	width: calc(100% + 12px);
 	margin-inline: -6px;
@@ -29,7 +30,8 @@
 }
 
 .habitRow[data-tracking-type='quantity'] {
-	min-height: 106px;
+	min-height: 104px;
+	padding-block: 10px;
 }
 
 .habitRow[data-tracking-type='duration'] {
@@ -85,37 +87,72 @@
 	white-space: nowrap;
 }
 
-.quantityControl {
+.quantityActions {
+	position: relative;
 	display: grid;
+	grid-template-columns: repeat(2, minmax(66px, 1fr));
 	gap: 7px;
-	justify-items: end;
-	min-width: 118px;
+	width: 148px;
 }
 
-.currentValue {
-	display: flex;
-	gap: 5px;
-	align-items: baseline;
-	justify-content: flex-end;
-}
-
-.currentValue strong {
-	font-size: 24px;
+.quantityActions > button {
+	display: inline-flex;
+	gap: 4px;
+	align-items: center;
+	justify-content: center;
+	min-height: 38px;
+	padding: 0 8px;
+	font-size: 12px;
 	font-weight: 700;
-	line-height: 28px;
+	line-height: 16px;
+	border-radius: 12px;
 }
 
-.currentValue small {
-	font-size: 13px;
+.quantityActions > button span {
+	white-space: nowrap;
+}
+
+.quantityActions svg {
+	flex: none;
+	width: 16px;
+	height: 16px;
+}
+
+.completeAction {
+	color: #081714;
+	background: var(--sport-color);
+}
+
+.habitRow[data-completed='false'] .completeAction {
+	color: var(--sport-color);
+	background: color-mix(in srgb, var(--sport-color) 10%, var(--surface-secondary));
+	border: 1px solid color-mix(in srgb, var(--sport-color) 38%, var(--border-color));
+}
+
+.actualAction {
+	color: var(--accent-color);
+	background: color-mix(in srgb, var(--accent-color) 10%, var(--surface-secondary));
+	border: 1px solid color-mix(in srgb, var(--accent-color) 42%, var(--border-color));
+}
+
+.quantityActions .undoQuantity {
+	position: absolute;
+	top: -30px;
+	right: -7px;
+	width: 28px;
+	min-width: 28px;
+	min-height: 28px;
+	padding: 0;
 	color: var(--muted-color);
+	background: transparent;
+	border: 0;
 }
 
-.stepActions {
-	display: flex;
-	gap: 12px;
+.quantityActions .undoQuantity svg {
+	width: 14px;
+	height: 14px;
 }
 
-.stepActions button,
 .squareControl,
 .circleControl {
 	display: grid;
@@ -128,29 +165,6 @@
 	background: color-mix(in srgb, var(--row-accent) 7%, var(--surface-secondary));
 	border: 1px solid color-mix(in srgb, var(--row-accent) 42%, var(--border-color));
 	border-radius: 13px;
-}
-
-.stepActions button {
-	position: relative;
-	height: 44px;
-	font-size: 20px;
-	color: var(--muted-color);
-	background: transparent;
-	border-color: transparent;
-}
-
-.stepActions button::before {
-	position: absolute;
-	inset: 7px 0;
-	content: '';
-	background: color-mix(in srgb, var(--row-accent) 7%, var(--surface-secondary));
-	border: 1px solid color-mix(in srgb, var(--muted-color) 28%, var(--border-color));
-	border-radius: 13px;
-}
-
-.stepActions svg {
-	position: relative;
-	z-index: 1;
 }
 
 .circleControl {
@@ -182,6 +196,158 @@
 	font-size: 13px;
 	line-height: 18px;
 	color: var(--error-color);
+}
+
+.actualEditor {
+	display: grid;
+	grid-column: 1 / -1;
+	gap: 12px;
+	padding: 14px;
+	margin: 4px 0 2px;
+	background: color-mix(in srgb, var(--surface-secondary) 88%, var(--accent-color));
+	border: 1px solid color-mix(in srgb, var(--accent-color) 28%, var(--border-color));
+	border-radius: 16px;
+}
+
+.actualEditor header,
+.actualEditor footer {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.actualEditor header > div {
+	display: grid;
+	gap: 1px;
+}
+
+.actualEditor header strong {
+	font-size: 15px;
+	line-height: 22px;
+}
+
+.actualEditor header small,
+.actualEditor footer small {
+	font-size: 12px;
+	line-height: 18px;
+	color: var(--muted-color);
+}
+
+.actualEditor header > button {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	font-size: 20px;
+	color: var(--muted-color);
+	background: transparent;
+	border-radius: 10px;
+}
+
+.actualField {
+	display: grid;
+	gap: 6px;
+}
+
+.actualField > span,
+.trainingFields label > span {
+	font-size: 12px;
+	font-weight: 650;
+	line-height: 18px;
+	color: var(--muted-color);
+}
+
+.actualField > div {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	overflow: hidden;
+	background: var(--background-color);
+	border: 1px solid color-mix(in srgb, var(--accent-color) 35%, var(--border-color));
+	border-radius: 13px;
+}
+
+.actualField input {
+	min-width: 0;
+	height: 46px;
+	padding: 0 12px;
+	font-size: 22px;
+	font-weight: 750;
+	color: var(--text-color);
+	outline: 0;
+	background: transparent;
+	border: 0;
+}
+
+.actualField b {
+	padding-right: 13px;
+	font-size: 13px;
+	color: var(--muted-color);
+}
+
+.trainingFields {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.trainingFields label {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 3px 5px;
+	align-items: center;
+	min-width: 0;
+}
+
+.trainingFields label > svg {
+	width: 15px;
+	height: 15px;
+	color: var(--accent-color);
+}
+
+.trainingFields input {
+	grid-column: 1 / -1;
+	min-width: 0;
+	height: 40px;
+	padding: 0 9px;
+	font-size: 13px;
+	color: var(--text-color);
+	outline: 0;
+	background: var(--background-color);
+	border: 1px solid var(--border-color);
+	border-radius: 11px;
+}
+
+.trainingFields .noteField {
+	grid-column: 1 / -1;
+}
+
+.actualEditor > p {
+	margin: -4px 0 0;
+	font-size: 12px;
+	line-height: 18px;
+	color: var(--error-color);
+}
+
+.actualEditor footer small {
+	max-width: 205px;
+}
+
+.actualEditor footer button {
+	display: inline-flex;
+	flex: none;
+	gap: 5px;
+	align-items: center;
+	justify-content: center;
+	min-height: 40px;
+	padding: 0 13px;
+	font-size: 13px;
+	font-weight: 750;
+	color: #081714;
+	background: var(--sport-color);
+	border-radius: 12px;
 }
 
 .completedFold {
@@ -236,15 +402,26 @@
 		padding-inline: 12px;
 	}
 
-	.quantityControl {
-		min-width: 108px;
+	.quantityActions {
+		grid-template-columns: 1fr;
+		width: 82px;
 	}
 
-	.stepActions {
-		gap: 8px;
+	.quantityActions > button {
+		min-height: 34px;
 	}
 
-	.stepActions button {
-		width: 44px;
+	.trainingFields {
+		grid-template-columns: 1fr;
+	}
+
+	.trainingFields .noteField {
+		grid-column: auto;
+	}
+}
+
+@media (max-width: 410px) {
+	.quantityActions > button:not(.undoQuantity) svg {
+		display: none;
 	}
 }

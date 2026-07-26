@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string -- Entry methods are stable domain identifiers. */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,6 +16,7 @@ import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
 import { MobilePageHeader } from '@widgets/mobile-page-header';
 import {
+	type HabitActualEntry,
 	TodayHabitPanel,
 	toggleCompletedVisibility,
 } from '@widgets/today-habit-panel';
@@ -30,6 +32,8 @@ interface TodayPageContentProps {
 	pendingIds: ReadonlySet<string>;
 	saveErrorIds: ReadonlySet<string>;
 	onChangeHabit: (habit: DailyHabitView, quantityBaseValue: number) => void;
+	onCompleteHabit: (habit: DailyHabitView) => void;
+	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
 	onSelectDate: (localDate: string) => void;
 	onToggleCompleted: () => void;
 }
@@ -54,6 +58,8 @@ function TodayPageContent({
 	pendingIds,
 	saveErrorIds,
 	onChangeHabit,
+	onCompleteHabit,
+	onSaveActual,
 	onSelectDate,
 	onToggleCompleted,
 }: TodayPageContentProps) {
@@ -118,6 +124,8 @@ function TodayPageContent({
 					pendingIds={pendingIds}
 					saveErrorIds={saveErrorIds}
 					onChange={onChangeHabit}
+					onComplete={onCompleteHabit}
+					onSaveActual={onSaveActual}
 					onToggleCompleted={onToggleCompleted}
 				/>
 			</div>
@@ -168,13 +176,24 @@ function TodayPage() {
 		return () => { active = false; };
 	}, [load, reloadNonce]);
 
-	async function changeHabit(habit: DailyHabitView, quantityBaseValue: number): Promise<void> {
+	async function changeHabit(
+		habit: DailyHabitView,
+		quantityBaseValue: number,
+		details?: HabitActualEntry & { entryMethod: 'completed' | 'actual' },
+	): Promise<void> {
 		const queuedSave = saveQueueRef.current!.enqueue(habit.id, async () => {
 			await saveDailyHabitInApp({
 				userCardId: habit.id,
 				localDate: todayLocalDate,
 				currentLocalDate: formatLocalDate(new Date()),
 				quantityBaseValue,
+				entryMethod: details?.entryMethod,
+				plannedQuantityBaseValue: habit.dailyTargetBase,
+				carryInBaseValue: habit.carryInBaseValue,
+				durationSeconds: details?.durationSeconds,
+				averagePaceSecondsPerKm: details?.averagePaceSecondsPerKm,
+				averageHeartRateBpm: details?.averageHeartRateBpm,
+				note: details?.note,
 				nowIso: new Date().toISOString(),
 				submissionId: crypto.randomUUID(),
 			});
@@ -219,6 +238,18 @@ function TodayPage() {
 			saveErrorIds={saveErrorIds}
 			onChangeHabit={(habit, quantityBaseValue) => {
 				void changeHabit(habit, quantityBaseValue);
+			}}
+			onCompleteHabit={(habit) => {
+				void changeHabit(habit, habit.dailyTargetBase, {
+					quantityBaseValue: habit.dailyTargetBase,
+					entryMethod: 'completed',
+				});
+			}}
+			onSaveActual={(habit, entry) => {
+				void changeHabit(habit, entry.quantityBaseValue, {
+					...entry,
+					entryMethod: 'actual',
+				});
 			}}
 			onSelectDate={(localDate) => {
 				if (localDate !== todayLocalDate) {

@@ -115,8 +115,26 @@ describe('correctActionRecord', () => {
 		expect(await database.tableFor<ActionRecord>('actionRecords').get('record-1')).toEqual({
 			...record(),
 			quantityBaseValue: 5_000,
+			entryMethod: 'adjustment',
 			lastSavedAt: updateInput.nowIso,
 			lastSubmissionId: updateInput.correctionId,
+		});
+	});
+
+	it('recalculates the next-session shortfall when today is corrected', async () => {
+		await seed([record({
+			plannedQuantityBaseValue: 8_000,
+			carryInBaseValue: 2_000,
+			carryOutBaseValue: 0,
+		})]);
+
+		await correctActionRecord(database, updateInput);
+
+		expect(await database.tableFor<ActionRecord>('actionRecords').get('record-1')).toMatchObject({
+			quantityBaseValue: 5_000,
+			entryMethod: 'adjustment',
+			plannedQuantityBaseValue: 8_000,
+			carryOutBaseValue: 3_000,
 		});
 	});
 

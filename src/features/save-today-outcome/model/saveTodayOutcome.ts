@@ -19,6 +19,16 @@ export interface SaveTodayOutcomeInput {
 	nowIso: string;
 	submissionId: string;
 	confirmedOverLimit?: boolean;
+	actionRecordDetails?: Readonly<Record<string, {
+		entryMethod?: ActionRecord['entryMethod'];
+		plannedQuantityBaseValue?: number;
+		carryInBaseValue?: number;
+		carryOutBaseValue?: number;
+		durationSeconds?: number;
+		averagePaceSecondsPerKm?: number;
+		averageHeartRateBpm?: number;
+		note?: string;
+	}>>;
 }
 
 function progressSnapshot(progress: GoalProgress, mode: StageCompletionMode): OutcomeProgressSnapshot {
@@ -150,12 +160,27 @@ export async function saveTodayOutcome(
 					{ mode: stageGoal.mode, targetQuantityBase: stageGoal.targetQuantityBase, targetActiveDays: stageGoal.targetActiveDays },
 				)
 				: null;
+			const recordDetails = input.actionRecordDetails?.[userCard.id];
 
 			const record: ActionRecord = {
 				id: existingRecord?.id ?? `${userCard.id}:${input.localDate}`,
 				userCardId: userCard.id,
 				localDate: input.localDate,
 				quantityBaseValue,
+				entryMethod: recordDetails ? recordDetails.entryMethod : existingRecord?.entryMethod,
+				plannedQuantityBaseValue: recordDetails
+					? recordDetails.plannedQuantityBaseValue
+					: existingRecord?.plannedQuantityBaseValue,
+				carryInBaseValue: recordDetails ? recordDetails.carryInBaseValue : existingRecord?.carryInBaseValue,
+				carryOutBaseValue: recordDetails ? recordDetails.carryOutBaseValue : existingRecord?.carryOutBaseValue,
+				durationSeconds: recordDetails ? recordDetails.durationSeconds : existingRecord?.durationSeconds,
+				averagePaceSecondsPerKm: recordDetails
+					? recordDetails.averagePaceSecondsPerKm
+					: existingRecord?.averagePaceSecondsPerKm,
+				averageHeartRateBpm: recordDetails
+					? recordDetails.averageHeartRateBpm
+					: existingRecord?.averageHeartRateBpm,
+				note: recordDetails ? recordDetails.note : existingRecord?.note,
 				longTermGoalId: longTermGoal?.id,
 				stageGoalId: stageGoal?.id,
 				firstSavedAt: existingRecord?.firstSavedAt ?? input.nowIso,

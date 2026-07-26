@@ -93,6 +93,38 @@ describe('loadDailyHabits', () => {
 		expect((await loadDailyHabits(database, '2026-07-28')).habits).toHaveLength(0);
 	});
 
+	it('adds the latest shortfall to the next scheduled target without reducing it for surplus', async () => {
+		await database.table('userCards').add({
+			id: 'run',
+			officialCardId: 'running',
+			title: '晨跑',
+			dailyPlan: { mode: 'average', weekdays: [1, 3, 5] },
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-07-27T00:00:00.000Z',
+			updatedAt: '2026-07-27T00:00:00.000Z',
+		});
+		await database.table('actionRecords').add({
+			id: 'run:2026-07-27',
+			userCardId: 'run',
+			localDate: '2026-07-27',
+			quantityBaseValue: 3_000,
+			plannedQuantityBaseValue: 5_000,
+			carryInBaseValue: 0,
+			carryOutBaseValue: 2_000,
+			firstSavedAt: '2026-07-27T08:00:00.000Z',
+			lastSavedAt: '2026-07-27T08:00:00.000Z',
+			lastSubmissionId: 'monday-run',
+		});
+
+		expect((await loadDailyHabits(database, '2026-07-28')).habits).toHaveLength(0);
+		expect((await loadDailyHabits(database, '2026-07-29')).habits[0]).toMatchObject({
+			baseDailyTargetBase: 5_000,
+			carryInBaseValue: 2_000,
+			dailyTargetBase: 7_000,
+		});
+	});
+
 	it('derives outcome dates and each active habit display total from effective action records', async () => {
 		await database.table('userCards').bulkAdd([
 			{ id: 'run', officialCardId: 'running', title: '晨跑', status: 'active', sortOrder: 0, createdAt: '2026-07-20T00:00:00.000Z', updatedAt: '2026-07-20T00:00:00.000Z' },

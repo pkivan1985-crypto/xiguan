@@ -5,6 +5,7 @@ import type { DailyHabitView } from '@features/load-daily-habits';
 
 import {
 	nextHabitQuantity,
+	parsePaceText,
 	TodayHabitPanel,
 	toggleCompletedVisibility,
 } from './TodayHabitPanel';
@@ -12,6 +13,9 @@ import {
 const translations: Record<string, string> = {
 	'shell.today.activeDayCount': '累计 {{count}} 天',
 	'shell.today.completeHabit': '完成{{title}}',
+	'shell.today.completeAction': '已完成',
+	'shell.today.completedAction': '已记录',
+	'shell.today.enterActual': '填实际',
 	'shell.today.completedFold': '已完成 {{count}} 项',
 	'shell.today.dailyProgress': '今日 {{current}} / {{target}} {{unit}}',
 	'shell.today.decreaseHabit': '减少{{title}}',
@@ -47,9 +51,14 @@ const habits: DailyHabitView[] = [
 		displayValue: '3.20',
 		displayUnit: 'km',
 		stepBase: 500,
+		basePerDisplayUnit: 1000,
+		maxDecimalPlaces: 2,
+		baseDailyTargetBase: 5000,
 		dailyTargetBase: 5_000,
+		carryInBaseValue: 0,
 		totalQuantityBaseValue: 18_400,
 		activeDays: 6,
+		supportsTrainingDetails: true,
 		goalTitle: '累计 30 公里',
 		goalProgressRatio: 18.4 / 30,
 	},
@@ -63,9 +72,14 @@ const habits: DailyHabitView[] = [
 		displayValue: '5',
 		displayUnit: '杯',
 		stepBase: 1,
+		basePerDisplayUnit: 1,
+		maxDecimalPlaces: 0,
+		baseDailyTargetBase: 8,
 		dailyTargetBase: 8,
+		carryInBaseValue: 0,
 		totalQuantityBaseValue: 42,
 		activeDays: 6,
+		supportsTrainingDetails: false,
 	},
 	{
 		id: 'read',
@@ -77,9 +91,14 @@ const habits: DailyHabitView[] = [
 		displayValue: '20',
 		displayUnit: '分钟',
 		stepBase: 5,
+		basePerDisplayUnit: 1,
+		maxDecimalPlaces: 0,
+		baseDailyTargetBase: 30,
 		dailyTargetBase: 30,
+		carryInBaseValue: 0,
 		totalQuantityBaseValue: 240,
 		activeDays: 8,
+		supportsTrainingDetails: false,
 	},
 	{
 		id: 'sleep',
@@ -91,9 +110,14 @@ const habits: DailyHabitView[] = [
 		displayValue: '1',
 		displayUnit: '次',
 		stepBase: 1,
+		basePerDisplayUnit: 1,
+		maxDecimalPlaces: 0,
+		baseDailyTargetBase: 1,
 		dailyTargetBase: 1,
+		carryInBaseValue: 0,
 		totalQuantityBaseValue: 6,
 		activeDays: 6,
+		supportsTrainingDetails: false,
 	},
 	{
 		id: 'avoid',
@@ -105,9 +129,14 @@ const habits: DailyHabitView[] = [
 		displayValue: '1',
 		displayUnit: '天',
 		stepBase: 1,
+		basePerDisplayUnit: 1,
+		maxDecimalPlaces: 0,
+		baseDailyTargetBase: 1,
 		dailyTargetBase: 1,
+		carryInBaseValue: 0,
 		totalQuantityBaseValue: 4,
 		activeDays: 4,
+		supportsTrainingDetails: false,
 	},
 ];
 
@@ -129,12 +158,20 @@ function renderPanel({
 			pendingIds={pendingIds}
 			saveErrorIds={saveErrorIds}
 			onChange={vi.fn()}
+			onComplete={vi.fn()}
+			onSaveActual={vi.fn()}
 			onToggleCompleted={vi.fn()}
 		/>,
 	);
 }
 
 describe('TodayHabitPanel', () => {
+	it('parses a running pace as deterministic seconds per kilometre', () => {
+		expect(parsePaceText('06:30')).toBe(390);
+		expect(parsePaceText('6:75')).toBeUndefined();
+		expect(parsePaceText('快跑')).toBeUndefined();
+	});
+
 	it('derives the next saved value for all five tracking controls', () => {
 		expect(nextHabitQuantity(habits[0]!, 'decrease')).toBe(2_700);
 		expect(nextHabitQuantity(habits[0]!, 'increase')).toBe(3_700);
@@ -154,7 +191,8 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('data-tracking-type="duration"');
 		expect(html).toContain('data-tracking-type="check"');
 		expect(html).toContain('data-tracking-type="avoid"');
-		expect(html).toContain('aria-label="减少跑步"');
+		expect(html).toContain('>已完成</span>');
+		expect(html).toContain('>填实际</span>');
 		expect(html).toContain('aria-label="增加喝水"');
 		expect(html).toContain('aria-label="记录阅读"');
 		expect(html).toContain('aria-label="撤销早睡"');

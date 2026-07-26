@@ -1,11 +1,18 @@
-/* eslint-disable react-refresh/only-export-components -- The approved task boundary keeps the tested interaction reducers beside this panel. */
+/* eslint-disable react-refresh/only-export-components -- The approved task boundary keeps the tested interaction helpers beside this panel. */
+import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	PiCaretDown,
 	PiCheck,
-	PiMinus,
+	PiCheckCircle,
+	PiClock,
+	PiHeartbeat,
+	PiNotePencil,
+	PiPencilSimple,
 	PiPlayFill,
 	PiPlus,
+	PiTimer,
+	PiX,
 } from 'react-icons/pi';
 
 import type { DailyHabitView } from '@features/load-daily-habits';
@@ -15,12 +22,22 @@ import styles from './TodayHabitPanel.module.css';
 
 export type HabitControlAction = 'decrease' | 'increase' | 'record' | 'toggle';
 
+export interface HabitActualEntry {
+	quantityBaseValue: number;
+	durationSeconds?: number;
+	averagePaceSecondsPerKm?: number;
+	averageHeartRateBpm?: number;
+	note?: string;
+}
+
 export interface TodayHabitPanelProps {
 	habits: readonly DailyHabitView[];
 	completedExpanded: boolean;
 	pendingIds: ReadonlySet<string>;
 	saveErrorIds: ReadonlySet<string>;
 	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
+	onComplete: (habit: DailyHabitView) => void;
+	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
 	onToggleCompleted: () => void;
 }
 
@@ -50,11 +67,7 @@ function number(value: number, maximumFractionDigits = 2): string {
 }
 
 function basePerDisplayUnit(habit: DailyHabitView): number {
-	const displayed = Number(habit.displayValue);
-	if (habit.quantityBaseValue > 0 && Number.isFinite(displayed) && displayed > 0) {
-		return habit.quantityBaseValue / displayed;
-	}
-	return Math.max(habit.stepBase * 2, 1);
+	return habit.basePerDisplayUnit;
 }
 
 function dailyTargetDisplay(habit: DailyHabitView): string {
@@ -65,6 +78,175 @@ function dailyTargetDisplay(habit: DailyHabitView): string {
 function totalDisplay(habit: DailyHabitView): string {
 	if (habit.trackingType !== 'quantity') return number(habit.totalQuantityBaseValue);
 	return number(habit.totalQuantityBaseValue / basePerDisplayUnit(habit), 1);
+}
+
+export function parsePaceText(value: string): number | undefined {
+	const match = /^(\d{1,2}):([0-5]\d)$/.exec(value.trim());
+	if (!match) return undefined;
+	const seconds = Number(match[1]) * 60 + Number(match[2]);
+	return seconds > 0 ? seconds : undefined;
+}
+
+function formatPaceText(seconds: number | undefined): string {
+	if (!seconds) return '';
+	return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+function ActualEntryEditor({
+	habit,
+	pending,
+	onCancel,
+	onSave,
+}: {
+	habit: DailyHabitView;
+	pending: boolean;
+	onCancel: () => void;
+	onSave: (entry: HabitActualEntry) => void;
+}) {
+	const { t } = useTranslation();
+	const [actual, setActual] = useState(habit.quantityBaseValue > 0 ? habit.displayValue : '');
+	const [durationMinutes, setDurationMinutes] = useState(
+		habit.durationSeconds ? String(habit.durationSeconds / 60) : '',
+	);
+	const [pace, setPace] = useState(formatPaceText(habit.averagePaceSecondsPerKm));
+	const [heartRate, setHeartRate] = useState(
+		habit.averageHeartRateBpm ? String(habit.averageHeartRateBpm) : '',
+	);
+	const [note, setNote] = useState(habit.note ?? '');
+	const [invalid, setInvalid] = useState(false);
+
+	function submit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		const displayValue = Number(actual);
+		const quantityBaseValue = Math.round(displayValue * habit.basePerDisplayUnit);
+		const durationSeconds = durationMinutes ? Math.round(Number(durationMinutes) * 60) : undefined;
+		const averagePaceSecondsPerKm = pace ? parsePaceText(pace) : undefined;
+		const averageHeartRateBpm = heartRate ? Number(heartRate) : undefined;
+		const valid = Number.isFinite(displayValue)
+			&& quantityBaseValue > 0
+			&& (!durationSeconds || durationSeconds > 0)
+			&& (!pace || averagePaceSecondsPerKm !== undefined)
+			&& (!averageHeartRateBpm || (
+				Number.isSafeInteger(averageHeartRateBpm)
+				&& averageHeartRateBpm >= 30
+				&& averageHeartRateBpm <= 240
+			));
+		if (!valid) {
+			setInvalid(true);
+			return;
+		}
+		onSave({
+			quantityBaseValue,
+			durationSeconds,
+			averagePaceSecondsPerKm,
+			averageHeartRateBpm,
+			note: note.trim() || undefined,
+		});
+	}
+
+	return (
+		<form className={styles.actualEditor} onSubmit={submit}>
+			<header>
+				<div>
+					<strong>{t('shell.today.actualEditorTitle')}</strong>
+					<small>
+						{t('shell.today.actualEditorPlan', {
+							target: dailyTargetDisplay(habit),
+							unit: habit.displayUnit,
+						})}
+					</small>
+				</div>
+				<button type='button' onClick={onCancel} aria-label={t('shell.today.closeActualEditor')}>
+					<PiX aria-hidden='true' />
+				</button>
+			</header>
+			<label className={styles.actualField}>
+				<span>{t('shell.today.actualQuantity')}</span>
+				<div>
+					<input
+						type='number'
+						inputMode='decimal'
+						min={1 / habit.basePerDisplayUnit}
+						step={1 / habit.basePerDisplayUnit}
+						value={actual}
+						onChange={(event) => {
+							setActual(event.target.value);
+							setInvalid(false);
+						}}
+						autoFocus
+					/>
+					<b>{habit.displayUnit}</b>
+				</div>
+			</label>
+			{habit.supportsTrainingDetails && (
+				<div className={styles.trainingFields}>
+					<label>
+						<PiClock aria-hidden='true' />
+						<span>{t('shell.today.durationMinutes')}</span>
+						<input
+							type='number'
+							inputMode='decimal'
+							min='0.1'
+							step='0.1'
+							value={durationMinutes}
+							onChange={(event) => setDurationMinutes(event.target.value)}
+							placeholder={t('shell.today.optional')}
+						/>
+					</label>
+					<label>
+						<PiTimer aria-hidden='true' />
+						<span>{t('shell.today.averagePace')}</span>
+						<input
+							type='text'
+							inputMode='numeric'
+							value={pace}
+							onChange={(event) => setPace(event.target.value)}
+							placeholder='06:30'
+						/>
+					</label>
+					<label>
+						<PiHeartbeat aria-hidden='true' />
+						<span>{t('shell.today.averageHeartRate')}</span>
+						<input
+							type='number'
+							inputMode='numeric'
+							min='30'
+							max='240'
+							value={heartRate}
+							onChange={(event) => setHeartRate(event.target.value)}
+							placeholder={t('shell.today.optional')}
+						/>
+					</label>
+					<label className={styles.noteField}>
+						<PiNotePencil aria-hidden='true' />
+						<span>{t('shell.today.trainingNote')}</span>
+						<input
+							type='text'
+							maxLength={280}
+							value={note}
+							onChange={(event) => setNote(event.target.value)}
+							placeholder={t('shell.today.trainingNotePlaceholder')}
+						/>
+					</label>
+				</div>
+			)}
+			{invalid && <p role='alert'>{t('shell.today.actualEntryInvalid')}</p>}
+			<footer>
+				<small>
+					{habit.carryInBaseValue > 0
+						? t('shell.today.includesCarry', {
+							carry: number(habit.carryInBaseValue / habit.basePerDisplayUnit),
+							unit: habit.displayUnit,
+						})
+						: t('shell.today.actualEntryHint')}
+				</small>
+				<button type='submit' disabled={pending}>
+					<PiCheck aria-hidden='true' />
+					{t('shell.today.saveActual')}
+				</button>
+			</footer>
+		</form>
+	);
 }
 
 function HabitSupportingCopy({ habit }: { habit: DailyHabitView }) {
@@ -108,39 +290,50 @@ function HabitControl({
 	habit,
 	pending,
 	onChange,
+	onComplete,
+	onEditActual,
 }: {
 	habit: DailyHabitView;
 	pending: boolean;
 	onChange: (quantityBaseValue: number) => void;
+	onComplete: () => void;
+	onEditActual: () => void;
 }) {
 	const { t } = useTranslation();
 	const completed = isCompleted(habit);
 
 	if (habit.trackingType === 'quantity') {
 		return (
-			<div className={styles.quantityControl}>
-				<span className={styles.currentValue}>
-					<strong>{habit.displayValue}</strong>
-					<small>{habit.displayUnit}</small>
-				</span>
-				<span className={styles.stepActions}>
+			<div className={styles.quantityActions}>
+				<button
+					type='button'
+					className={styles.completeAction}
+					disabled={pending}
+					onClick={onComplete}
+				>
+					<PiCheckCircle aria-hidden='true' />
+					<span>{t(completed ? 'shell.today.completedAction' : 'shell.today.completeAction')}</span>
+				</button>
+				<button
+					type='button'
+					className={styles.actualAction}
+					disabled={pending}
+					onClick={onEditActual}
+				>
+					<PiPencilSimple aria-hidden='true' />
+					<span>{t('shell.today.enterActual')}</span>
+				</button>
+				{completed && (
 					<button
 						type='button'
+						className={styles.undoQuantity}
 						disabled={pending || habit.quantityBaseValue === 0}
 						aria-label={t('shell.today.decreaseHabit', { title: habit.title })}
-						onClick={() => onChange(nextHabitQuantity(habit, 'decrease'))}
+						onClick={() => onChange(0)}
 					>
-						<PiMinus aria-hidden='true' />
+						<PiX aria-hidden='true' />
 					</button>
-					<button
-						type='button'
-						disabled={pending}
-						aria-label={t('shell.today.increaseHabit', { title: habit.title })}
-						onClick={() => onChange(nextHabitQuantity(habit, 'increase'))}
-					>
-						<PiPlus aria-hidden='true' />
-					</button>
-				</span>
+				)}
 			</div>
 		);
 	}
@@ -193,12 +386,22 @@ function HabitRow({
 	habit,
 	pending,
 	saveError,
+	actualEditorOpen,
 	onChange,
+	onComplete,
+	onEditActual,
+	onCancelActual,
+	onSaveActual,
 }: {
 	habit: DailyHabitView;
 	pending: boolean;
 	saveError: boolean;
+	actualEditorOpen: boolean;
 	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
+	onComplete: (habit: DailyHabitView) => void;
+	onEditActual: () => void;
+	onCancelActual: () => void;
+	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
 }) {
 	const { t } = useTranslation();
 
@@ -226,6 +429,8 @@ function HabitRow({
 				habit={habit}
 				pending={pending}
 				onChange={(quantityBaseValue) => onChange(habit, quantityBaseValue)}
+				onComplete={() => onComplete(habit)}
+				onEditActual={onEditActual}
 			/>
 			{saveError && (
 				<p
@@ -235,6 +440,14 @@ function HabitRow({
 				>
 					{t('shell.today.itemSaveError')}
 				</p>
+			)}
+			{actualEditorOpen && (
+				<ActualEntryEditor
+					habit={habit}
+					pending={pending}
+					onCancel={onCancelActual}
+					onSave={(entry) => onSaveActual(habit, entry)}
+				/>
 			)}
 		</div>
 	);
@@ -246,9 +459,12 @@ function TodayHabitPanel({
 	pendingIds,
 	saveErrorIds,
 	onChange,
+	onComplete,
+	onSaveActual,
 	onToggleCompleted,
 }: TodayHabitPanelProps) {
 	const { t } = useTranslation();
+	const [actualEditorId, setActualEditorId] = useState<string | null>(null);
 	const completedCount = habits.filter(isCompleted).length;
 	const visibleHabits = completedExpanded
 		? habits
@@ -269,7 +485,15 @@ function TodayHabitPanel({
 							habit={habit}
 							pending={pendingIds.has(habit.id)}
 							saveError={saveErrorIds.has(habit.id)}
+							actualEditorOpen={actualEditorId === habit.id}
 							onChange={onChange}
+							onComplete={onComplete}
+							onEditActual={() => setActualEditorId(habit.id)}
+							onCancelActual={() => setActualEditorId(null)}
+							onSaveActual={(selectedHabit, entry) => {
+								onSaveActual(selectedHabit, entry);
+								setActualEditorId(null);
+							}}
 						/>
 					))}
 				</div>

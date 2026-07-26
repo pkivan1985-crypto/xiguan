@@ -54,6 +54,16 @@ function shortDateLabel(localDate: string, locale: string): string {
 	}).format(new Date(year!, month! - 1, day!, 12));
 }
 
+function recordBaseValue(value: number, basePerDisplayUnit: number): string {
+	return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
+		.format(value / basePerDisplayUnit);
+}
+
+function paceValue(seconds: number): string {
+	const minutes = Math.floor(seconds / 60);
+	return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
 function ProgressHeader() {
 	const { t } = useTranslation();
 	return (
@@ -161,21 +171,68 @@ function ProgressPageContent({
 									<div className={styles.records}>
 										{selectedRecords.map((record) => (
 											<article key={record.id}>
-												<span><PiCheckCircle aria-hidden='true' /></span>
-												<div>
-													<strong>{record.cardTitle}</strong>
-													<small>
-														{record.stageGoalTitle
-															?? record.longTermGoalTitle
-															?? t('shell.progress.dailyRecord')}
-													</small>
+												<div className={styles.recordMain}>
+													<span><PiCheckCircle aria-hidden='true' /></span>
+													<div>
+														<strong>{record.cardTitle}</strong>
+														<small>
+															{record.stageGoalTitle
+																?? record.longTermGoalTitle
+																?? t('shell.progress.dailyRecord')}
+														</small>
+													</div>
+													<b>
+														{t('shell.progress.recordValue', {
+															value: record.displayValue,
+															unit: record.displayUnit,
+														})}
+													</b>
 												</div>
-												<b>
-													{t('shell.progress.recordValue', {
-														value: record.displayValue,
-														unit: record.displayUnit,
-													})}
-												</b>
+												{(record.plannedQuantityBaseValue
+													|| record.durationSeconds
+													|| record.averagePaceSecondsPerKm
+													|| record.averageHeartRateBpm
+													|| record.note) && (
+													<div className={styles.recordFacts}>
+														{record.plannedQuantityBaseValue && (
+															<span>{t('shell.progress.plannedValue', {
+																value: recordBaseValue(
+																	record.plannedQuantityBaseValue,
+																	record.basePerDisplayUnit,
+																),
+																unit: record.displayUnit,
+															})}</span>
+														)}
+														{record.carryOutBaseValue !== undefined
+															&& record.carryOutBaseValue > 0 && (
+															<span data-accent='warning'>{t('shell.progress.carryForward', {
+																value: recordBaseValue(
+																	record.carryOutBaseValue,
+																	record.basePerDisplayUnit,
+																),
+																unit: record.displayUnit,
+															})}</span>
+														)}
+														{record.durationSeconds && (
+															<span>{t('shell.progress.durationValue', {
+																value: new Intl.NumberFormat(undefined, {
+																	maximumFractionDigits: 1,
+																}).format(record.durationSeconds / 60),
+															})}</span>
+														)}
+														{record.averagePaceSecondsPerKm && (
+															<span>{t('shell.progress.paceValue', {
+																value: paceValue(record.averagePaceSecondsPerKm),
+															})}</span>
+														)}
+														{record.averageHeartRateBpm && (
+															<span>{t('shell.progress.heartRateValue', {
+																value: record.averageHeartRateBpm,
+															})}</span>
+														)}
+														{record.note && <p>{record.note}</p>}
+													</div>
+												)}
 											</article>
 										))}
 									</div>

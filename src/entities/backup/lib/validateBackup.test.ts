@@ -21,7 +21,7 @@ const payload: BackupPayloadV1 = {
 	stageGoals: [{ id: 'stage-1', longTermGoalId: 'long-1', title: '阶段20公里', mode: 'quantity', targetQuantityBase: 20_000, status: 'active', startDate: '2026-07-01', createdAt: '2026-07-12T01:00:00.000Z', updatedAt: '2026-07-12T01:00:00.000Z' }],
 	goalRevisions: [],
 	todayDrafts: [],
-	actionRecords: [{ id: 'record-1', userCardId: 'card-1', localDate: '2026-07-12', quantityBaseValue: 5_000, longTermGoalId: 'long-1', stageGoalId: 'stage-1', firstSavedAt: '2026-07-12T01:00:00.000Z', lastSavedAt: '2026-07-12T01:00:00.000Z', lastSubmissionId: 'submission-1' }],
+	actionRecords: [{ id: 'record-1', userCardId: 'card-1', localDate: '2026-07-12', quantityBaseValue: 5_000, entryMethod: 'actual', plannedQuantityBaseValue: 6_000, carryInBaseValue: 0, carryOutBaseValue: 1_000, durationSeconds: 1_800, averagePaceSecondsPerKm: 360, averageHeartRateBpm: 145, note: '河边慢跑', longTermGoalId: 'long-1', stageGoalId: 'stage-1', firstSavedAt: '2026-07-12T01:00:00.000Z', lastSavedAt: '2026-07-12T01:00:00.000Z', lastSubmissionId: 'submission-1' }],
 	outcomeBatches: [],
 	settings: [{ key: 'repeat-outcome-ui-settings', value: '{"state":{}}', updatedAt: '2026-07-12T01:00:00.000Z' }],
 };

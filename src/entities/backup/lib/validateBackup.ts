@@ -103,6 +103,16 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 		if (!isRecord(record) || !isText(record.id) || !isText(record.userCardId) || !isLocalDate(record.localDate)
 			|| !isSafePositive(record.quantityBaseValue) || !isIso(record.firstSavedAt) || !isIso(record.lastSavedAt)
 			|| !isText(record.lastSubmissionId)) fail('INVALID_BACKUP');
+		if (record.entryMethod !== undefined
+			&& !['completed', 'actual', 'adjustment'].includes(String(record.entryMethod))) fail('INVALID_BACKUP');
+		if (record.plannedQuantityBaseValue !== undefined && !isSafePositive(record.plannedQuantityBaseValue)) fail('INVALID_BACKUP');
+		if (record.carryInBaseValue !== undefined && !isSafeNonNegative(record.carryInBaseValue)) fail('INVALID_BACKUP');
+		if (record.carryOutBaseValue !== undefined && !isSafeNonNegative(record.carryOutBaseValue)) fail('INVALID_BACKUP');
+		if (record.durationSeconds !== undefined && !isSafePositive(record.durationSeconds)) fail('INVALID_BACKUP');
+		if (record.averagePaceSecondsPerKm !== undefined && !isSafePositive(record.averagePaceSecondsPerKm)) fail('INVALID_BACKUP');
+		if (record.averageHeartRateBpm !== undefined
+			&& (!Number.isSafeInteger(record.averageHeartRateBpm) || record.averageHeartRateBpm < 30 || record.averageHeartRateBpm > 240)) fail('INVALID_BACKUP');
+		if (record.note !== undefined && (typeof record.note !== 'string' || record.note.length > 280)) fail('INVALID_BACKUP');
 	}
 	for (const batch of candidate.outcomeBatches) {
 		if (!isRecord(batch) || !isText(batch.id) || !isText(batch.submissionId) || !isLocalDate(batch.localDate)

@@ -14,6 +14,13 @@ export interface SaveDailyHabitInput {
 	localDate: string;
 	currentLocalDate: string;
 	quantityBaseValue: number;
+	entryMethod?: ActionRecord['entryMethod'];
+	plannedQuantityBaseValue?: number;
+	carryInBaseValue?: number;
+	durationSeconds?: number;
+	averagePaceSecondsPerKm?: number;
+	averageHeartRateBpm?: number;
+	note?: string;
 	nowIso: string;
 	submissionId: string;
 }
@@ -29,6 +36,27 @@ function assertInput(input: SaveDailyHabitInput): void {
 	if (!Number.isSafeInteger(input.quantityBaseValue) || input.quantityBaseValue < 0) {
 		throw new Error('INVALID_QUANTITY');
 	}
+	if (input.plannedQuantityBaseValue !== undefined
+		&& (!Number.isSafeInteger(input.plannedQuantityBaseValue) || input.plannedQuantityBaseValue <= 0)) {
+		throw new Error('INVALID_PLANNED_QUANTITY');
+	}
+	if (input.carryInBaseValue !== undefined
+		&& (!Number.isSafeInteger(input.carryInBaseValue) || input.carryInBaseValue < 0)) {
+		throw new Error('INVALID_CARRY_IN');
+	}
+	if (input.durationSeconds !== undefined
+		&& (!Number.isSafeInteger(input.durationSeconds) || input.durationSeconds <= 0)) {
+		throw new Error('INVALID_DURATION');
+	}
+	if (input.averagePaceSecondsPerKm !== undefined
+		&& (!Number.isSafeInteger(input.averagePaceSecondsPerKm) || input.averagePaceSecondsPerKm <= 0)) {
+		throw new Error('INVALID_PACE');
+	}
+	if (input.averageHeartRateBpm !== undefined
+		&& (!Number.isSafeInteger(input.averageHeartRateBpm) || input.averageHeartRateBpm < 30 || input.averageHeartRateBpm > 240)) {
+		throw new Error('INVALID_HEART_RATE');
+	}
+	if (input.note !== undefined && input.note.length > 280) throw new Error('NOTE_TOO_LONG');
 }
 
 function singleCardDraft(input: SaveDailyHabitInput, valueText: string): TodayDraft {
@@ -84,6 +112,20 @@ export async function saveDailyHabit(
 		nowIso: input.nowIso,
 		submissionId: input.submissionId,
 		confirmedOverLimit: true,
+		actionRecordDetails: {
+			[input.userCardId]: {
+				entryMethod: input.entryMethod,
+				plannedQuantityBaseValue: input.plannedQuantityBaseValue,
+				carryInBaseValue: input.carryInBaseValue,
+				carryOutBaseValue: input.plannedQuantityBaseValue === undefined
+					? undefined
+					: Math.max(0, input.plannedQuantityBaseValue - input.quantityBaseValue),
+				durationSeconds: input.durationSeconds,
+				averagePaceSecondsPerKm: input.averagePaceSecondsPerKm,
+				averageHeartRateBpm: input.averageHeartRateBpm,
+				note: input.note?.trim() || undefined,
+			},
+		},
 	}, singleCardDraft(input, displayValue));
 	try {
 		await completeOutcomePlayback(database, batch.id, input.nowIso);

@@ -1,3 +1,4 @@
+/* stylelint-disable no-descending-specificity -- Record detail copy intentionally extends the panel typography rules. */
 .page {
 	display: grid;
 	gap: 10px;
@@ -94,7 +95,7 @@
 
 .records {
 	display: grid;
-	max-height: 96px;
+	max-height: 210px;
 	overflow-y: auto;
 }
 
@@ -105,25 +106,31 @@
 
 .records article {
 	display: grid;
+	gap: 6px;
+	padding: 7px 0;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.recordMain {
+	display: grid;
 	grid-template-columns: 25px minmax(0, 1fr) auto;
 	gap: 8px;
 	align-items: center;
 	min-height: 24px;
-	border-bottom: 1px solid var(--border-color);
 }
 
 .records article:last-child {
 	border-bottom: 0;
 }
 
-.records article > span {
+.recordMain > span {
 	display: grid;
 	place-items: center;
 	font-size: 19px;
 	color: var(--sport-color);
 }
 
-.records article > div {
+.recordMain > div {
 	display: flex;
 	gap: 6px;
 	align-items: baseline;
@@ -150,9 +157,40 @@
 	color: var(--muted-color);
 }
 
-.records b {
+.recordMain b {
 	font-size: 14px;
 	line-height: 20px;
+	white-space: nowrap;
+}
+
+.recordFacts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 6px;
+	padding-left: 33px;
+}
+
+.recordFacts span {
+	padding: 2px 7px;
+	font-size: 11px;
+	line-height: 17px;
+	color: var(--muted-color);
+	background: var(--surface-secondary);
+	border-radius: var(--radius-pill);
+}
+
+.recordFacts span[data-accent='warning'] {
+	color: var(--reading-color);
+}
+
+.recordFacts p {
+	flex-basis: 100%;
+	margin: 1px 0 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 12px;
+	line-height: 18px;
+	color: var(--muted-color);
 	white-space: nowrap;
 }
 
@@ -246,7 +284,7 @@
 }
 
 @media (max-width: 359px) {
-	.records article > div {
+	.recordMain > div {
 		display: grid;
 		gap: 0;
 	}

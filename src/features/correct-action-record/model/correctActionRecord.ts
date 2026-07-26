@@ -107,6 +107,10 @@ export async function correctActionRecord(
 			await actionRecords.put({
 				...record,
 				quantityBaseValue: input.quantityBaseValue!,
+				entryMethod: 'adjustment',
+				carryOutBaseValue: record.plannedQuantityBaseValue === undefined
+					? record.carryOutBaseValue
+					: Math.max(0, record.plannedQuantityBaseValue - input.quantityBaseValue!),
 				lastSavedAt: input.nowIso,
 				lastSubmissionId: input.correctionId,
 			});
