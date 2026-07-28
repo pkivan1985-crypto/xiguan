@@ -16,6 +16,7 @@ import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 export interface SaveTodayOutcomeInput {
 	localDate: string;
 	currentLocalDate: string;
+	recordingContext?: 'today' | 'backfill';
 	nowIso: string;
 	submissionId: string;
 	confirmedOverLimit?: boolean;
@@ -83,9 +84,37 @@ function completionRevision(
 function assertInput(input: SaveTodayOutcomeInput): void {
 	parseLocalDate(input.localDate);
 	parseLocalDate(input.currentLocalDate);
-	if (input.currentLocalDate !== input.localDate) throw new Error('TODAY_DRAFT_DATE_CHANGED');
+	if (input.localDate > input.currentLocalDate) throw new Error('FUTURE_RECORD_NOT_ALLOWED');
+	if (
+		input.currentLocalDate !== input.localDate
+		&& input.recordingContext !== 'backfill'
+	) {
+		throw new Error('TODAY_DRAFT_DATE_CHANGED');
+	}
 	if (!input.submissionId.trim()) throw new Error('SUBMISSION_ID_REQUIRED');
 	if (Number.isNaN(Date.parse(input.nowIso))) throw new Error('INVALID_NOW_ISO');
+}
+
+function coversLocalDate(
+	goal: Pick<LongTermGoal | StageGoal, 'startDate' | 'endDate'>,
+	localDate: string,
+): boolean {
+	return goal.startDate <= localDate && (!goal.endDate || localDate <= goal.endDate);
+}
+
+function goalForLocalDate<T extends LongTermGoal | StageGoal>(
+	goals: readonly T[],
+	localDate: string,
+): T | undefined {
+	return goals
+		.filter((goal) => coversLocalDate(goal, localDate))
+		.sort((left, right) => {
+			const leftActive = left.status === 'active' ? 0 : 1;
+			const rightActive = right.status === 'active' ? 0 : 1;
+			return leftActive - rightActive
+				|| right.startDate.localeCompare(left.startDate)
+				|| right.updatedAt.localeCompare(left.updatedAt);
+		})[0];
 }
 
 export async function saveTodayOutcome(
@@ -139,14 +168,21 @@ export async function saveTodayOutcome(
 			});
 
 			const existingRecord = await tables.actionRecords.where('[userCardId+localDate]').equals([userCard.id, input.localDate]).first();
+			const cardLongTermGoals = await tables.longTermGoals
+				.where('userCardId')
+				.equals(userCard.id)
+				.toArray();
 			let longTermGoal = existingRecord?.longTermGoalId
 				? await tables.longTermGoals.get(existingRecord.longTermGoalId)
-				: await tables.longTermGoals.where('[userCardId+status]').equals([userCard.id, 'active']).first();
+				: goalForLocalDate(cardLongTermGoals, input.localDate)
+					?? cardLongTermGoals.find(({ status }) => status === 'active');
+			const relatedStageGoals = longTermGoal
+				? await tables.stageGoals.where('longTermGoalId').equals(longTermGoal.id).toArray()
+				: [];
 			let stageGoal = existingRecord?.stageGoalId
 				? await tables.stageGoals.get(existingRecord.stageGoalId)
-				: longTermGoal
-					? await tables.stageGoals.where('[longTermGoalId+status]').equals([longTermGoal.id, 'active']).first()
-					: undefined;
+				: goalForLocalDate(relatedStageGoals, input.localDate)
+					?? relatedStageGoals.find(({ status }) => status === 'active');
 			const cardRecordsBefore = await tables.actionRecords.where('userCardId').equals(userCard.id).toArray();
 			const longTermProgressBefore = longTermGoal
 				? calculateGoalProgress(

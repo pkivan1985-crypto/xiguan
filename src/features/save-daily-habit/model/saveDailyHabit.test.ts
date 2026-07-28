@@ -162,6 +162,59 @@ describe('saveDailyHabit', () => {
 		})).rejects.toThrow('TODAY_DRAFT_DATE_CHANGED');
 	});
 
+	it('allows an explicit historical backfill while still rejecting future records', async () => {
+		await expect(saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: '2026-07-24',
+			currentLocalDate: LOCAL_DATE,
+			recordingContext: 'backfill',
+			quantityBaseValue: 2_500,
+			plannedQuantityBaseValue: 5_000,
+			nowIso: '2026-07-25T04:10:00.000Z',
+			submissionId: 'backfill-a',
+		})).resolves.toEqual({
+			operation: 'save',
+			actionRecordId: 'card-a:2026-07-24',
+		});
+		expect(await database.table('actionRecords').get('card-a:2026-07-24')).toMatchObject({
+			quantityBaseValue: 2_500,
+			plannedQuantityBaseValue: 5_000,
+			carryOutBaseValue: 2_500,
+		});
+
+		await expect(saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: '2026-07-26',
+			currentLocalDate: LOCAL_DATE,
+			recordingContext: 'backfill',
+			quantityBaseValue: 1,
+			nowIso: '2026-07-25T04:20:00.000Z',
+			submissionId: 'future-a',
+		})).rejects.toThrow('FUTURE_RECORD_NOT_ALLOWED');
+	});
+
+	it('does not let backfill overwrite an existing historical record', async () => {
+		await saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: '2026-07-24',
+			currentLocalDate: LOCAL_DATE,
+			recordingContext: 'backfill',
+			quantityBaseValue: 2_500,
+			nowIso: '2026-07-25T04:10:00.000Z',
+			submissionId: 'backfill-first',
+		});
+
+		await expect(saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: '2026-07-24',
+			currentLocalDate: LOCAL_DATE,
+			recordingContext: 'backfill',
+			quantityBaseValue: 5_000,
+			nowIso: '2026-07-25T04:20:00.000Z',
+			submissionId: 'backfill-duplicate',
+		})).rejects.toThrow('BACKFILL_RECORD_EXISTS');
+	});
+
 	it('saves integer-only count presets without adding decimal text', async () => {
 		await database.table('userCards').add({
 			id: 'card-water',

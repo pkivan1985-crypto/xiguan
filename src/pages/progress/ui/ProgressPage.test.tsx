@@ -26,6 +26,7 @@ const translations: Record<string, string> = {
 	'shell.nav.progress': '进展',
 	'shell.progress.activeSummary': '{{habits}} 个习惯正在推进 · 本月 {{days}} 个成果日',
 	'shell.progress.calendarTab': '月历',
+	'shell.progress.backfill': '补打卡',
 	'shell.progress.dailyRecord': '当日记录',
 	'shell.progress.details': '查看详情',
 	'shell.progress.goalsTab': '目标',
@@ -195,6 +196,8 @@ type ProgressPageContentProps = {
 	onNextMonth: () => void;
 	onPreviousMonth: () => void;
 	onSelectDate: (localDate: string) => void;
+	backfillAvailable?: boolean;
+	onOpenBackfill?: () => void;
 };
 
 function progressContent(): ComponentType<ProgressPageContentProps> | undefined {
@@ -340,6 +343,33 @@ describe('ProgressPage', () => {
 		expect(html).toContain('aria-selected="true">目标</button>');
 		expect(html).not.toContain('data-testid="progress-calendar-panel"');
 		expect(html).toContain('data-testid="progress-plan-panel"');
+	});
+
+	it('shows the backfill action only when a historical day has a missed scheduled habit', () => {
+		const ProgressPageContent = progressContent();
+		expect(ProgressPageContent).toBeTypeOf('function');
+		if (!ProgressPageContent) return;
+		const html = renderToStaticMarkup(
+			<MemoryRouter>
+				<ProgressPageContent
+					activeTab='calendar'
+					dashboard={dashboard}
+					history={history}
+					selectedDate='2026-07-24'
+					todayLocalDate='2026-07-25'
+					canGoNext={false}
+					onChangeTab={vi.fn()}
+					onNextMonth={vi.fn()}
+					onPreviousMonth={vi.fn()}
+					onSelectDate={vi.fn()}
+					backfillAvailable
+					onOpenBackfill={vi.fn()}
+				/>
+			</MemoryRouter>,
+		);
+
+		expect(html).toContain('>补打卡</button>');
+		expect(html).toContain('href="/history?date=2026-07-24"');
 	});
 
 	it('does not repeat a goal title beside the same selected-record title', () => {

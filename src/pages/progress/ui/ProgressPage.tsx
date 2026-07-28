@@ -3,10 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	PiArrowClockwise,
+	PiCalendarPlus,
 	PiCaretRight,
 	PiChartBar,
 	PiCheckCircle,
 	PiGearSix,
+	PiX,
 } from 'react-icons/pi';
 import { Link, useSearchParams } from 'react-router';
 
@@ -22,14 +24,24 @@ import {
 } from '../model/progressPageState';
 import { loadHistoryInApp, type HistoryModel } from '@features/load-history';
 import {
+	loadDailyHabitsInApp,
+	type DailyHabitView,
+	type DailyHabitsModel,
+} from '@features/load-daily-habits';
+import {
 	loadHomeDashboardInApp,
 	type HomeDashboardModel,
 } from '@features/load-home-dashboard';
+import { saveDailyHabitInApp } from '@features/save-daily-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
 import { GoalSummary } from '@widgets/goal-summary';
 import { MobilePageHeader } from '@widgets/mobile-page-header';
 import { OutcomeCalendar } from '@widgets/outcome-calendar';
+import {
+	type HabitActualEntry,
+	TodayHabitPanel,
+} from '@widgets/today-habit-panel';
 
 import styles from './ProgressPage.module.css';
 
@@ -44,6 +56,8 @@ interface ProgressPageContentProps {
 	onNextMonth: () => void;
 	onPreviousMonth: () => void;
 	onSelectDate: (localDate: string) => void;
+	backfillAvailable?: boolean;
+	onOpenBackfill?: () => void;
 }
 
 function shortDateLabel(localDate: string, locale: string): string {
@@ -93,6 +107,8 @@ function ProgressPageContent({
 	onNextMonth,
 	onPreviousMonth,
 	onSelectDate,
+	backfillAvailable = false,
+	onOpenBackfill,
 }: ProgressPageContentProps) {
 	const { t, i18n } = useTranslation();
 	const selectedRecords = history.groups.find(
@@ -239,13 +255,25 @@ function ProgressPageContent({
 										})}
 									</div>
 								)}
-								<Link
-									className={styles.detailsLink}
-									to={buildHistoryDateHref(selectedDate)}
-								>
-									{t('shell.progress.details')}
-									<PiCaretRight aria-hidden='true' />
-								</Link>
+								<div className={styles.selectedDayActions}>
+									{backfillAvailable && onOpenBackfill && (
+										<button
+											type='button'
+											className={styles.backfillButton}
+											onClick={onOpenBackfill}
+										>
+											<PiCalendarPlus aria-hidden='true' />
+											{t('shell.progress.backfill')}
+										</button>
+									)}
+									<Link
+										className={styles.detailsLink}
+										to={buildHistoryDateHref(selectedDate)}
+									>
+										{t('shell.progress.details')}
+										<PiCaretRight aria-hidden='true' />
+									</Link>
+								</div>
 							</div>
 						</OutcomeCalendar>
 					</section>
@@ -278,6 +306,85 @@ function ProgressPageContent({
 	);
 }
 
+interface BackfillSheetProps {
+	localDate: string;
+	model: DailyHabitsModel;
+	pendingIds: ReadonlySet<string>;
+	saveErrorIds: ReadonlySet<string>;
+	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
+	onComplete: (habit: DailyHabitView) => void;
+	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
+	onClose: () => void;
+}
+
+function BackfillSheet({
+	localDate,
+	model,
+	pendingIds,
+	saveErrorIds,
+	onChange,
+	onComplete,
+	onSaveActual,
+	onClose,
+}: BackfillSheetProps) {
+	const { t, i18n } = useTranslation();
+	const habits = model.habits.filter(
+		(habit) => habit.scheduledToday && !habit.recordedToday,
+	);
+	const dateLabel = shortDateLabel(
+		localDate,
+		i18n.resolvedLanguage ?? i18n.language,
+	);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') onClose();
+		};
+		document.addEventListener('keydown', handleKeyDown);
+		return () => document.removeEventListener('keydown', handleKeyDown);
+	}, [onClose]);
+
+	return (
+		<div className={styles.backfillOverlay} onMouseDown={onClose}>
+			<section
+				className={styles.backfillSheet}
+				role='dialog'
+				aria-modal='true'
+				aria-labelledby='backfill-sheet-title'
+				onMouseDown={(event) => event.stopPropagation()}
+			>
+				<span className={styles.sheetGrab} aria-hidden='true' />
+				<header>
+					<div>
+						<h2 id='backfill-sheet-title'>{t('shell.progress.backfill')}</h2>
+						<p>{t('shell.progress.backfillDescription', { date: dateLabel })}</p>
+					</div>
+					<button
+						type='button'
+						onClick={onClose}
+						aria-label={t('common.close')}
+						autoFocus
+					>
+						<PiX aria-hidden='true' />
+					</button>
+				</header>
+				<TodayHabitPanel
+					habits={habits}
+					context='backfill'
+					completedExpanded
+					pendingIds={pendingIds}
+					saveErrorIds={saveErrorIds}
+					onChange={onChange}
+					onComplete={onComplete}
+					onSaveActual={onSaveActual}
+					onToggleCompleted={() => undefined}
+				/>
+				<p className={styles.backfillHint}>{t('shell.progress.backfillHint')}</p>
+			</section>
+		</div>
+	);
+}
+
 function ProgressPage() {
 	const { t } = useTranslation();
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -290,6 +397,10 @@ function ProgressPage() {
 	const month = useMemo(() => progressMonthFromDate(selectedDate), [selectedDate]);
 	const [dashboard, setDashboard] = useState<HomeDashboardModel | null>(null);
 	const [history, setHistory] = useState<HistoryModel | null>(null);
+	const [backfillModel, setBackfillModel] = useState<DailyHabitsModel | null>(null);
+	const [backfillOpen, setBackfillOpen] = useState(false);
+	const [backfillPendingIds, setBackfillPendingIds] = useState<ReadonlySet<string>>(new Set());
+	const [backfillSaveErrorIds, setBackfillSaveErrorIds] = useState<ReadonlySet<string>>(new Set());
 	const [error, setError] = useState(false);
 	const [reloadNonce, setReloadNonce] = useState(0);
 
@@ -312,16 +423,91 @@ function ProgressPage() {
 		return () => { active = false; };
 	}, [month, reloadNonce, todayLocalDate]);
 
+	useEffect(() => {
+		let active = true;
+		if (selectedDate >= todayLocalDate) {
+			return () => { active = false; };
+		}
+		void loadDailyHabitsInApp(selectedDate)
+			.then((next) => {
+				if (active) setBackfillModel(next);
+			})
+			.catch(() => {
+				if (active) setBackfillModel(null);
+			});
+		return () => { active = false; };
+	}, [reloadNonce, selectedDate, todayLocalDate]);
+
 	const moveMonth = (offset: number) => {
 		const next = moveProgressMonth(month, selectedDate, offset, todayLocalDate);
 		if (next.year === month.year && next.monthIndex === month.monthIndex) return;
 		setSearchParams(next.dateSearch, { replace: true });
 	};
 	const selectDate = (localDate: string) => {
+		setBackfillOpen(false);
+		setBackfillSaveErrorIds(new Set());
 		setSearchParams(buildProgressDateSearch(localDate), { replace: true });
 	};
 	const canGoNext = month.year < now.getFullYear()
 		|| (month.year === now.getFullYear() && month.monthIndex < now.getMonth());
+	const backfillableHabits = backfillModel?.localDate === selectedDate
+		? backfillModel.habits.filter(
+		(habit) => habit.scheduledToday && !habit.recordedToday,
+		)
+		: [];
+
+	async function saveBackfillHabit(
+		habit: DailyHabitView,
+		quantityBaseValue: number,
+		details?: HabitActualEntry & { entryMethod: 'completed' | 'actual' },
+	): Promise<void> {
+		if (
+			selectedDate >= formatLocalDate(new Date())
+			|| !habit.scheduledToday
+			|| habit.recordedToday
+			|| backfillPendingIds.has(habit.id)
+		) return;
+		setBackfillPendingIds((current) => new Set(current).add(habit.id));
+		setBackfillSaveErrorIds((current) => {
+			const next = new Set(current);
+			next.delete(habit.id);
+			return next;
+		});
+		try {
+			await saveDailyHabitInApp({
+				userCardId: habit.id,
+				localDate: selectedDate,
+				currentLocalDate: formatLocalDate(new Date()),
+				recordingContext: 'backfill',
+				quantityBaseValue,
+				entryMethod: details?.entryMethod,
+				plannedQuantityBaseValue: habit.dailyTargetBase,
+				carryInBaseValue: habit.carryInBaseValue,
+				durationSeconds: details?.durationSeconds,
+				averagePaceSecondsPerKm: details?.averagePaceSecondsPerKm,
+				averageHeartRateBpm: details?.averageHeartRateBpm,
+				note: details?.note,
+				nowIso: new Date().toISOString(),
+				submissionId: crypto.randomUUID(),
+			});
+			const nextModel = await loadDailyHabitsInApp(selectedDate);
+			setBackfillModel(nextModel);
+			setReloadNonce((value) => value + 1);
+			if (!nextModel.habits.some(
+				(candidate) => candidate.scheduledToday && !candidate.recordedToday,
+			)) {
+				setBackfillOpen(false);
+			}
+		} catch {
+			setBackfillSaveErrorIds((current) => new Set(current).add(habit.id));
+		} finally {
+			setBackfillPendingIds((current) => {
+				const next = new Set(current);
+				next.delete(habit.id);
+				return next;
+			});
+		}
+	}
 
 	if (error) {
 		return (
@@ -361,7 +547,8 @@ function ProgressPage() {
 	}
 
 	return (
-		<ProgressPageContent
+		<>
+			<ProgressPageContent
 			activeTab={activeTab}
 			dashboard={dashboard}
 			history={history}
@@ -372,7 +559,34 @@ function ProgressPage() {
 			onPreviousMonth={() => moveMonth(-1)}
 			onNextMonth={() => moveMonth(1)}
 			onSelectDate={selectDate}
-		/>
+			backfillAvailable={backfillableHabits.length > 0}
+			onOpenBackfill={() => setBackfillOpen(true)}
+			/>
+			{backfillOpen && backfillModel && (
+				<BackfillSheet
+				localDate={selectedDate}
+				model={backfillModel}
+				pendingIds={backfillPendingIds}
+				saveErrorIds={backfillSaveErrorIds}
+				onChange={(habit, quantityBaseValue) => {
+					void saveBackfillHabit(habit, quantityBaseValue);
+				}}
+				onComplete={(habit) => {
+					void saveBackfillHabit(habit, habit.dailyTargetBase, {
+						quantityBaseValue: habit.dailyTargetBase,
+						entryMethod: 'completed',
+					});
+				}}
+				onSaveActual={(habit, entry) => {
+					void saveBackfillHabit(habit, entry.quantityBaseValue, {
+						...entry,
+						entryMethod: 'actual',
+					});
+				}}
+				onClose={() => setBackfillOpen(false)}
+				/>
+			)}
+		</>
 	);
 }
 
