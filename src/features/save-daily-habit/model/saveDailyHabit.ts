@@ -13,6 +13,7 @@ export interface SaveDailyHabitInput {
 	userCardId: string;
 	localDate: string;
 	currentLocalDate: string;
+	recordingContext?: 'today' | 'backfill';
 	quantityBaseValue: number;
 	entryMethod?: ActionRecord['entryMethod'];
 	plannedQuantityBaseValue?: number;
@@ -79,10 +80,13 @@ export async function saveDailyHabit(
 	assertInput(input);
 	const actionRecordId = `${input.userCardId}:${input.localDate}`;
 	const actionRecords = database.tableFor<ActionRecord>('actionRecords');
+	const existingRecord = await actionRecords.get(actionRecordId);
+	if (input.recordingContext === 'backfill' && existingRecord) {
+		throw new Error('BACKFILL_RECORD_EXISTS');
+	}
 
 	if (input.quantityBaseValue === 0) {
-		const existing = await actionRecords.get(actionRecordId);
-		if (existing) {
+		if (existingRecord) {
 			await correctActionRecord(database, {
 				actionRecordId,
 				operation: 'delete',
@@ -109,6 +113,7 @@ export async function saveDailyHabit(
 	const batch = await saveTodayOutcome(database, {
 		localDate: input.localDate,
 		currentLocalDate: input.currentLocalDate,
+		recordingContext: input.recordingContext,
 		nowIso: input.nowIso,
 		submissionId: input.submissionId,
 		confirmedOverLimit: true,

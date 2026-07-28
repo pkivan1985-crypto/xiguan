@@ -63,6 +63,21 @@ describe('loadDailyHabits', () => {
 		expect(result.scheduledCount).toBe(2);
 	});
 
+	it('does not offer a card for a historical date before the card existed', async () => {
+		await database.table('userCards').add({
+			id: 'new-run',
+			officialCardId: 'running',
+			title: '后来创建的跑步',
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-07-25T08:00:00.000Z',
+			updatedAt: '2026-07-25T08:00:00.000Z',
+		});
+
+		expect((await loadDailyHabits(database, '2026-07-24')).habits).toHaveLength(0);
+		expect((await loadDailyHabits(database, '2026-07-25')).habits).toHaveLength(1);
+	});
+
 	it('returns goal progress derived from real records', async () => {
 		await database.table('userCards').add({ id: 'run', officialCardId: 'running', title: '晨跑', status: 'active', sortOrder: 0, createdAt: '2026-07-25T00:00:00.000Z', updatedAt: '2026-07-25T00:00:00.000Z' });
 		await database.table('longTermGoals').add({ id: 'long', userCardId: 'run', title: '累计 10 公里', targetQuantityBase: 10000, status: 'active', startDate: '2026-07-01', createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' });

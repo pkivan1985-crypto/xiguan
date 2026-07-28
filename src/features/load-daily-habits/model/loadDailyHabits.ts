@@ -15,6 +15,7 @@ import {
 } from '@entities/card-template';
 import type { IsoWeekday, UserCard } from '@entities/user-card';
 import type { LocalDate } from '@shared/lib/date';
+import { formatLocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 
 export interface DailyHabitView {
@@ -53,14 +54,51 @@ export interface DailyHabitsModel {
 	scheduledCount: number;
 }
 
-function currentLongTermGoal(goals: readonly LongTermGoal[], userCardId: string): LongTermGoal | undefined {
+function coversLocalDate(
+	goal: Pick<LongTermGoal | StageGoal, 'startDate' | 'endDate'>,
+	localDate: LocalDate,
+): boolean {
+	return goal.startDate <= localDate && (!goal.endDate || localDate <= goal.endDate);
+}
+
+function currentLongTermGoal(
+	goals: readonly LongTermGoal[],
+	userCardId: string,
+	localDate: LocalDate,
+): LongTermGoal | undefined {
 	return goals
 		.filter((goal) => goal.userCardId === userCardId)
 		.sort((left, right) => {
+			const leftCoversDate = coversLocalDate(left, localDate) ? 0 : 1;
+			const rightCoversDate = coversLocalDate(right, localDate) ? 0 : 1;
 			const leftActive = left.status === 'active' ? 0 : 1;
 			const rightActive = right.status === 'active' ? 0 : 1;
-			return leftActive - rightActive || right.updatedAt.localeCompare(left.updatedAt);
+			return leftCoversDate - rightCoversDate
+				|| leftActive - rightActive
+				|| right.updatedAt.localeCompare(left.updatedAt);
 		})[0];
+}
+
+function currentStageGoal(
+	goals: readonly StageGoal[],
+	localDate: LocalDate,
+): StageGoal | undefined {
+	return goals
+		.filter((goal) => coversLocalDate(goal, localDate))
+		.sort((left, right) => {
+			const leftActive = left.status === 'active' ? 0 : 1;
+			const rightActive = right.status === 'active' ? 0 : 1;
+			return leftActive - rightActive
+				|| right.startDate.localeCompare(left.startDate)
+				|| right.updatedAt.localeCompare(left.updatedAt);
+		})[0]
+		?? selectCurrentStageGoal(goals);
+}
+
+function cardExistedOnDate(card: UserCard, localDate: LocalDate): boolean {
+	const createdAt = new Date(card.createdAt);
+	return Number.isNaN(createdAt.getTime())
+		|| formatLocalDate(createdAt) <= localDate;
 }
 
 function weekday(localDate: LocalDate): IsoWeekday {
@@ -103,6 +141,7 @@ export async function loadDailyHabits(
 	}
 	const todayWeekday = weekday(localDate);
 	const habits = data.cards
+		.filter((card) => cardExistedOnDate(card, localDate))
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DailyHabitView[] => {
 			const template = templatesById.get(card.officialCardId);
@@ -114,9 +153,12 @@ export async function loadDailyHabits(
 			const scheduledToday = scheduledByPlan || todayRecord !== undefined;
 			const quantityBaseValue = todayRecord?.quantityBaseValue ?? 0;
 			const trackingType = template.trackingType ?? 'quantity';
-			const longTermGoal = currentLongTermGoal(data.longTermGoals, card.id);
+			const longTermGoal = currentLongTermGoal(data.longTermGoals, card.id, localDate);
 			const stageGoal = longTermGoal
-				? selectCurrentStageGoal(data.stageGoals.filter(({ longTermGoalId }) => longTermGoalId === longTermGoal.id))
+				? currentStageGoal(
+					data.stageGoals.filter(({ longTermGoalId }) => longTermGoalId === longTermGoal.id),
+					localDate,
+				)
 				: undefined;
 			const primaryGoal = stageGoal ?? longTermGoal;
 			const goalRecords = primaryGoal

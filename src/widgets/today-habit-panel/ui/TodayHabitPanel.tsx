@@ -33,6 +33,7 @@ export interface HabitActualEntry {
 
 export interface TodayHabitPanelProps {
 	habits: readonly DailyHabitView[];
+	context?: 'today' | 'backfill';
 	completedExpanded: boolean;
 	pendingIds: ReadonlySet<string>;
 	saveErrorIds: ReadonlySet<string>;
@@ -96,11 +97,13 @@ function formatPaceText(seconds: number | undefined): string {
 
 function ActualEntryEditor({
 	habit,
+	context,
 	pending,
 	onCancel,
 	onSave,
 }: {
 	habit: DailyHabitView;
+	context: 'today' | 'backfill';
 	pending: boolean;
 	onCancel: () => void;
 	onSave: (entry: HabitActualEntry) => void;
@@ -150,9 +153,13 @@ function ActualEntryEditor({
 		<form className={styles.actualEditor} onSubmit={submit}>
 			<header>
 				<div>
-					<strong>{t('shell.today.actualEditorTitle')}</strong>
+					<strong>{t(context === 'backfill'
+						? 'shell.today.backfillActualEditorTitle'
+						: 'shell.today.actualEditorTitle')}</strong>
 					<small>
-						{t('shell.today.actualEditorPlan', {
+						{t(context === 'backfill'
+							? 'shell.today.backfillActualEditorPlan'
+							: 'shell.today.actualEditorPlan', {
 							target: dailyTargetDisplay(habit),
 							unit: habit.displayUnit,
 						})}
@@ -251,7 +258,13 @@ function ActualEntryEditor({
 	);
 }
 
-function HabitSupportingCopy({ habit }: { habit: DailyHabitView }) {
+function HabitSupportingCopy({
+	habit,
+	context,
+}: {
+	habit: DailyHabitView;
+	context: 'today' | 'backfill';
+}) {
 	const { t } = useTranslation();
 	const completed = isCompleted(habit);
 
@@ -272,7 +285,9 @@ function HabitSupportingCopy({ habit }: { habit: DailyHabitView }) {
 	return (
 		<>
 			<small>
-				{t('shell.today.dailyProgress', {
+				{t(context === 'backfill'
+					? 'shell.today.backfillDailyProgress'
+					: 'shell.today.dailyProgress', {
 					current: habit.displayValue,
 					target: dailyTargetDisplay(habit),
 					unit: habit.displayUnit,
@@ -399,6 +414,7 @@ function HabitControl({
 
 function HabitRow({
 	habit,
+	context,
 	pending,
 	saveError,
 	actualEditorOpen,
@@ -409,6 +425,7 @@ function HabitRow({
 	onSaveActual,
 }: {
 	habit: DailyHabitView;
+	context: 'today' | 'backfill';
 	pending: boolean;
 	saveError: boolean;
 	actualEditorOpen: boolean;
@@ -439,7 +456,7 @@ function HabitRow({
 			/>
 			<div className={styles.habitCopy}>
 				<strong>{habit.title}</strong>
-				<HabitSupportingCopy habit={habit} />
+				<HabitSupportingCopy habit={habit} context={context} />
 			</div>
 			<HabitControl
 				habit={habit}
@@ -460,6 +477,7 @@ function HabitRow({
 			{actualEditorOpen && (
 				<ActualEntryEditor
 					habit={habit}
+					context={context}
 					pending={pending}
 					onCancel={onCancelActual}
 					onSave={(entry) => onSaveActual(habit, entry)}
@@ -471,6 +489,7 @@ function HabitRow({
 
 function TodayHabitPanel({
 	habits,
+	context = 'today',
 	completedExpanded,
 	pendingIds,
 	saveErrorIds,
@@ -487,7 +506,11 @@ function TodayHabitPanel({
 		: habits.filter((habit) => !isCompleted(habit));
 
 	return (
-		<section className={styles.panel} data-testid='today-habit-panel'>
+		<section
+			className={styles.panel}
+			data-testid='today-habit-panel'
+			data-context={context}
+		>
 			{habits.length === 0 ? (
 				<div className={styles.empty}>
 					<strong>{t('shell.today.emptyTitle')}</strong>
@@ -499,6 +522,7 @@ function TodayHabitPanel({
 						<HabitRow
 							key={habit.id}
 							habit={habit}
+							context={context}
 							pending={pendingIds.has(habit.id)}
 							saveError={saveErrorIds.has(habit.id)}
 							actualEditorOpen={actualEditorId === habit.id}

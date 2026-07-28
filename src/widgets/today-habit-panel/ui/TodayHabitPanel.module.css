@@ -9,6 +9,11 @@
 	box-shadow: var(--shadow-sm);
 }
 
+.panel[data-context='backfill'] {
+	width: 100%;
+	margin-inline: 0;
+}
+
 .rows {
 	display: grid;
 }
