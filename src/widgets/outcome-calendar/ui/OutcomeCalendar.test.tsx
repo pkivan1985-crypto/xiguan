@@ -109,4 +109,24 @@ describe('OutcomeCalendar', () => {
 		expect(css).toMatch(/\.calendar\s*\{[^}]*width:\s*100%;/s);
 		expect(css).not.toMatch(/\.calendar\s*\{[^}]*max-width:\s*360px;/s);
 	});
+
+	it('grows with selected-day details so appended actions remain inside the panel', () => {
+		const html = renderToStaticMarkup(<OutcomeCalendar
+			year={2026}
+			monthIndex={6}
+			outcomeDates={[]}
+			todayLocalDate='2026-07-28'
+			onPreviousMonth={() => undefined}
+			onNextMonth={() => undefined}
+			canGoNext={false}
+		>
+			<div>补打卡</div>
+		</OutcomeCalendar>);
+		const css = readFileSync(new URL('./OutcomeCalendar.module.css', import.meta.url), 'utf8');
+
+		expect(html).toContain('data-has-details="true"');
+		expect(css).toMatch(
+			/\.calendar\[data-has-details='true'\]\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*435px;/s,
+		);
+	});
 });
