@@ -9,6 +9,12 @@
 	box-shadow: var(--shadow-sm);
 }
 
+.calendar[data-has-details='true'] {
+	height: auto;
+	min-height: 435px;
+	padding-bottom: 12px;
+}
+
 .header {
 	display: grid;
 	grid-template-columns: 44px 1fr 44px;

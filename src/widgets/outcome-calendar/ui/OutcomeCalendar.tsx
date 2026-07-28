@@ -42,7 +42,11 @@ function OutcomeCalendar({
 	);
 
 	return (
-		<section className={styles.calendar} aria-labelledby='outcome-calendar-title'>
+		<section
+			className={styles.calendar}
+			aria-labelledby='outcome-calendar-title'
+			data-has-details={children ? 'true' : undefined}
+		>
 			<header className={styles.header}>
 				<button type='button' onClick={onPreviousMonth} aria-label={t('shell.home.previousMonth')}><PiCaretLeft aria-hidden='true' /></button>
 				<h3 id='outcome-calendar-title'>{t('shell.home.monthLabel', { year, month: monthIndex + 1 })}</h3>
