@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- Tab, query and element identifiers are stable non-UI strings. */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	PiArrowClockwise,
@@ -8,6 +8,7 @@ import {
 	PiChartBar,
 	PiCheckCircle,
 	PiGearSix,
+	PiPencilSimple,
 	PiX,
 } from 'react-icons/pi';
 import { Link, useSearchParams } from 'react-router';
@@ -22,7 +23,13 @@ import {
 	validSelectedDate,
 	type ProgressTab,
 } from '../model/progressPageState';
-import { loadHistoryInApp, type HistoryModel } from '@features/load-history';
+import { parseQuantityToBase } from '@entities/card-template';
+import { correctActionRecordInApp } from '@features/correct-action-record';
+import {
+	loadHistoryInApp,
+	type HistoryModel,
+	type HistoryRecordModel,
+} from '@features/load-history';
 import {
 	loadDailyHabitsInApp,
 	type DailyHabitView,
@@ -36,6 +43,10 @@ import { saveDailyHabitInApp } from '@features/save-daily-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
 import { GoalSummary } from '@widgets/goal-summary';
+import {
+	ActionRecordEditor,
+	type ActionRecordEditValue,
+} from '@widgets/action-record-editor';
 import { MobilePageHeader } from '@widgets/mobile-page-header';
 import { OutcomeCalendar } from '@widgets/outcome-calendar';
 import {
@@ -58,6 +69,7 @@ interface ProgressPageContentProps {
 	onSelectDate: (localDate: string) => void;
 	backfillAvailable?: boolean;
 	onOpenBackfill?: () => void;
+	onEditRecord?: (recordId: string) => void;
 }
 
 function shortDateLabel(localDate: string, locale: string): string {
@@ -76,6 +88,30 @@ function recordBaseValue(value: number, basePerDisplayUnit: number): string {
 function paceValue(seconds: number): string {
 	const minutes = Math.floor(seconds / 60);
 	return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+function correctionErrorKey(error: unknown):
+	| 'shell.history.dateChanged'
+	| 'shell.history.invalidValue'
+	| 'shell.history.saveError'
+	| 'shell.today.actualEntryInvalid' {
+	if (!(error instanceof Error)) return 'shell.history.saveError';
+	if (
+		error.message === 'ACTION_RECORD_NOT_TODAY'
+		|| error.message === 'ACTION_RECORD_DATE_MISMATCH'
+		|| error.message === 'ACTION_RECORD_IN_FUTURE'
+	) return 'shell.history.dateChanged';
+	if (
+		error.message === 'INVALID_QUANTITY'
+		|| error.message === 'QUANTITY_CONFIRMATION_REQUIRED'
+	) return 'shell.history.invalidValue';
+	if (
+		error.message === 'INVALID_DURATION'
+		|| error.message === 'INVALID_PACE'
+		|| error.message === 'INVALID_HEART_RATE'
+		|| error.message === 'NOTE_TOO_LONG'
+	) return 'shell.today.actualEntryInvalid';
+	return 'shell.history.saveError';
 }
 
 function ProgressHeader() {
@@ -109,6 +145,7 @@ function ProgressPageContent({
 	onSelectDate,
 	backfillAvailable = false,
 	onOpenBackfill,
+	onEditRecord,
 }: ProgressPageContentProps) {
 	const { t, i18n } = useTranslation();
 	const selectedRecords = history.groups.find(
@@ -249,6 +286,16 @@ function ProgressPageContent({
 															)}
 															{record.note && <p>{record.note}</p>}
 														</div>
+													)}
+													{onEditRecord && (
+														<button
+															type='button'
+															className={styles.editRecordButton}
+															onClick={() => onEditRecord(record.id)}
+														>
+															<PiPencilSimple aria-hidden='true' />
+															{t('shell.progress.editRecord')}
+														</button>
 													)}
 												</article>
 											);
@@ -401,6 +448,10 @@ function ProgressPage() {
 	const [backfillOpen, setBackfillOpen] = useState(false);
 	const [backfillPendingIds, setBackfillPendingIds] = useState<ReadonlySet<string>>(new Set());
 	const [backfillSaveErrorIds, setBackfillSaveErrorIds] = useState<ReadonlySet<string>>(new Set());
+	const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
+	const [correctionSaving, setCorrectionSaving] = useState(false);
+	const [correctionError, setCorrectionError] = useState<string>();
+	const correctionIds = useRef<{ update?: string; delete?: string }>({});
 	const [error, setError] = useState(false);
 	const [reloadNonce, setReloadNonce] = useState(0);
 
@@ -446,6 +497,9 @@ function ProgressPage() {
 	const selectDate = (localDate: string) => {
 		setBackfillOpen(false);
 		setBackfillSaveErrorIds(new Set());
+		setSelectedRecordId(null);
+		setCorrectionError(undefined);
+		correctionIds.current = {};
 		setSearchParams(buildProgressDateSearch(localDate), { replace: true });
 	};
 	const canGoNext = month.year < now.getFullYear()
@@ -455,6 +509,9 @@ function ProgressPage() {
 		(habit) => habit.scheduledToday && !habit.recordedToday,
 		)
 		: [];
+	const selectedRecord = history?.groups
+		.flatMap(({ records }) => records)
+		.find(({ id }) => id === selectedRecordId);
 
 	async function saveBackfillHabit(
 		habit: DailyHabitView,
@@ -506,6 +563,51 @@ function ProgressPage() {
 				next.delete(habit.id);
 				return next;
 			});
+		}
+	}
+
+	async function correctSelectedRecord(
+		record: HistoryRecordModel,
+		operation: 'update' | 'delete',
+		value?: ActionRecordEditValue,
+	): Promise<void> {
+		if (correctionSaving) return;
+		setCorrectionSaving(true);
+		setCorrectionError(undefined);
+		try {
+			const quantityBaseValue = operation === 'update'
+				? parseQuantityToBase(value?.valueText ?? '', {
+					baseUnit: record.displayUnit,
+					displayUnit: record.displayUnit,
+					basePerDisplayUnit: record.basePerDisplayUnit,
+					maxDecimalPlaces: record.maxDecimalPlaces,
+					confirmationThresholdDisplay: record.confirmationThresholdDisplay,
+				}, { confirmedOverLimit: true })
+				: undefined;
+			const correctionId = correctionIds.current[operation] ?? crypto.randomUUID();
+			correctionIds.current[operation] = correctionId;
+			await correctActionRecordInApp({
+				actionRecordId: record.id,
+				operation,
+				quantityBaseValue,
+				currentLocalDate: formatLocalDate(new Date()),
+				recordLocalDate: record.localDate,
+				nowIso: new Date().toISOString(),
+				correctionId,
+				details: operation === 'update' && record.supportsTrainingDetails ? {
+					durationSeconds: value?.durationSeconds,
+					averagePaceSecondsPerKm: value?.averagePaceSecondsPerKm,
+					averageHeartRateBpm: value?.averageHeartRateBpm,
+					note: value?.note,
+				} : undefined,
+			});
+			setSelectedRecordId(null);
+			correctionIds.current = {};
+			setReloadNonce((current) => current + 1);
+		} catch (caught) {
+			setCorrectionError(t(correctionErrorKey(caught)));
+		} finally {
+			setCorrectionSaving(false);
 		}
 	}
 
@@ -561,6 +663,11 @@ function ProgressPage() {
 			onSelectDate={selectDate}
 			backfillAvailable={backfillableHabits.length > 0}
 			onOpenBackfill={() => setBackfillOpen(true)}
+			onEditRecord={(recordId) => {
+				correctionIds.current = {};
+				setCorrectionError(undefined);
+				setSelectedRecordId(recordId);
+			}}
 			/>
 			{backfillOpen && backfillModel && (
 				<BackfillSheet
@@ -584,6 +691,24 @@ function ProgressPage() {
 					});
 				}}
 				onClose={() => setBackfillOpen(false)}
+				/>
+			)}
+			{selectedRecord && (
+				<ActionRecordEditor
+					record={selectedRecord}
+					saving={correctionSaving}
+					error={correctionError}
+					onClose={() => {
+						setSelectedRecordId(null);
+						setCorrectionError(undefined);
+						correctionIds.current = {};
+					}}
+					onSave={(value) => {
+						void correctSelectedRecord(selectedRecord, 'update', value);
+					}}
+					onDelete={() => {
+						void correctSelectedRecord(selectedRecord, 'delete');
+					}}
 				/>
 			)}
 		</>

@@ -9,7 +9,10 @@ import { correctActionRecordInApp } from '@features/correct-action-record';
 import { loadHistoryInApp, type HistoryModel, type HistoryRecordModel } from '@features/load-history';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
-import { ActionRecordEditor } from '@widgets/action-record-editor';
+import {
+	ActionRecordEditor,
+	type ActionRecordEditValue,
+} from '@widgets/action-record-editor';
 import { HistoryList } from '@widgets/history-list';
 import { historyErrorKey } from '../model/historyPage';
 
@@ -33,10 +36,14 @@ function HistoryPage() {
 	const selected = model?.groups.flatMap(({ records }) => records).find(({ id }) => id === selectedId);
 	const reload = async () => setModel(await loadHistoryInApp(formatLocalDate(new Date())));
 	const closeEditor = () => { setSelectedId(null); setActionError(undefined); correctionIds.current = {}; };
-	const runCorrection = async (record: HistoryRecordModel, operation: 'update' | 'delete', valueText?: string) => {
+	const runCorrection = async (
+		record: HistoryRecordModel,
+		operation: 'update' | 'delete',
+		value?: ActionRecordEditValue,
+	) => {
 		setSaving(true); setActionError(undefined);
 		try {
-			const quantityBaseValue = operation === 'update' ? parseQuantityToBase(valueText ?? '', {
+			const quantityBaseValue = operation === 'update' ? parseQuantityToBase(value?.valueText ?? '', {
 				baseUnit: record.displayUnit,
 				displayUnit: record.displayUnit,
 				basePerDisplayUnit: record.basePerDisplayUnit,
@@ -52,6 +59,12 @@ function HistoryPage() {
 				currentLocalDate: formatLocalDate(new Date()),
 				nowIso: new Date().toISOString(),
 				correctionId,
+				details: operation === 'update' && record.supportsTrainingDetails ? {
+					durationSeconds: value?.durationSeconds,
+					averagePaceSecondsPerKm: value?.averagePaceSecondsPerKm,
+					averageHeartRateBpm: value?.averageHeartRateBpm,
+					note: value?.note,
+				} : undefined,
 			});
 			await reload();
 			closeEditor();

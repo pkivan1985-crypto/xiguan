@@ -30,6 +30,28 @@ describe('ActionRecordEditor', () => {
 		expect(html).not.toContain('shell.history.confirmUpdate');
 	});
 
+	it('prefills optional running details so a backfilled record can be corrected completely', () => {
+		const html = renderToStaticMarkup(<ActionRecordEditor
+			record={{
+				...record,
+				supportsTrainingDetails: true,
+				durationSeconds: 1_800,
+				averagePaceSecondsPerKm: 390,
+				averageHeartRateBpm: 148,
+				note: '河边慢跑',
+			}}
+			saving={false}
+			onSave={() => undefined}
+			onDelete={() => undefined}
+			onClose={() => undefined}
+		/>);
+		expect(html).toContain('shell.today.durationMinutes');
+		expect(html).toContain('value="30"');
+		expect(html).toContain('value="6:30"');
+		expect(html).toContain('value="148"');
+		expect(html).toContain('value="河边慢跑"');
+	});
+
 	it('replaces the editor content with confirmation instead of stacking both layers', () => {
 		const source = readFileSync(new URL('./ActionRecordEditor.tsx', import.meta.url), 'utf8');
 		const css = readFileSync(new URL('./ActionRecordEditor.module.css', import.meta.url), 'utf8');

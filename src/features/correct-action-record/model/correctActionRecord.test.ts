@@ -102,6 +102,46 @@ describe('correctActionRecord', () => {
 		expect(await database.tableFor<GoalRevision>('goalRevisions').count()).toBe(0);
 	});
 
+	it('updates a selected historical record and its optional training details', async () => {
+		await seed([record({
+			localDate: '2026-07-11',
+			durationSeconds: 2_400,
+			note: '原备注',
+		})]);
+
+		await correctActionRecord(database, {
+			...updateInput,
+			currentLocalDate: '2026-07-12',
+			recordLocalDate: '2026-07-11',
+			details: {
+				durationSeconds: 1_980,
+				averagePaceSecondsPerKm: 396,
+				averageHeartRateBpm: 152,
+				note: '河边夜跑',
+			},
+		});
+
+		expect(await database.tableFor<ActionRecord>('actionRecords').get('record-1')).toMatchObject({
+			localDate: '2026-07-11',
+			quantityBaseValue: 5_000,
+			durationSeconds: 1_980,
+			averagePaceSecondsPerKm: 396,
+			averageHeartRateBpm: 152,
+			note: '河边夜跑',
+			entryMethod: 'adjustment',
+		});
+	});
+
+	it('rejects a future record date before opening a correction transaction', async () => {
+		await seed();
+
+		await expect(correctActionRecord(database, {
+			...updateInput,
+			recordLocalDate: '2026-07-13',
+		})).rejects.toThrow('ACTION_RECORD_IN_FUTURE');
+		expect(await database.tableFor<ActionRecord>('actionRecords').get('record-1')).toEqual(record());
+	});
+
 	it.each([0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1])('rejects invalid update quantity %s', async (quantityBaseValue) => {
 		await seed();
 		await expect(correctActionRecord(database, { ...updateInput, quantityBaseValue })).rejects.toThrow('INVALID_QUANTITY');

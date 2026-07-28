@@ -29,6 +29,7 @@ const translations: Record<string, string> = {
 	'shell.progress.backfill': '补打卡',
 	'shell.progress.dailyRecord': '当日记录',
 	'shell.progress.details': '查看详情',
+	'shell.progress.editRecord': '修改记录',
 	'shell.progress.goalsTab': '目标',
 	'shell.progress.noRecords': '这一天还没有真实记录。',
 	'shell.progress.plans': '总规划',
@@ -198,6 +199,7 @@ type ProgressPageContentProps = {
 	onSelectDate: (localDate: string) => void;
 	backfillAvailable?: boolean;
 	onOpenBackfill?: () => void;
+	onEditRecord?: (recordId: string) => void;
 };
 
 function progressContent(): ComponentType<ProgressPageContentProps> | undefined {
@@ -309,6 +311,7 @@ describe('ProgressPage', () => {
 		expect(html).toContain('平均心率 148 bpm');
 		expect(html).toContain('河边慢跑');
 		expect(html).toContain('查看详情');
+		expect(html).not.toContain('修改记录');
 		expect(html).toContain('data-testid="progress-plan-panel"');
 		expect(html).toContain('5 个习惯正在推进 · 本月 2 个成果日');
 		expect(html).toContain('累计 100 km');
@@ -316,6 +319,33 @@ describe('ProgressPage', () => {
 		expect(html).not.toContain('早睡');
 		expect(html).not.toContain('所选记录');
 		expect(html).not.toContain('长期规划');
+	});
+
+	it('offers direct correction for a saved calendar record', () => {
+		const ProgressPageContent = progressContent();
+		expect(ProgressPageContent).toBeTypeOf('function');
+		if (!ProgressPageContent) return;
+
+		const html = renderToStaticMarkup(
+			<MemoryRouter>
+				<ProgressPageContent
+					activeTab='calendar'
+					dashboard={dashboard}
+					history={history}
+					selectedDate='2026-07-25'
+					todayLocalDate='2026-07-26'
+					canGoNext={false}
+					onChangeTab={vi.fn()}
+					onNextMonth={vi.fn()}
+					onPreviousMonth={vi.fn()}
+					onSelectDate={vi.fn()}
+					onEditRecord={vi.fn()}
+				/>
+			</MemoryRouter>,
+		);
+
+		expect(html).toContain('修改记录');
+		expect(html).toContain('type="button"');
 	});
 
 	it('keeps the goals tab on the same route data while hiding only the calendar panel', () => {

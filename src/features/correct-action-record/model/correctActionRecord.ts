@@ -21,8 +21,15 @@ export interface CorrectActionRecordInput {
 	operation: 'update' | 'delete';
 	quantityBaseValue?: number;
 	currentLocalDate: string;
+	recordLocalDate?: string;
 	nowIso: string;
 	correctionId: string;
+	details?: {
+		durationSeconds?: number;
+		averagePaceSecondsPerKm?: number;
+		averageHeartRateBpm?: number;
+		note?: string;
+	};
 }
 
 export interface CorrectActionRecordResult {
@@ -33,6 +40,12 @@ export interface CorrectActionRecordResult {
 
 function assertInput(input: CorrectActionRecordInput): void {
 	parseLocalDate(input.currentLocalDate);
+	if (input.recordLocalDate) {
+		parseLocalDate(input.recordLocalDate);
+		if (input.recordLocalDate > input.currentLocalDate) {
+			throw new Error('ACTION_RECORD_IN_FUTURE');
+		}
+	}
 	if (!input.actionRecordId.trim()) throw new Error('ACTION_RECORD_ID_REQUIRED');
 	if (!input.correctionId.trim()) throw new Error('CORRECTION_ID_REQUIRED');
 	if (Number.isNaN(Date.parse(input.nowIso))) throw new Error('INVALID_NOW_ISO');
@@ -40,9 +53,47 @@ function assertInput(input: CorrectActionRecordInput): void {
 		if (!Number.isSafeInteger(input.quantityBaseValue) || input.quantityBaseValue! <= 0) {
 			throw new Error('INVALID_QUANTITY');
 		}
+		if (input.details?.durationSeconds !== undefined
+			&& (!Number.isSafeInteger(input.details.durationSeconds) || input.details.durationSeconds <= 0)) {
+			throw new Error('INVALID_DURATION');
+		}
+		if (input.details?.averagePaceSecondsPerKm !== undefined
+			&& (!Number.isSafeInteger(input.details.averagePaceSecondsPerKm)
+				|| input.details.averagePaceSecondsPerKm <= 0)) {
+			throw new Error('INVALID_PACE');
+		}
+		if (input.details?.averageHeartRateBpm !== undefined
+			&& (!Number.isSafeInteger(input.details.averageHeartRateBpm)
+				|| input.details.averageHeartRateBpm < 30
+				|| input.details.averageHeartRateBpm > 240)) {
+			throw new Error('INVALID_HEART_RATE');
+		}
+		if (input.details?.note !== undefined && input.details.note.length > 280) {
+			throw new Error('NOTE_TOO_LONG');
+		}
 	} else if (input.quantityBaseValue !== undefined) {
 		throw new Error('DELETE_QUANTITY_NOT_ALLOWED');
+	} else if (input.details !== undefined) {
+		throw new Error('DELETE_DETAILS_NOT_ALLOWED');
 	}
+}
+
+function applyDetails(
+	record: ActionRecord,
+	details: NonNullable<CorrectActionRecordInput['details']>,
+): ActionRecord {
+	const next = {
+		...record,
+		durationSeconds: details.durationSeconds,
+		averagePaceSecondsPerKm: details.averagePaceSecondsPerKm,
+		averageHeartRateBpm: details.averageHeartRateBpm,
+		note: details.note?.trim() || undefined,
+	};
+	if (next.durationSeconds === undefined) delete next.durationSeconds;
+	if (next.averagePaceSecondsPerKm === undefined) delete next.averagePaceSecondsPerKm;
+	if (next.averageHeartRateBpm === undefined) delete next.averageHeartRateBpm;
+	if (next.note === undefined) delete next.note;
+	return next;
 }
 
 function snapshotChanged(
@@ -95,7 +146,12 @@ export async function correctActionRecord(
 			return;
 		}
 		if (!record) throw new Error('ACTION_RECORD_NOT_FOUND');
-		if (record.localDate !== input.currentLocalDate) throw new Error('ACTION_RECORD_NOT_TODAY');
+		const expectedRecordDate = input.recordLocalDate ?? input.currentLocalDate;
+		if (record.localDate !== expectedRecordDate) {
+			throw new Error(input.recordLocalDate
+				? 'ACTION_RECORD_DATE_MISMATCH'
+				: 'ACTION_RECORD_NOT_TODAY');
+		}
 		if (record.lastSubmissionId === input.correctionId) {
 			result = { operation: input.operation, actionRecordId: record.id, changedGoalIds: [] };
 			return;
@@ -104,7 +160,7 @@ export async function correctActionRecord(
 		if (input.operation === 'delete') {
 			await actionRecords.delete(record.id);
 		} else {
-			await actionRecords.put({
+			let nextRecord: ActionRecord = {
 				...record,
 				quantityBaseValue: input.quantityBaseValue!,
 				entryMethod: 'adjustment',
@@ -113,7 +169,9 @@ export async function correctActionRecord(
 					: Math.max(0, record.plannedQuantityBaseValue - input.quantityBaseValue!),
 				lastSavedAt: input.nowIso,
 				lastSubmissionId: input.correctionId,
-			});
+			};
+			if (input.details) nextRecord = applyDetails(nextRecord, input.details);
+			await actionRecords.put(nextRecord);
 		}
 
 		const cardRecords = await actionRecords.where('userCardId').equals(record.userCardId).toArray();
