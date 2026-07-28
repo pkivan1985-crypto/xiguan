@@ -3,10 +3,19 @@ import styles from './ActionRecordEditor.module.css';
 import { keepFocusInsideConfirmation, type FocusTarget } from './keepFocusInsideConfirmation';
 import { type FormEvent, type KeyboardEvent as ReactKeyboardEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiTrash2, FiX } from 'react-icons/fi';
+import { FiActivity, FiClock, FiHeart, FiTrash2, FiX } from 'react-icons/fi';
+import { parseQuantityToBase } from '@entities/card-template';
 import type { HistoryRecordModel } from '@features/load-history';
 
 type ConfirmationKind = 'update' | 'delete';
+
+export interface ActionRecordEditValue {
+	valueText: string;
+	durationSeconds?: number;
+	averagePaceSecondsPerKm?: number;
+	averageHeartRateBpm?: number;
+	note?: string;
+}
 
 interface EditorConfirmationProps {
 	kind: ConfirmationKind;
@@ -19,9 +28,21 @@ interface ActionRecordEditorProps {
 	record: HistoryRecordModel;
 	saving: boolean;
 	error?: string;
-	onSave: (valueText: string) => void;
+	onSave: (value: ActionRecordEditValue) => void;
 	onDelete: () => void;
 	onClose: () => void;
+}
+
+function formatPace(seconds: number | undefined): string {
+	if (!seconds) return '';
+	return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+function parsePace(value: string): number | undefined {
+	const match = /^(\d{1,2}):([0-5]\d)$/.exec(value.trim());
+	if (!match) return undefined;
+	const seconds = Number(match[1]) * 60 + Number(match[2]);
+	return seconds > 0 ? seconds : undefined;
 }
 
 function EditorConfirmation({ kind, busy, onConfirm, onCancel }: EditorConfirmationProps) {
@@ -50,9 +71,55 @@ function EditorConfirmation({ kind, busy, onConfirm, onCancel }: EditorConfirmat
 function ActionRecordEditor({ record, saving, error, onSave, onDelete, onClose }: ActionRecordEditorProps) {
 	const { t } = useTranslation();
 	const [valueText, setValueText] = useState(record.displayValue);
+	const [durationMinutes, setDurationMinutes] = useState(
+		record.durationSeconds ? String(record.durationSeconds / 60) : '',
+	);
+	const [paceText, setPaceText] = useState(formatPace(record.averagePaceSecondsPerKm));
+	const [heartRateText, setHeartRateText] = useState(
+		record.averageHeartRateBpm ? String(record.averageHeartRateBpm) : '',
+	);
+	const [note, setNote] = useState(record.note ?? '');
+	const [pendingValue, setPendingValue] = useState<ActionRecordEditValue>();
+	const [invalid, setInvalid] = useState(false);
 	const [confirmation, setConfirmation] = useState<ConfirmationKind | null>(null);
 	const submit = (event: FormEvent) => {
 		event.preventDefault();
+		let quantityValid = true;
+		try {
+			parseQuantityToBase(valueText, {
+				baseUnit: record.displayUnit,
+				displayUnit: record.displayUnit,
+				basePerDisplayUnit: record.basePerDisplayUnit,
+				maxDecimalPlaces: record.maxDecimalPlaces,
+				confirmationThresholdDisplay: record.confirmationThresholdDisplay,
+			}, { confirmedOverLimit: true });
+		} catch {
+			quantityValid = false;
+		}
+		const durationSeconds = durationMinutes
+			? Math.round(Number(durationMinutes) * 60)
+			: undefined;
+		const averagePaceSecondsPerKm = paceText ? parsePace(paceText) : undefined;
+		const averageHeartRateBpm = heartRateText ? Number(heartRateText) : undefined;
+		const valid = quantityValid
+			&& (!durationSeconds || durationSeconds > 0)
+			&& (!paceText || averagePaceSecondsPerKm !== undefined)
+			&& (!averageHeartRateBpm || (
+				Number.isSafeInteger(averageHeartRateBpm)
+				&& averageHeartRateBpm >= 30
+				&& averageHeartRateBpm <= 240
+			));
+		if (!valid) {
+			setInvalid(true);
+			return;
+		}
+		setPendingValue({
+			valueText,
+			durationSeconds,
+			averagePaceSecondsPerKm,
+			averageHeartRateBpm,
+			note: note.trim() || undefined,
+		});
 		setConfirmation('update');
 	};
 
@@ -62,14 +129,78 @@ function ActionRecordEditor({ record, saving, error, onSave, onDelete, onClose }
 				kind={confirmation}
 				busy={saving}
 				onCancel={() => setConfirmation(null)}
-				onConfirm={() => confirmation === 'update' ? onSave(valueText) : onDelete()}
+				onConfirm={() => {
+					if (confirmation === 'update') {
+						if (pendingValue) onSave(pendingValue);
+						return;
+					}
+					onDelete();
+				}}
 			/> : <>
 				<span className={styles.grab} aria-hidden='true' />
-				<header><h2 id='record-editor-title'>{t('shell.history.editorTitle')}</h2><button className={styles.closeButton} type='button' onClick={onClose} disabled={saving} aria-label={t('common.close')}><FiX aria-hidden='true' /></button></header>
+				<header>
+					<div>
+						<h2 id='record-editor-title'>{t('shell.history.editorTitle')}</h2>
+						<small>{record.localDate}</small>
+					</div>
+					<button className={styles.closeButton} type='button' onClick={onClose} disabled={saving} aria-label={t('common.close')}><FiX aria-hidden='true' /></button>
+				</header>
 				<form onSubmit={submit}>
 					<label htmlFor='correct-record-value'>{record.cardTitle}</label>
-					<div className={styles.inputRow}><input id='correct-record-value' autoFocus inputMode='decimal' value={valueText} onChange={(event) => setValueText(event.target.value)} disabled={saving} /><span>{record.displayUnit}</span></div>
+					<div className={styles.inputRow}><input id='correct-record-value' autoFocus inputMode='decimal' value={valueText} onChange={(event) => { setValueText(event.target.value); setInvalid(false); }} disabled={saving} /><span>{record.displayUnit}</span></div>
+					{record.supportsTrainingDetails && (
+						<div className={styles.trainingFields}>
+							<label>
+								<FiClock aria-hidden='true' />
+								<span>{t('shell.today.durationMinutes')}</span>
+								<input
+									type='number'
+									inputMode='decimal'
+									min='0.1'
+									step='0.1'
+									value={durationMinutes}
+									onChange={(event) => { setDurationMinutes(event.target.value); setInvalid(false); }}
+									placeholder={t('shell.today.optional')}
+								/>
+							</label>
+							<label>
+								<FiActivity aria-hidden='true' />
+								<span>{t('shell.today.averagePace')}</span>
+								<input
+									type='text'
+									inputMode='numeric'
+									value={paceText}
+									onChange={(event) => { setPaceText(event.target.value); setInvalid(false); }}
+									placeholder='06:30'
+								/>
+							</label>
+							<label>
+								<FiHeart aria-hidden='true' />
+								<span>{t('shell.today.averageHeartRate')}</span>
+								<input
+									type='number'
+									inputMode='numeric'
+									min='30'
+									max='240'
+									value={heartRateText}
+									onChange={(event) => { setHeartRateText(event.target.value); setInvalid(false); }}
+									placeholder={t('shell.today.optional')}
+								/>
+							</label>
+							<label className={styles.noteField}>
+								<span>{t('shell.today.trainingNote')}</span>
+								<input
+									type='text'
+									maxLength={280}
+									value={note}
+									onChange={(event) => setNote(event.target.value)}
+									placeholder={t('shell.today.trainingNotePlaceholder')}
+								/>
+							</label>
+						</div>
+					)}
 					<p className={styles.impact}>{t('shell.history.recalculationImpact')}</p>
+					{invalid && <p className={styles.error} role='alert'>{t('shell.today.actualEntryInvalid')}</p>}
 					{error && <p className={styles.error} role='alert'>{error}</p>}
 					<div className={styles.actions}>
 						<button className={styles.delete} type='button' onClick={() => setConfirmation('delete')} disabled={saving}><FiTrash2 aria-hidden='true' />{t('shell.history.deleteRecord')}</button>

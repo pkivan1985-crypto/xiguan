@@ -194,6 +194,26 @@
 	white-space: nowrap;
 }
 
+.editRecordButton {
+	display: inline-flex;
+	gap: 5px;
+	align-items: center;
+	justify-self: end;
+	min-height: 36px;
+	padding: 0 10px;
+	font-size: 12px;
+	font-weight: 650;
+	color: var(--accent-color);
+	background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+	border: 1px solid color-mix(in srgb, var(--accent-color) 38%, var(--border-color));
+	border-radius: 11px;
+}
+
+.editRecordButton svg {
+	flex: none;
+	font-size: 16px;
+}
+
 .empty {
 	display: grid;
 	align-items: center;

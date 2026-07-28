@@ -27,6 +27,7 @@ export interface HistoryRecordModel {
 	averagePaceSecondsPerKm?: number;
 	averageHeartRateBpm?: number;
 	note?: string;
+	supportsTrainingDetails?: boolean;
 	canCorrect: boolean;
 	relationAvailable: boolean;
 }
@@ -94,6 +95,7 @@ export async function loadHistory(
 					averagePaceSecondsPerKm: record.averagePaceSecondsPerKm,
 					averageHeartRateBpm: record.averageHeartRateBpm,
 					note: record.note,
+					supportsTrainingDetails: card?.officialCardId === 'running',
 					canCorrect: relationAvailable && record.localDate === currentLocalDate,
 					relationAvailable,
 				};

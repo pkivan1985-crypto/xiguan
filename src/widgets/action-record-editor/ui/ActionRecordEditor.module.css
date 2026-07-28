@@ -12,7 +12,9 @@
 .sheet {
 	position: relative;
 	width: min(100%, 520px);
+	max-height: min(88dvh, 760px);
 	padding: 12px 14px max(18px, env(safe-area-inset-bottom));
+	overflow-y: auto;
 	background: var(--surface-color);
 	border: 1px solid var(--border-color);
 	border-radius: 22px 22px 0 0;
@@ -35,8 +37,18 @@
 	margin-bottom: 12px;
 }
 
+.sheet > header > div {
+	display: grid;
+	gap: 1px;
+}
+
 .sheet h2 {
 	font-size: 0.88rem;
+}
+
+.sheet header small {
+	font-size: 0.65rem;
+	color: var(--muted-color);
 }
 
 .closeButton {
@@ -86,6 +98,52 @@
 	font-size: 0.72rem;
 	font-weight: 750;
 	color: #65c95d;
+}
+
+.trainingFields {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+	margin-top: 3px;
+}
+
+.trainingFields label {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 4px;
+	align-items: center;
+	min-width: 0;
+}
+
+.trainingFields label > svg {
+	width: 14px;
+	height: 14px;
+	color: var(--accent-color);
+}
+
+.trainingFields label > span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 0.64rem;
+	color: var(--muted-color);
+	white-space: nowrap;
+}
+
+.trainingFields input {
+	grid-column: 1 / -1;
+	min-width: 0;
+	height: 40px;
+	padding: 0 9px;
+	font: inherit;
+	font-size: 0.7rem;
+	color: var(--text-color);
+	background: var(--page-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 11px;
+}
+
+.trainingFields .noteField {
+	grid-column: 1 / -1;
 }
 
 .impact,
