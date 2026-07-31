@@ -4,9 +4,10 @@ import type { CardTemplate } from './types';
 
 export const SYSTEM_CATEGORIES: readonly CategoryDefinition[] = Object.freeze([
 	{ id: 'sport', title: '运动', sortOrder: 0, enabled: true },
-	{ id: 'reading', title: '阅读', sortOrder: 1, enabled: true },
-	{ id: 'life', title: '生活', sortOrder: 2, enabled: true },
-	{ id: 'output', title: '输出', sortOrder: 3, enabled: false },
+	{ id: 'nutrition', title: '饮食健康', sortOrder: 1, enabled: true },
+	{ id: 'learning', title: '学习成长', sortOrder: 2, enabled: true },
+	{ id: 'recovery', title: '作息恢复', sortOrder: 3, enabled: true },
+	{ id: 'focus', title: '专注自律', sortOrder: 4, enabled: true },
 ]);
 
 export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
@@ -33,7 +34,7 @@ export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
 	},
 	{
 		id: 'water',
-		categoryId: 'life',
+		categoryId: 'nutrition',
 		title: '喝水',
 		sortOrder: 0,
 		enabled: true,
@@ -53,8 +54,29 @@ export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
 		},
 	},
 	{
+		id: 'light-food',
+		categoryId: 'nutrition',
+		title: '轻食',
+		sortOrder: 1,
+		enabled: true,
+		version: 1,
+		defaultStageMode: 'activeDays',
+		trackingType: 'checklist',
+		iconKey: 'leaf',
+		accent: 'green',
+		defaultDailyTargetBase: 4,
+		stepBase: 1,
+		quantity: {
+			baseUnit: 'rule',
+			displayUnit: '项',
+			basePerDisplayUnit: 1,
+			maxDecimalPlaces: 0,
+			confirmationThresholdDisplay: 20,
+		},
+	},
+	{
 		id: 'reading-time',
-		categoryId: 'reading',
+		categoryId: 'learning',
 		title: '阅读',
 		sortOrder: 0,
 		enabled: true,
@@ -75,7 +97,7 @@ export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
 	},
 	{
 		id: 'sleep',
-		categoryId: 'life',
+		categoryId: 'recovery',
 		title: '按时睡觉',
 		sortOrder: 1,
 		enabled: true,
@@ -96,7 +118,7 @@ export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
 	},
 	{
 		id: 'screen-free',
-		categoryId: 'life',
+		categoryId: 'focus',
 		title: '少刷手机',
 		sortOrder: 2,
 		enabled: true,

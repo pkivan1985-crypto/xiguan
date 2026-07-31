@@ -6,6 +6,7 @@ import type { DailyHabitView } from '@features/load-daily-habits';
 import {
 	nextHabitQuantity,
 	parsePaceText,
+	resolveSwipeReveal,
 	TodayHabitPanel,
 	toggleCompletedVisibility,
 } from './TodayHabitPanel';
@@ -16,6 +17,7 @@ const translations: Record<string, string> = {
 	'shell.today.completeAction': '打卡',
 	'shell.today.completedAction': '完成',
 	'shell.today.enterActual': '记录进度',
+	'shell.createCard.detailAction': '逐项记录',
 	'shell.today.completedFold': '已完成 {{count}} 项',
 	'shell.today.dailyProgress': '今日 {{current}} / {{target}} {{unit}}',
 	'shell.today.decreaseHabit': '减少{{title}}',
@@ -156,11 +158,13 @@ function renderPanel({
 	completedExpanded = true,
 	pendingIds = new Set<string>(),
 	saveErrorIds = new Set<string>(),
+	openDetails = false,
 }: {
 	renderedHabits?: readonly DailyHabitView[];
 	completedExpanded?: boolean;
 	pendingIds?: ReadonlySet<string>;
 	saveErrorIds?: ReadonlySet<string>;
+	openDetails?: boolean;
 } = {}): string {
 	return renderToStaticMarkup(
 		<TodayHabitPanel
@@ -171,6 +175,8 @@ function renderPanel({
 			onChange={vi.fn()}
 			onComplete={vi.fn()}
 			onSaveActual={vi.fn()}
+			onOpenDetails={openDetails ? vi.fn() : undefined}
+			onRequestDelete={vi.fn()}
 			onToggleCompleted={vi.fn()}
 		/>,
 	);
@@ -192,6 +198,13 @@ describe('TodayHabitPanel', () => {
 		expect(nextHabitQuantity({ ...habits[4]!, quantityBaseValue: 0 }, 'toggle')).toBe(1);
 	});
 
+	it('reveals only after a deliberate horizontal swipe to the left', () => {
+		expect(resolveSwipeReveal({ deltaX: -52, deltaY: 4, wasRevealed: false })).toBe(true);
+		expect(resolveSwipeReveal({ deltaX: -18, deltaY: 2, wasRevealed: false })).toBe(false);
+		expect(resolveSwipeReveal({ deltaX: -58, deltaY: 72, wasRevealed: false })).toBe(false);
+		expect(resolveSwipeReveal({ deltaX: 52, deltaY: 4, wasRevealed: true })).toBe(false);
+	});
+
 	it('renders five tracking types as rows inside one unified panel', () => {
 		const html = renderPanel();
 
@@ -202,7 +215,9 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('data-tracking-type="duration"');
 		expect(html).toContain('data-tracking-type="check"');
 		expect(html).toContain('data-tracking-type="avoid"');
-		expect(html).toContain('>完成</span>');
+		expect(html.match(/data-swipe-habit-id=/g)).toHaveLength(5);
+		expect(html.match(/data-testid="delete-habit-action"/g)).toHaveLength(5);
+		expect(html).toContain('>打卡</span>');
 		expect(html).toContain('>记录进度</span>');
 		expect(html).toContain('aria-label="增加喝水"');
 		expect(html).toContain('aria-label="记录阅读"');
@@ -221,7 +236,12 @@ describe('TodayHabitPanel', () => {
 				recordedToday: false,
 			}],
 		});
-		const html = renderPanel({ renderedHabits: [habits[0]!] });
+		const completedHabit: DailyHabitView = {
+			...habits[0]!,
+			quantityBaseValue: 5_000,
+			displayValue: '5.00',
+		};
+		const html = renderPanel({ renderedHabits: [completedHabit] });
 
 		expect(pendingHtml).toContain('>打卡</span>');
 		expect(pendingHtml).toContain('>记录进度</span>');
@@ -229,6 +249,26 @@ describe('TodayHabitPanel', () => {
 		expect(html).toMatch(/class="[^"]*completeAction[^"]*" disabled="" data-recorded="true"/);
 		expect(html).toContain('>完成</span>');
 		expect(html).toContain('>记录进度</span>');
+	});
+
+	it('uses the unified quick action and dedicated detail entry on the Today route', () => {
+		const checklist: DailyHabitView = {
+			...habits[1]!,
+			id: 'light-food',
+			title: '轻食计划',
+			trackingType: 'checklist',
+			iconKey: 'leaf',
+			displayUnit: '项',
+			quantityBaseValue: 2,
+			displayValue: '2',
+			baseDailyTargetBase: 4,
+			dailyTargetBase: 4,
+		};
+		const html = renderPanel({ renderedHabits: [checklist], openDetails: true });
+
+		expect(html).toContain('>打卡</span>');
+		expect(html).toContain('>逐项记录</span>');
+		expect(html).not.toContain('aria-label="增加轻食计划"');
 	});
 
 	it('keeps a rest-day habit visible without exposing recording controls', () => {
@@ -249,7 +289,8 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('aria-label="今日休息"');
 		expect(html).not.toContain('>打卡</span>');
 		expect(html).not.toContain('>记录进度</span>');
-		expect(html).not.toContain('<button');
+		expect(html.match(/<button/g)).toHaveLength(1);
+		expect(html).toContain('data-testid="delete-habit-action"');
 	});
 
 	it('keeps the unified panel and empty-state copy when there are no habits', () => {
@@ -296,7 +337,7 @@ describe('TodayHabitPanel', () => {
 
 		expect(html.match(/aria-busy="true"/g)).toHaveLength(1);
 		expect(html.match(/ disabled=""/g)).toHaveLength(2);
-		expect(html.match(/data-recorded="true"/g)).toHaveLength(1);
+		expect(html.match(/data-recorded="true"/g)).toBeNull();
 		expect(html.match(/role="alert"/g)).toHaveLength(1);
 		expect(html).toContain('data-error-for="read"');
 		expect(html).not.toContain('data-error-for="water"');

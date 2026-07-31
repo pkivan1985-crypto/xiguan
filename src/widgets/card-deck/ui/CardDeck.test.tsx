@@ -199,6 +199,7 @@ const copy: CardDeckCopy = {
 		quantity: '数值记录',
 		duration: '时长记录',
 		avoid: '避免记录',
+		checklist: '逐项记录',
 	},
 };
 

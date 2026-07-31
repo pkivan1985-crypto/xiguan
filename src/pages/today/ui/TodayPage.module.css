@@ -1,3 +1,4 @@
+/* stylelint-disable no-descending-specificity -- Dialog and page actions intentionally share icon/button base rules. */
 .page {
 	display: flex;
 	flex-direction: column;
@@ -136,6 +137,90 @@
 	width: 1px;
 	height: 22px;
 	background: var(--border-color);
+}
+
+.dialogBackdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 80;
+	display: grid;
+	align-items: end;
+	padding: 20px max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+	background: rgb(0 8 12 / 68%);
+	backdrop-filter: blur(6px);
+}
+
+.deleteDialog {
+	display: grid;
+	grid-template-columns: 42px minmax(0, 1fr);
+	gap: 8px 12px;
+	width: min(100%, 430px);
+	padding: 18px;
+	margin: 0 auto;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 22px;
+	box-shadow: var(--shadow-lg);
+}
+
+.warningIcon {
+	display: grid;
+	grid-row: 1 / span 2;
+	place-items: center;
+	width: 42px;
+	height: 42px;
+	font-size: 22px;
+	color: var(--danger-color, #ff6b6b);
+	background: color-mix(in srgb, var(--danger-color, #ff6b6b) 14%, transparent);
+	border-radius: 13px;
+}
+
+.deleteDialog h2 {
+	align-self: end;
+	font-size: 18px;
+	line-height: 24px;
+}
+
+.deleteDialog p {
+	font-size: 13px;
+	line-height: 20px;
+	color: var(--muted-color);
+}
+
+.deleteDialog .deleteError {
+	grid-column: 1 / -1;
+	color: var(--error-color);
+}
+
+.dialogActions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-column: 1 / -1;
+	gap: 10px;
+	margin-top: 8px;
+}
+
+.dialogActions button {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: center;
+	min-height: 46px;
+	font-size: 14px;
+	font-weight: 750;
+	color: var(--text-color);
+	background: var(--surface-secondary);
+	border-radius: 14px;
+}
+
+.dialogActions .confirmDelete {
+	color: #fff;
+	background: var(--danger-color, #d83c48);
+}
+
+.dialogActions svg {
+	width: 18px;
+	height: 18px;
 }
 
 @media (max-width: 370px) {

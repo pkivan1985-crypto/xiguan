@@ -135,6 +135,7 @@ function DeckPageContent({
 						quantity: t('shell.deck.trackingTypes.quantity'),
 						duration: t('shell.deck.trackingTypes.duration'),
 						avoid: t('shell.deck.trackingTypes.avoid'),
+						checklist: t('shell.deck.trackingTypes.count'),
 					},
 				}}
 			/>

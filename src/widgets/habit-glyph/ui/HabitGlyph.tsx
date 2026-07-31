@@ -5,6 +5,7 @@ import {
 	PiMoonStars,
 	PiPersonSimpleRun,
 	PiShieldCheck,
+	PiLeaf,
 } from 'react-icons/pi';
 
 import type { CardTemplate } from '@entities/card-template';
@@ -20,6 +21,7 @@ const glyphs: Record<HabitIconKey, IconType> = {
 	book: PiBookOpenText,
 	moon: PiMoonStars,
 	shield: PiShieldCheck,
+	leaf: PiLeaf,
 };
 
 export interface HabitGlyphProps {

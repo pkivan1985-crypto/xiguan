@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components -- The approved task boundary keeps the tested interaction helpers beside this panel. */
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+	PiArrowLeft,
 	PiCaretDown,
 	PiCheck,
 	PiCheckCircle,
@@ -13,6 +14,7 @@ import {
 	PiPlayFill,
 	PiPlus,
 	PiTimer,
+	PiTrash,
 	PiX,
 } from 'react-icons/pi';
 
@@ -40,6 +42,8 @@ export interface TodayHabitPanelProps {
 	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
 	onComplete: (habit: DailyHabitView) => void;
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
+	onOpenDetails?: (habit: DailyHabitView) => void;
+	onRequestDelete?: (habit: DailyHabitView) => void;
 	onToggleCompleted: () => void;
 }
 
@@ -58,6 +62,23 @@ export function nextHabitQuantity(
 		return habit.quantityBaseValue + habit.stepBase;
 	}
 	return habit.quantityBaseValue >= habit.dailyTargetBase ? 0 : habit.dailyTargetBase;
+}
+
+const SWIPE_ACTION_WIDTH = 84;
+const SWIPE_REVEAL_THRESHOLD = 42;
+
+export function resolveSwipeReveal({
+	deltaX,
+	deltaY,
+	wasRevealed,
+}: {
+	deltaX: number;
+	deltaY: number;
+	wasRevealed: boolean;
+}): boolean {
+	if (Math.abs(deltaY) > Math.abs(deltaX)) return wasRevealed;
+	if (wasRevealed) return deltaX < SWIPE_REVEAL_THRESHOLD;
+	return deltaX <= -SWIPE_REVEAL_THRESHOLD;
 }
 
 function isCompleted(habit: DailyHabitView): boolean {
@@ -312,12 +333,14 @@ function HabitControl({
 	onChange,
 	onComplete,
 	onEditActual,
+	onOpenDetails,
 }: {
 	habit: DailyHabitView;
 	pending: boolean;
 	onChange: (quantityBaseValue: number) => void;
 	onComplete: () => void;
 	onEditActual: () => void;
+	onOpenDetails?: () => void;
 }) {
 	const { t } = useTranslation();
 	const completed = isCompleted(habit);
@@ -329,18 +352,58 @@ function HabitControl({
 			</span>
 		);
 	}
+	if (onOpenDetails) {
+		return (
+			<div className={styles.quantityActions}>
+				<button
+					type='button'
+					className={styles.completeAction}
+					disabled={pending || completed}
+					data-recorded={completed || undefined}
+					onClick={completed ? undefined : onComplete}
+				>
+					<PiCheckCircle aria-hidden='true' />
+					<span>{t(completed
+						? 'shell.today.completedAction'
+						: 'shell.today.completeAction')}</span>
+				</button>
+				<button
+					type='button'
+					className={styles.actualAction}
+					disabled={pending}
+					onClick={onOpenDetails}
+				>
+					<PiPencilSimple aria-hidden='true' />
+					<span>{t(habit.trackingType === 'checklist'
+						? 'shell.createCard.detailAction'
+						: 'shell.today.enterActual')}</span>
+				</button>
+				{completed && (
+					<button
+						type='button'
+						className={styles.undoQuantity}
+						disabled={pending || habit.quantityBaseValue === 0}
+						aria-label={t('shell.today.decreaseHabit', { title: habit.title })}
+						onClick={() => onChange(0)}
+					>
+						<PiX aria-hidden='true' />
+					</button>
+				)}
+			</div>
+		);
+	}
 	if (habit.trackingType === 'quantity') {
 		return (
 			<div className={styles.quantityActions}>
 				<button
 					type='button'
 					className={styles.completeAction}
-					disabled={pending || habit.recordedToday}
-					data-recorded={habit.recordedToday || undefined}
-					onClick={habit.recordedToday ? undefined : onComplete}
+					disabled={pending || completed}
+					data-recorded={completed || undefined}
+					onClick={completed ? undefined : onComplete}
 				>
 					<PiCheckCircle aria-hidden='true' />
-					<span>{t(habit.recordedToday
+					<span>{t(completed
 						? 'shell.today.completedAction'
 						: 'shell.today.completeAction')}</span>
 				</button>
@@ -421,6 +484,7 @@ function HabitRow({
 	onChange,
 	onComplete,
 	onEditActual,
+	onOpenDetails,
 	onCancelActual,
 	onSaveActual,
 }: {
@@ -432,6 +496,7 @@ function HabitRow({
 	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
 	onComplete: (habit: DailyHabitView) => void;
 	onEditActual: () => void;
+	onOpenDetails?: () => void;
 	onCancelActual: () => void;
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
 }) {
@@ -446,7 +511,6 @@ function HabitRow({
 			data-completed={isCompleted(habit)}
 			data-scheduled={habit.scheduledToday}
 			aria-busy={pending || undefined}
-			role='listitem'
 		>
 			<HabitGlyph
 				iconKey={habit.iconKey}
@@ -464,6 +528,7 @@ function HabitRow({
 				onChange={(quantityBaseValue) => onChange(habit, quantityBaseValue)}
 				onComplete={() => onComplete(habit)}
 				onEditActual={onEditActual}
+				onOpenDetails={onOpenDetails}
 			/>
 			{saveError && (
 				<p
@@ -487,6 +552,127 @@ function HabitRow({
 	);
 }
 
+interface SwipeGesture {
+	pointerId: number;
+	startOffset: number;
+	startX: number;
+	startY: number;
+}
+
+function SwipeableHabitRow({
+	habit,
+	revealed,
+	onReveal,
+	onRequestDelete,
+	...rowProps
+}: Omit<Parameters<typeof HabitRow>[0], 'habit'> & {
+	habit: DailyHabitView;
+	revealed: boolean;
+	onReveal: (revealed: boolean) => void;
+	onRequestDelete?: (habit: DailyHabitView) => void;
+}) {
+	const { t } = useTranslation();
+	const gestureRef = useRef<SwipeGesture | null>(null);
+	const [dragging, setDragging] = useState(false);
+	const [dragOffset, setDragOffset] = useState(0);
+	const swipeEnabled = Boolean(onRequestDelete);
+	const currentOffset = dragging
+		? dragOffset
+		: revealed ? -SWIPE_ACTION_WIDTH : 0;
+
+	function pointerDown(event: PointerEvent<HTMLDivElement>) {
+		if (!swipeEnabled || rowProps.pending) return;
+		const target = event.target;
+		// eslint-disable-next-line i18next/no-literal-string -- This is an interaction selector, not user-facing copy.
+		if (target instanceof Element && target.closest('button, a, input, textarea, select')) return;
+		gestureRef.current = {
+			pointerId: event.pointerId,
+			startOffset: revealed ? -SWIPE_ACTION_WIDTH : 0,
+			startX: event.clientX,
+			startY: event.clientY,
+		};
+		setDragOffset(revealed ? -SWIPE_ACTION_WIDTH : 0);
+		setDragging(true);
+		event.currentTarget.setPointerCapture?.(event.pointerId);
+	}
+
+	function pointerMove(event: PointerEvent<HTMLDivElement>) {
+		const gesture = gestureRef.current;
+		if (!gesture || gesture.pointerId !== event.pointerId) return;
+		const deltaX = event.clientX - gesture.startX;
+		const deltaY = event.clientY - gesture.startY;
+		if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 8) {
+			gestureRef.current = null;
+			setDragging(false);
+			return;
+		}
+		if (Math.abs(deltaX) < 6) return;
+		event.preventDefault();
+		setDragOffset(Math.max(
+			-SWIPE_ACTION_WIDTH,
+			Math.min(0, gesture.startOffset + deltaX),
+		));
+	}
+
+	function finishPointer(event: PointerEvent<HTMLDivElement>) {
+		const gesture = gestureRef.current;
+		if (!gesture || gesture.pointerId !== event.pointerId) return;
+		const shouldReveal = resolveSwipeReveal({
+			deltaX: event.clientX - gesture.startX,
+			deltaY: event.clientY - gesture.startY,
+			wasRevealed: revealed,
+		});
+		gestureRef.current = null;
+		setDragging(false);
+		onReveal(shouldReveal);
+		event.currentTarget.releasePointerCapture?.(event.pointerId);
+	}
+
+	function cancelPointer(event: PointerEvent<HTMLDivElement>) {
+		if (gestureRef.current?.pointerId !== event.pointerId) return;
+		gestureRef.current = null;
+		setDragging(false);
+	}
+
+	return (
+		<div
+			className={styles.swipeShell}
+			data-swipe-habit-id={habit.id}
+			data-revealed={revealed || undefined}
+			data-dragging={dragging || undefined}
+			onPointerDown={pointerDown}
+			onPointerMove={pointerMove}
+			onPointerUp={finishPointer}
+			onPointerCancel={cancelPointer}
+			role='listitem'
+		>
+			{onRequestDelete && (
+				<button
+					type='button'
+					className={styles.deleteAction}
+					data-testid='delete-habit-action'
+					tabIndex={revealed ? 0 : -1}
+					aria-label={t('shell.today.deleteHabit', { title: habit.title })}
+					disabled={rowProps.pending}
+					onClick={() => {
+						onReveal(false);
+						onRequestDelete(habit);
+					}}
+				>
+					<PiTrash aria-hidden='true' />
+					<span>{t('habits.actions.delete')}</span>
+				</button>
+			)}
+			<div
+				className={styles.swipeContent}
+				style={{ transform: `translateX(${currentOffset}px)` }}
+			>
+				<HabitRow habit={habit} {...rowProps} />
+			</div>
+		</div>
+	);
+}
+
 function TodayHabitPanel({
 	habits,
 	context = 'today',
@@ -496,10 +682,13 @@ function TodayHabitPanel({
 	onChange,
 	onComplete,
 	onSaveActual,
+	onOpenDetails,
+	onRequestDelete,
 	onToggleCompleted,
 }: TodayHabitPanelProps) {
 	const { t } = useTranslation();
 	const [actualEditorId, setActualEditorId] = useState<string | null>(null);
+	const [revealedHabitId, setRevealedHabitId] = useState<string | null>(null);
 	const completedCount = habits.filter(isCompleted).length;
 	const visibleHabits = completedExpanded
 		? habits
@@ -511,6 +700,12 @@ function TodayHabitPanel({
 			data-testid='today-habit-panel'
 			data-context={context}
 		>
+			{habits.length > 0 && onRequestDelete && (
+				<p className={styles.swipeHint}>
+					<PiArrowLeft aria-hidden='true' />
+					<span>{t('shell.today.swipeDeleteHint')}</span>
+				</p>
+			)}
 			{habits.length === 0 ? (
 				<div className={styles.empty}>
 					<strong>{t('shell.today.emptyTitle')}</strong>
@@ -519,16 +714,25 @@ function TodayHabitPanel({
 			) : (
 				<div className={styles.rows} role='list'>
 					{visibleHabits.map((habit) => (
-						<HabitRow
+						<SwipeableHabitRow
 							key={habit.id}
 							habit={habit}
+							revealed={revealedHabitId === habit.id}
 							context={context}
 							pending={pendingIds.has(habit.id)}
 							saveError={saveErrorIds.has(habit.id)}
 							actualEditorOpen={actualEditorId === habit.id}
+							onReveal={(revealed) => {
+								setRevealedHabitId(revealed ? habit.id : null);
+							}}
+							onRequestDelete={onRequestDelete}
 							onChange={onChange}
 							onComplete={onComplete}
-							onEditActual={() => setActualEditorId(habit.id)}
+							onEditActual={() => {
+								setRevealedHabitId(null);
+								setActualEditorId(habit.id);
+							}}
+							onOpenDetails={onOpenDetails ? () => onOpenDetails(habit) : undefined}
 							onCancelActual={() => setActualEditorId(null)}
 							onSaveActual={(selectedHabit, entry) => {
 								onSaveActual(selectedHabit, entry);

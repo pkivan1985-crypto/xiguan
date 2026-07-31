@@ -159,6 +159,43 @@ describe('loadDailyHabits', () => {
 		});
 	});
 
+	it('loads light-food rules as the daily target and restores the saved checklist details', async () => {
+		await database.table('userCards').add({
+			id: 'food',
+			officialCardId: 'light-food',
+			title: '轻食计划',
+			habitConfig: {
+				kind: 'light-food',
+				rules: [
+					{ id: 'avoid-spicy', label: '不吃辣', builtIn: true },
+					{ id: 'custom-a', label: '不吃夜宵', builtIn: false },
+				],
+			},
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-07-25T00:00:00.000Z',
+			updatedAt: '2026-07-25T00:00:00.000Z',
+		});
+		await database.table('actionRecords').add({
+			id: 'food:2026-07-25',
+			userCardId: 'food',
+			localDate: '2026-07-25',
+			quantityBaseValue: 1,
+			details: { kind: 'light-food', checkedRuleIds: ['avoid-spicy'] },
+			firstSavedAt: '2026-07-25T08:00:00.000Z',
+			lastSavedAt: '2026-07-25T08:00:00.000Z',
+			lastSubmissionId: 'food-save',
+		});
+
+		expect((await loadDailyHabits(database, '2026-07-25')).habits[0]).toMatchObject({
+			id: 'food',
+			trackingType: 'checklist',
+			dailyTargetBase: 2,
+			habitConfig: { kind: 'light-food', rules: [{ id: 'avoid-spicy' }, { id: 'custom-a' }] },
+			details: { kind: 'light-food', checkedRuleIds: ['avoid-spicy'] },
+		});
+	});
+
 	it('adds the latest shortfall to the next scheduled target without reducing it for surplus', async () => {
 		await database.table('userCards').add({
 			id: 'run',

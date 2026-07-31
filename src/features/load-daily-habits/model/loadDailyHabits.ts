@@ -14,6 +14,8 @@ import {
 	type HabitTrackingType,
 } from '@entities/card-template';
 import type { IsoWeekday, UserCard } from '@entities/user-card';
+import type { HabitConfiguration } from '@entities/user-card';
+import type { HabitRecordDetails } from '@entities/action-record';
 import type { LocalDate } from '@shared/lib/date';
 import { formatLocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
@@ -36,6 +38,9 @@ export interface DailyHabitView {
 	totalQuantityBaseValue: number;
 	activeDays: number;
 	supportsTrainingDetails: boolean;
+	officialCardId?: string;
+	habitConfig?: HabitConfiguration;
+	details?: HabitRecordDetails;
 	durationSeconds?: number;
 	averagePaceSecondsPerKm?: number;
 	averageHeartRateBpm?: number;
@@ -191,8 +196,12 @@ export async function loadDailyHabits(
 				?? stageGoal?.dailyTargetBase
 				?? template.defaultDailyTargetBase
 				?? template.quantity.basePerDisplayUnit;
+			const configuredDailyTarget = card.habitConfig?.kind === 'light-food'
+				? card.habitConfig.rules.length
+				: resolvedBaseDailyTarget;
 			return [{
 				id: card.id,
+				officialCardId: card.officialCardId,
 				title: card.title,
 				trackingType,
 				iconKey: template.iconKey ?? 'activity',
@@ -205,13 +214,15 @@ export async function loadDailyHabits(
 				stepBase: template.stepBase ?? template.quantity.basePerDisplayUnit,
 				basePerDisplayUnit: template.quantity.basePerDisplayUnit,
 				maxDecimalPlaces: template.quantity.maxDecimalPlaces,
-				baseDailyTargetBase: resolvedBaseDailyTarget,
+				baseDailyTargetBase: configuredDailyTarget,
 				dailyTargetBase: todayRecord?.plannedQuantityBaseValue
-					?? resolvedBaseDailyTarget + carryInBaseValue,
+					?? configuredDailyTarget + carryInBaseValue,
 				carryInBaseValue,
 				totalQuantityBaseValue: cardRecords.reduce((total, record) => total + record.quantityBaseValue, 0),
 				activeDays: new Set(cardRecords.map((record) => record.localDate)).size,
 				supportsTrainingDetails: card.officialCardId === 'running',
+				habitConfig: card.habitConfig,
+				details: todayRecord?.details,
 				durationSeconds: todayRecord?.durationSeconds,
 				averagePaceSecondsPerKm: todayRecord?.averagePaceSecondsPerKm,
 				averageHeartRateBpm: todayRecord?.averageHeartRateBpm,

@@ -1,7 +1,7 @@
 import type { QuantityConfig } from '../lib/parseQuantity';
 
 export type StageCompletionMode = 'quantity' | 'activeDays' | 'both';
-export type HabitTrackingType = 'check' | 'count' | 'quantity' | 'duration' | 'avoid';
+export type HabitTrackingType = 'check' | 'count' | 'quantity' | 'duration' | 'avoid' | 'checklist';
 
 export interface CardTemplate {
 	id: string;
@@ -12,7 +12,7 @@ export interface CardTemplate {
 	version: number;
 	defaultStageMode: StageCompletionMode;
 	trackingType?: HabitTrackingType;
-	iconKey?: 'activity' | 'droplet' | 'book' | 'moon' | 'shield';
+	iconKey?: 'activity' | 'droplet' | 'book' | 'moon' | 'shield' | 'leaf';
 	accent?: 'blue' | 'cyan' | 'green' | 'amber' | 'violet';
 	defaultDailyTargetBase?: number;
 	stepBase?: number;

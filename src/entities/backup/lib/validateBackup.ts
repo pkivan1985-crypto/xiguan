@@ -48,6 +48,62 @@ function isSafePositive(value: unknown): value is number {
 	return Number.isSafeInteger(value) && (value as number) > 0;
 }
 
+function isOptionalText(value: unknown, maximum: number): boolean {
+	return value === undefined || (typeof value === 'string' && value.length <= maximum);
+}
+
+function isOptionalSafeNonNegative(value: unknown): boolean {
+	return value === undefined || isSafeNonNegative(value);
+}
+
+function assertHabitConfig(value: unknown): void {
+	if (!isRecord(value) || value.kind !== 'light-food' || !Array.isArray(value.rules)
+		|| value.rules.length === 0 || value.rules.length > 50) fail('INVALID_BACKUP');
+	for (const rule of value.rules) {
+		if (!isRecord(rule) || !isText(rule.id) || !isText(rule.label)
+			|| rule.label.length > 80 || typeof rule.builtIn !== 'boolean') fail('INVALID_BACKUP');
+	}
+	assertUnique(value.rules.map((rule) => String((rule as Record<string, unknown>).id)));
+}
+
+function assertRecordDetails(value: unknown): void {
+	if (!isRecord(value) || !isText(value.kind)) fail('INVALID_BACKUP');
+	if (value.kind === 'water') {
+		if (value.cupSizeMl !== undefined && (!isSafePositive(value.cupSizeMl) || value.cupSizeMl > 5_000)) fail('INVALID_BACKUP');
+		if (![value.morningCups, value.afternoonCups, value.eveningCups].every(isOptionalSafeNonNegative)) fail('INVALID_BACKUP');
+		if (value.beverageType !== undefined && !['water', 'tea', 'coffee', 'other'].includes(String(value.beverageType))) fail('INVALID_BACKUP');
+		return;
+	}
+	if (value.kind === 'reading') {
+		if (!isOptionalText(value.bookTitle, 120) || !isOptionalText(value.chapter, 120) || !isOptionalText(value.reflection, 1_000)) fail('INVALID_BACKUP');
+		if (value.durationMinutes !== undefined && !isSafePositive(value.durationMinutes)) fail('INVALID_BACKUP');
+		if (![value.startPage, value.endPage].every(isOptionalSafeNonNegative)) fail('INVALID_BACKUP');
+		if (isSafeNonNegative(value.startPage) && isSafeNonNegative(value.endPage) && value.endPage < value.startPage) fail('INVALID_BACKUP');
+		return;
+	}
+	if (value.kind === 'light-food') {
+		if (!Array.isArray(value.checkedRuleIds) || value.checkedRuleIds.some((id) => !isText(id))
+			|| new Set(value.checkedRuleIds).size !== value.checkedRuleIds.length) fail('INVALID_BACKUP');
+		return;
+	}
+	if (value.kind === 'sleep') {
+		if (value.onTime !== undefined && typeof value.onTime !== 'boolean') fail('INVALID_BACKUP');
+		if (![value.bedtime, value.wakeTime].every((time) => time === undefined || (typeof time === 'string' && /^\d{2}:\d{2}$/.test(time)))) fail('INVALID_BACKUP');
+		if (value.durationMinutes !== undefined && !isSafePositive(value.durationMinutes)) fail('INVALID_BACKUP');
+		if (value.quality !== undefined && ![1, 2, 3, 4, 5].includes(Number(value.quality))) fail('INVALID_BACKUP');
+		if (value.wakeFeeling !== undefined && !['tired', 'normal', 'refreshed'].includes(String(value.wakeFeeling))) fail('INVALID_BACKUP');
+		return;
+	}
+	if (value.kind === 'screen-free') {
+		if (![value.screenMinutes, value.shortVideoMinutes, value.socialMinutes, value.newsMinutes, value.otherMinutes].every(isOptionalSafeNonNegative)) fail('INVALID_BACKUP');
+		if (value.screenFreeMoments !== undefined && (!Array.isArray(value.screenFreeMoments)
+			|| value.screenFreeMoments.some((moment) => !['after-waking', 'during-meals', 'before-sleep'].includes(String(moment)))
+			|| new Set(value.screenFreeMoments).size !== value.screenFreeMoments.length)) fail('INVALID_BACKUP');
+		return;
+	}
+	fail('INVALID_BACKUP');
+}
+
 function assertUnique(values: string[]): void {
 	if (new Set(values).size !== values.length) fail('DUPLICATE_KEY');
 }
@@ -79,6 +135,7 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 				}
 			}
 		}
+		if (card.habitConfig !== undefined) assertHabitConfig(card.habitConfig);
 	}
 	for (const goal of candidate.longTermGoals) {
 		if (!isRecord(goal) || !isText(goal.id) || !isText(goal.userCardId) || !isText(goal.title)
@@ -116,6 +173,7 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 		if (record.averageHeartRateBpm !== undefined
 			&& (!Number.isSafeInteger(record.averageHeartRateBpm) || record.averageHeartRateBpm < 30 || record.averageHeartRateBpm > 240)) fail('INVALID_BACKUP');
 		if (record.note !== undefined && (typeof record.note !== 'string' || record.note.length > 280)) fail('INVALID_BACKUP');
+		if (record.details !== undefined) assertRecordDetails(record.details);
 	}
 	for (const batch of candidate.outcomeBatches) {
 		if (!isRecord(batch) || !isText(batch.id) || !isText(batch.submissionId) || !isLocalDate(batch.localDate)

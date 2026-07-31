@@ -29,6 +29,7 @@ export interface SaveTodayOutcomeInput {
 		averagePaceSecondsPerKm?: number;
 		averageHeartRateBpm?: number;
 		note?: string;
+		details?: ActionRecord['details'];
 	}>>;
 }
 
@@ -217,6 +218,7 @@ export async function saveTodayOutcome(
 					? recordDetails.averageHeartRateBpm
 					: existingRecord?.averageHeartRateBpm,
 				note: recordDetails ? recordDetails.note : existingRecord?.note,
+				details: recordDetails ? recordDetails.details : existingRecord?.details,
 				longTermGoalId: longTermGoal?.id,
 				stageGoalId: stageGoal?.id,
 				firstSavedAt: existingRecord?.firstSavedAt ?? input.nowIso,

@@ -12,7 +12,9 @@ export const APP_ROUTES = {
 	SETTINGS: '/settings',
 	DATA_MANAGEMENT: '/settings/data',
 	GOAL_DETAILS_PATTERN: '/goals/:userCardId',
+	HABIT_RECORD_PATTERN: '/record/:userCardId',
 	goalDetails: (userCardId: string) => `/goals/${encodeURIComponent(userCardId)}`,
+	habitRecord: (userCardId: string, localDate?: string) => `/record/${encodeURIComponent(userCardId)}${localDate ? `?date=${encodeURIComponent(localDate)}` : ''}`,
 } as const;
 
 export const PRIMARY_NAV_ROUTES = [

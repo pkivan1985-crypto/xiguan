@@ -33,6 +33,31 @@ describe('createHabit', () => {
 		expect(await database.table('longTermGoals').count()).toBe(0);
 	});
 
+	it('stores light-food rules as optional card configuration', async () => {
+		const result = await createHabit(database, {
+			templateId: 'light-food',
+			cardTitle: '清淡饮食',
+			startDate: '2026-07-25',
+			habitConfig: {
+				kind: 'light-food',
+				rules: [
+					{ id: 'no-spicy', label: '不吃辣', builtIn: true },
+					{ id: 'custom-fried', label: '不吃油炸食物', builtIn: false },
+				],
+			},
+			nowIso: '2026-07-25T01:00:00.000Z',
+			ids: { userCardId: 'card-food', longTermGoalId: 'long-food', stageGoalId: 'stage-food' },
+		});
+
+		expect(result.userCard.habitConfig).toEqual({
+			kind: 'light-food',
+			rules: [
+				{ id: 'no-spicy', label: '不吃辣', builtIn: true },
+				{ id: 'custom-fried', label: '不吃油炸食物', builtIn: false },
+			],
+		});
+	});
+
 	it('atomically creates optional long-term and stage plans using the preset unit', async () => {
 		const result = await createHabit(database, {
 			templateId: 'reading-time',

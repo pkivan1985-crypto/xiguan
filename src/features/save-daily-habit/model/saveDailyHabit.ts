@@ -22,6 +22,7 @@ export interface SaveDailyHabitInput {
 	averagePaceSecondsPerKm?: number;
 	averageHeartRateBpm?: number;
 	note?: string;
+	details?: ActionRecord['details'];
 	nowIso: string;
 	submissionId: string;
 }
@@ -58,6 +59,13 @@ function assertInput(input: SaveDailyHabitInput): void {
 		throw new Error('INVALID_HEART_RATE');
 	}
 	if (input.note !== undefined && input.note.length > 280) throw new Error('NOTE_TOO_LONG');
+	if (input.details !== undefined) {
+		try {
+			JSON.stringify(input.details);
+		} catch {
+			throw new Error('INVALID_DETAILS');
+		}
+	}
 }
 
 function singleCardDraft(input: SaveDailyHabitInput, valueText: string): TodayDraft {
@@ -129,6 +137,7 @@ export async function saveDailyHabit(
 				averagePaceSecondsPerKm: input.averagePaceSecondsPerKm,
 				averageHeartRateBpm: input.averageHeartRateBpm,
 				note: input.note?.trim() || undefined,
+				details: input.details,
 			},
 		},
 	}, singleCardDraft(input, displayValue));
