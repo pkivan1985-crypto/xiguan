@@ -1,16 +1,22 @@
 /* eslint-disable i18next/no-literal-string -- Record kinds and option values are stable domain identifiers. */
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { IconType } from 'react-icons';
 import {
 	PiArrowLeft,
+	PiBowlFood,
 	PiBookOpenText,
 	PiCheck,
-	PiClock,
+	PiCoffee,
 	PiDrop,
+	PiFlame,
+	PiGauge,
 	PiHeartbeat,
 	PiLeaf,
 	PiMoonStars,
 	PiNotePencil,
+	PiPepper,
+	PiRuler,
 	PiShieldCheck,
 	PiTimer,
 	PiX,
@@ -27,6 +33,12 @@ import { HabitGlyph } from '@widgets/habit-glyph';
 import styles from './HabitRecordPage.module.css';
 
 const SCREEN_MOMENTS = ['after-waking', 'during-meals', 'before-sleep'] as const;
+const FOOD_RULE_ICONS: Record<string, IconType> = {
+	'avoid-heaty': PiFlame,
+	'avoid-spicy': PiPepper,
+	'avoid-greasy': PiBowlFood,
+	'avoid-sugary-drinks': PiCoffee,
+};
 
 function numberOrUndefined(value: string): number | undefined {
 	if (!value.trim()) return undefined;
@@ -293,8 +305,18 @@ function HabitRecordPage() {
 				{habit.officialCardId === 'light-food' && (
 					<section className={styles.block}>
 						<BlockTitle icon={PiLeaf} title={t('shell.record.food.title')} hint={t('shell.record.food.hint', { done: checkedRules.length, total: rules.length })} />
-						<div className={styles.checkList}>
-							{rules.map((rule) => <label key={rule.id}><PiLeaf aria-hidden='true' /><span>{rule.label}</span><input type='checkbox' checked={checkedRules.includes(rule.id)} onChange={() => setCheckedRules((current) => current.includes(rule.id) ? current.filter((id) => id !== rule.id) : [...current, rule.id])} /></label>)}
+						<div className={`${styles.checkList} ${styles.foodCheckList}`}>
+							{rules.map((rule) => {
+								const RuleIcon = FOOD_RULE_ICONS[rule.id] ?? PiLeaf;
+								return (
+									<label key={rule.id}>
+										<RuleIcon aria-hidden='true' />
+										<span>{rule.label}</span>
+										<input type='checkbox' checked={checkedRules.includes(rule.id)} onChange={() => setCheckedRules((current) => current.includes(rule.id) ? current.filter((id) => id !== rule.id) : [...current, rule.id])} />
+										<i className={styles.checkState} aria-hidden='true'><PiCheck /></i>
+									</label>
+								);
+							})}
 						</div>
 					</section>
 				)}
@@ -319,9 +341,9 @@ function HabitRecordPage() {
 		return <section className={styles.block}>
 			<BlockTitle icon={PiTimer} title={t('shell.record.running.title')} hint={t('shell.record.optionalHint')} />
 			<div className={styles.grid}>
-				<Field label={t('shell.record.running.distance')} value={actual} onChange={setActual} unit={habit!.displayUnit} />
-				<Field label={t('shell.record.running.duration')} value={duration} onChange={setDuration} unit={t('shell.record.units.minutes')} />
-				<Field label={t('shell.record.running.pace')} value={pace} onChange={setPace} placeholder='06:30' icon={<PiClock />} inputType='text' />
+				<Field label={t('shell.record.running.distance')} value={actual} onChange={setActual} unit={habit!.displayUnit} icon={<PiRuler />} />
+				<Field label={t('shell.record.running.duration')} value={duration} onChange={setDuration} unit={t('shell.record.units.minutes')} icon={<PiTimer />} />
+				<Field label={t('shell.record.running.pace')} value={pace} onChange={setPace} placeholder='06:30' icon={<PiGauge />} inputType='text' />
 				<Field label={t('shell.record.running.heartRate')} value={heartRate} onChange={setHeartRate} unit='bpm' icon={<PiHeartbeat />} />
 			</div>
 		</section>;

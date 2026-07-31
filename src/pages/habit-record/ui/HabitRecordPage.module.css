@@ -132,6 +132,14 @@
 	color: var(--muted-color);
 }
 
+.field > span svg,
+.wideField > span svg {
+	flex: 0 0 auto;
+	width: 13px;
+	height: 13px;
+	color: var(--accent-color);
+}
+
 .field > div {
 	position: relative;
 	display: grid;
@@ -217,6 +225,44 @@
 	min-height: 48px;
 	padding: 0 10px;
 	border-top: 1px solid var(--border-color);
+}
+
+.foodCheckList label {
+	grid-template-columns: 24px minmax(0, 1fr) 24px;
+}
+
+.checkList.foodCheckList input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	opacity: 0;
+}
+
+.checkState {
+	display: grid;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	color: transparent;
+	border: 1.5px solid var(--muted-color);
+	border-radius: 50%;
+}
+
+.checkState svg {
+	width: 14px;
+	height: 14px;
+}
+
+.checkList.foodCheckList input:checked + .checkState {
+	color: var(--page-bg);
+	background: var(--achievement-color);
+	border-color: var(--achievement-color);
+}
+
+.foodCheckList label:focus-within .checkState {
+	outline: 2px solid var(--accent-color);
+	outline-offset: 2px;
 }
 
 .checkList label:first-child {

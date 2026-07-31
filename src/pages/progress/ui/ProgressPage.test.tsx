@@ -299,7 +299,7 @@ describe('ProgressPage', () => {
 		expect(html).toContain('<h1>进展</h1>');
 		expect(html).toContain('href="/settings"');
 		expect(html).toContain('role="tablist"');
-		expect(html).toContain('aria-selected="true">月历</button>');
+		expect(html).toMatch(/aria-selected="true"><svg[^>]*>.*<\/svg>月历<\/button>/s);
 		expect(html).toContain('data-testid="progress-calendar-panel"');
 		expect(html).toContain('7月25日 · 1 项成果');
 		expect(html).toContain('跑步');
@@ -370,7 +370,7 @@ describe('ProgressPage', () => {
 			</MemoryRouter>,
 		);
 
-		expect(html).toContain('aria-selected="true">目标</button>');
+		expect(html).toMatch(/aria-selected="true"><svg[^>]*>.*<\/svg>目标<\/button>/s);
 		expect(html).not.toContain('data-testid="progress-calendar-panel"');
 		expect(html).toContain('data-testid="progress-plan-panel"');
 	});

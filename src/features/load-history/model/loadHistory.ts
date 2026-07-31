@@ -10,6 +10,8 @@ export interface HistoryRecordModel {
 	id: string;
 	localDate: string;
 	cardTitle: string;
+	iconKey?: CardTemplate['iconKey'];
+	accent?: CardTemplate['accent'];
 	quantityBaseValue: number;
 	displayValue: string;
 	displayUnit: string;
@@ -74,6 +76,8 @@ export async function loadHistory(
 					id: record.id,
 					localDate: record.localDate,
 					cardTitle: card?.title ?? '',
+					iconKey: template?.iconKey,
+					accent: template?.accent,
 					quantityBaseValue: record.quantityBaseValue,
 					displayValue: template
 						? template.trackingType && template.trackingType !== 'quantity' && template.quantity.maxDecimalPlaces === 0

@@ -1,6 +1,17 @@
 import styles from './SettingsPage.module.css';
 import { useTranslation } from 'react-i18next';
-import { FiDownload, FiExternalLink, FiGithub, FiHardDrive, FiMoon, FiRefreshCw, FiSun, FiWifi, FiWifiOff } from 'react-icons/fi';
+import {
+	PiArrowsClockwise,
+	PiArrowSquareOut,
+	PiDeviceMobile,
+	PiDownloadSimple,
+	PiGithubLogo,
+	PiHardDrive,
+	PiMoon,
+	PiSun,
+	PiWifiHigh,
+	PiWifiSlash,
+} from 'react-icons/pi';
 import { Link } from 'react-router';
 import { useSettingsStore } from '@entities/settings';
 import { usePwaInstall } from '@features/pwa-install';
@@ -56,10 +67,10 @@ function SettingsPage() {
 						{t('shell.settings.themeSystem')}
 					</button>
 					<button className={settings.theme === 'light' ? styles.selected : ''} onClick={() => setTheme('light')}>
-						<FiSun aria-hidden='true' /> {t('shell.settings.themeLight')}
+						<PiSun aria-hidden='true' /> {t('shell.settings.themeLight')}
 					</button>
 					<button className={settings.theme === 'dark' ? styles.selected : ''} onClick={() => setTheme('dark')}>
-						<FiMoon aria-hidden='true' /> {t('shell.settings.themeDark')}
+						<PiMoon aria-hidden='true' /> {t('shell.settings.themeDark')}
 					</button>
 				</div>
 
@@ -81,13 +92,13 @@ function SettingsPage() {
 
 			<ShellSection title={t('shell.settings.appTitle')} description={t('shell.settings.appDescription')}>
 				<div className={styles.appFacts}>
-					<p><FiDownload aria-hidden='true' /><span><strong>{t('shell.settings.installTitle')}</strong><small>{pwaStatusDescription}</small></span></p>
-					<p>{update.online ? <FiWifi aria-hidden='true' /> : <FiWifiOff aria-hidden='true' />}<span><strong>{t('shell.settings.offlineTitle')}</strong><small>{offlineDescription}</small></span></p>
-					<p><FiRefreshCw aria-hidden='true' /><span><strong>{t('shell.settings.updateTitle')}</strong><small>{updateDescription}</small></span></p>
+					<p><PiDeviceMobile aria-hidden='true' /><span><strong>{t('shell.settings.installTitle')}</strong><small>{pwaStatusDescription}</small></span></p>
+					<p>{update.online ? <PiWifiHigh aria-hidden='true' /> : <PiWifiSlash aria-hidden='true' />}<span><strong>{t('shell.settings.offlineTitle')}</strong><small>{offlineDescription}</small></span></p>
+					<p><PiArrowsClockwise aria-hidden='true' /><span><strong>{t('shell.settings.updateTitle')}</strong><small>{updateDescription}</small></span></p>
 				</div>
 				<div className={styles.appActions}>
 					<button onClick={install} disabled={state === 'INSTALLED'}>
-						<FiDownload aria-hidden='true' />
+						<PiDownloadSimple aria-hidden='true' />
 						{state === 'INSTALLED' ? t('shell.settings.installed') : t('shell.settings.installAction')}
 					</button>
 					<button
@@ -95,13 +106,13 @@ function SettingsPage() {
 						disabled={!update.online || update.state.kind === 'checking' || update.state.kind === 'blocked' || update.state.kind === 'applying'}
 						onClick={() => void (update.state.kind === 'available' ? update.applyUpdate() : update.checkForUpdate())}
 					>
-						<FiRefreshCw aria-hidden='true' />
+						<PiArrowsClockwise aria-hidden='true' />
 						{update.state.kind === 'available' ? t('shell.pwa.updateNow') : update.state.kind === 'failed' ? t('shell.pwa.retry') : t('shell.settings.checkUpdate')}
 					</button>
 				</div>
 				{iosDevice && (state === 'IOS_MANUAL' || state === 'INSTALLED') && (
 					<Link className={styles.iosTransferNotice} to={APP_ROUTES.DATA_MANAGEMENT}>
-						<FiHardDrive aria-hidden='true' />
+						<PiHardDrive aria-hidden='true' />
 						<span>{t(state === 'IOS_MANUAL'
 							? 'shell.settings.iosStorageBeforeInstall'
 							: 'shell.settings.iosStorageAfterInstall')}</span>
@@ -117,7 +128,7 @@ function SettingsPage() {
 				description={t('shell.settings.dataDescription')}
 			>
 				<Link className={styles.notice} to={APP_ROUTES.DATA_MANAGEMENT}>
-					<FiHardDrive aria-hidden='true' />
+					<PiHardDrive aria-hidden='true' />
 					<span>{t('shell.settings.dataAction')}</span>
 				</Link>
 			</ShellSection>
@@ -125,13 +136,13 @@ function SettingsPage() {
 			<ShellSection title={t('shell.settings.openSourceTitle')}>
 				{PROJECT_SOURCE.status === 'available' ? (
 					<a className={styles.linkRow} href={PROJECT_SOURCE.url} target='_blank' rel='noreferrer'>
-						<FiGithub aria-hidden='true' />
+						<PiGithubLogo aria-hidden='true' />
 						<span><strong>{t('shell.settings.projectSourceCode')}</strong></span>
-						<FiExternalLink aria-hidden='true' />
+						<PiArrowSquareOut aria-hidden='true' />
 					</a>
 				) : (
 					<div className={styles.linkRow}>
-						<FiGithub aria-hidden='true' />
+						<PiGithubLogo aria-hidden='true' />
 						<span>
 							<strong>{t('shell.settings.projectSourceCode')}</strong>
 							<small>{t('shell.settings.projectSourcePending')}</small>
@@ -139,12 +150,12 @@ function SettingsPage() {
 					</div>
 				)}
 				<a className={styles.linkRow} href={UPSTREAM_SOURCE_URL} target='_blank' rel='noreferrer'>
-					<FiGithub aria-hidden='true' />
+					<PiGithubLogo aria-hidden='true' />
 					<span>
 						<strong>{t('shell.settings.upstreamSourceCode')}</strong>
 						<small>{t('shell.settings.license')}</small>
 					</span>
-					<FiExternalLink aria-hidden='true' />
+					<PiArrowSquareOut aria-hidden='true' />
 				</a>
 			</ShellSection>
 		</div>

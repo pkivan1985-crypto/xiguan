@@ -32,8 +32,10 @@
 .segmented button {
 	position: relative;
 	z-index: 0;
-	display: grid;
-	place-items: center;
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: center;
 	min-width: 0;
 	padding: 0;
 	font-size: 15px;
@@ -54,6 +56,11 @@
 .segmented button[aria-selected='true'] {
 	color: var(--text-color);
 	background: color-mix(in srgb, var(--accent-color) 28%, var(--surface-secondary));
+}
+
+.segmented button > svg {
+	width: 16px;
+	height: 16px;
 }
 
 .tabContent {
@@ -113,7 +120,7 @@
 
 .recordMain {
 	display: grid;
-	grid-template-columns: 25px minmax(0, 1fr) auto;
+	grid-template-columns: 38px minmax(0, 1fr) auto;
 	gap: 8px;
 	align-items: center;
 	min-height: 24px;
@@ -121,13 +128,6 @@
 
 .records article:last-child {
 	border-bottom: 0;
-}
-
-.recordMain > span {
-	display: grid;
-	place-items: center;
-	font-size: 19px;
-	color: var(--sport-color);
 }
 
 .recordMain > div {
@@ -167,7 +167,7 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px 6px;
-	padding-left: 33px;
+	padding-left: 46px;
 }
 
 .recordFacts span {

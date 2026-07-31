@@ -3,12 +3,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	PiArrowClockwise,
+	PiCalendarBlank,
 	PiCalendarPlus,
 	PiCaretRight,
 	PiChartBar,
-	PiCheckCircle,
+	PiEye,
 	PiGearSix,
 	PiPencilSimple,
+	PiTarget,
 	PiX,
 } from 'react-icons/pi';
 import { Link, useSearchParams } from 'react-router';
@@ -43,6 +45,7 @@ import { saveDailyHabitInApp } from '@features/save-daily-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
 import { GoalSummary } from '@widgets/goal-summary';
+import { HabitGlyph } from '@widgets/habit-glyph';
 import {
 	ActionRecordEditor,
 	type ActionRecordEditValue,
@@ -182,6 +185,9 @@ function ProgressPageContent({
 						onClick={() => onChangeTab(tab.tab)}
 						key={tab.tab}
 					>
+						{tab.tab === 'calendar'
+							? <PiCalendarBlank aria-hidden='true' />
+							: <PiTarget aria-hidden='true' />}
 						{t(tab.tab === 'calendar'
 							? 'shell.progress.calendarTab'
 							: 'shell.progress.goalsTab')}
@@ -230,7 +236,13 @@ function ProgressPageContent({
 											return (
 												<article key={record.id}>
 													<div className={styles.recordMain}>
-														<span><PiCheckCircle aria-hidden='true' /></span>
+														<HabitGlyph
+															iconKey={record.iconKey ?? 'activity'}
+															accent={record.accent ?? 'green'}
+															label={record.cardTitle}
+															decorative
+															size='sm'
+														/>
 														<div>
 															<strong>{record.cardTitle}</strong>
 															{showRelatedGoalTitle && <small>{relatedGoalTitle}</small>}
@@ -317,6 +329,7 @@ function ProgressPageContent({
 										className={styles.detailsLink}
 										to={buildHistoryDateHref(selectedDate)}
 									>
+										<PiEye aria-hidden='true' />
 										{t('shell.progress.details')}
 										<PiCaretRight aria-hidden='true' />
 									</Link>
