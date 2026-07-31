@@ -7,6 +7,7 @@ import { SettingsPage } from '@pages/settings';
 import { CreateRunningCardPage } from '@pages/create-running-card';
 import { GoalDetailsPage } from '@pages/habit-statistics';
 import { DataManagementPage } from '@pages/data-management';
+import { HabitRecordPage } from '@pages/habit-record';
 import { APP_ROUTES } from '@shared/config';
 import { AppShell } from '@widgets/app-shell';
 
@@ -36,6 +37,10 @@ export const routeConfig: RouteObject[] = [
 	{
 		path: APP_ROUTES.DECK_NEW,
 		element: <CreateRunningCardPage />,
+	},
+	{
+		path: APP_ROUTES.HABIT_RECORD_PATTERN,
+		element: <HabitRecordPage />,
 	},
 	{
 		path: '*',

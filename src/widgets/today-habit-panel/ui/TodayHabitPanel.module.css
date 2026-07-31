@@ -18,6 +18,48 @@
 	display: grid;
 }
 
+.swipeShell {
+	position: relative;
+	overflow: hidden;
+	touch-action: pan-y;
+}
+
+.swipeShell + .swipeShell {
+	border-top: 1px solid var(--border-color);
+}
+
+.swipeContent {
+	position: relative;
+	z-index: 1;
+	background: var(--surface-color);
+	transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	will-change: transform;
+}
+
+.swipeShell[data-dragging='true'] .swipeContent {
+	transition: none;
+}
+
+.deleteAction {
+	position: absolute;
+	inset: 0 0 0 auto;
+	display: grid;
+	gap: 4px;
+	place-content: center;
+	width: 84px;
+	font-size: 12px;
+	font-weight: 750;
+	line-height: 16px;
+	color: #fff;
+	background: var(--danger-color, #d83c48);
+}
+
+.deleteAction svg {
+	width: 22px;
+	height: 22px;
+	margin-inline: auto;
+}
+
 .habitRow {
 	--row-accent: var(--accent-color);
 
@@ -30,10 +72,6 @@
 	padding: 0 16px;
 }
 
-.habitRow + .habitRow {
-	border-top: 1px solid var(--border-color);
-}
-
 .habitRow[data-tracking-type='quantity'] {
 	min-height: 104px;
 	padding-block: 10px;
@@ -42,6 +80,10 @@
 .habitRow[data-scheduled='false'] {
 	min-height: 84px;
 	background: color-mix(in srgb, var(--surface-secondary) 42%, transparent);
+}
+
+.swipeShell:has(.habitRow[data-scheduled='false']) .swipeContent {
+	background: color-mix(in srgb, var(--surface-secondary) 42%, var(--surface-color));
 }
 
 .habitRow[data-tracking-type='duration'] {
@@ -394,6 +436,25 @@
 	color: var(--muted-color);
 	background: transparent;
 	border-top: 1px solid var(--border-color);
+}
+
+.swipeHint {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: flex-end;
+	min-height: 32px;
+	padding: 4px 16px;
+	font-size: 11px;
+	line-height: 16px;
+	color: var(--muted-color);
+	border-bottom: 1px solid var(--border-color);
+}
+
+.swipeHint svg {
+	width: 15px;
+	height: 15px;
+	color: var(--danger-color, #ff8585);
 }
 
 .completedFold svg {

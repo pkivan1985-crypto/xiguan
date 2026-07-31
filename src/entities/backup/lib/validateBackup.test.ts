@@ -114,6 +114,33 @@ describe('backup V1 validation', () => {
 		await expect(validatePlainBackup(invalidTarget, definitions, digest)).rejects.toMatchObject({ code: 'INVALID_BACKUP' });
 	});
 
+	it('accepts valid habit configuration and typed record details but rejects malformed details', async () => {
+		const configured = await envelope();
+		configured.data.userCards[0].habitConfig = {
+			kind: 'light-food',
+			rules: [{ id: 'no-spicy', label: '不吃辣', builtIn: true }],
+		};
+		configured.data.actionRecords[0].details = {
+			kind: 'water',
+			cupSizeMl: 300,
+			morningCups: 2,
+			afternoonCups: 3,
+			eveningCups: 1,
+			beverageType: 'water',
+		};
+		configured.checksum.value = await backupFingerprint(configured.data, digest);
+		await expect(validatePlainBackup(configured, definitions, digest)).resolves.toBeDefined();
+
+		const malformed = structuredClone(configured);
+		malformed.data.actionRecords[0].details = {
+			kind: 'water',
+			cupSizeMl: -1,
+		};
+		malformed.checksum.value = await backupFingerprint(malformed.data, digest);
+		await expect(validatePlainBackup(malformed, definitions, digest))
+			.rejects.toMatchObject({ code: 'INVALID_BACKUP' });
+	});
+
 	it('uses stable error objects instead of translated entity messages', () => {
 		const error = new BackupValidationError('INVALID_BACKUP');
 		expect(error.code).toBe('INVALID_BACKUP');

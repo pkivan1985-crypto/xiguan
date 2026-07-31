@@ -122,6 +122,40 @@ describe('saveDailyHabit', () => {
 		});
 	});
 
+	it('stores preset-specific optional details without changing the cumulative fact', async () => {
+		await saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: LOCAL_DATE,
+			currentLocalDate: LOCAL_DATE,
+			quantityBaseValue: 2_500,
+			entryMethod: 'actual',
+			details: {
+				kind: 'reading',
+				bookTitle: '活着',
+				durationMinutes: 35,
+				startPage: 18,
+				endPage: 42,
+				chapter: '第三章',
+				reflection: '人物选择比情节更有力量。',
+			},
+			nowIso: '2026-07-25T02:30:00.000Z',
+			submissionId: 'save-reading-details',
+		});
+
+		expect(await database.table('actionRecords').get(`card-a:${LOCAL_DATE}`)).toMatchObject({
+			quantityBaseValue: 2_500,
+			details: {
+				kind: 'reading',
+				bookTitle: '活着',
+				durationMinutes: 35,
+				startPage: 18,
+				endPage: 42,
+				chapter: '第三章',
+				reflection: '人物选择比情节更有力量。',
+			},
+		});
+	});
+
 	it('overwrites the same day and deletes it when the value returns to zero', async () => {
 		await saveDailyHabit(database, {
 			userCardId: 'card-a',

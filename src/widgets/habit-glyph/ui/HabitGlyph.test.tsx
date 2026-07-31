@@ -6,6 +6,7 @@ import { HabitGlyph } from './HabitGlyph';
 vi.mock('react-icons/pi', () => ({
 	PiBookOpenText: () => <svg data-phosphor-icon='PiBookOpenText' />,
 	PiDrop: () => <svg data-phosphor-icon='PiDrop' />,
+	PiLeaf: () => <svg data-phosphor-icon='PiLeaf' />,
 	PiMoonStars: () => <svg data-phosphor-icon='PiMoonStars' />,
 	PiPersonSimpleRun: () => <svg data-phosphor-icon='PiPersonSimpleRun' />,
 	PiShieldCheck: () => <svg data-phosphor-icon='PiShieldCheck' />,
@@ -16,6 +17,7 @@ describe('HabitGlyph', () => {
 		['activity', 'green', '跑步', 'PiPersonSimpleRun'],
 		['droplet', 'cyan', '喝水', 'PiDrop'],
 		['book', 'amber', '阅读', 'PiBookOpenText'],
+		['leaf', 'green', '轻食', 'PiLeaf'],
 		['moon', 'violet', '早睡', 'PiMoonStars'],
 		['shield', 'blue', '远离手机', 'PiShieldCheck'],
 	] as const)('renders the %s glyph as an accessible %s icon container', (iconKey, accent, label, phosphorIcon) => {

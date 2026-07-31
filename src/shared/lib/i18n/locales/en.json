@@ -471,6 +471,21 @@
 			"planCanvas": "Habit plan",
 			"chooseType": "Choose a tracking type",
 			"chooseTypeHint": "Pick the closest type for quick daily recording.",
+			"flowProgress": "Create habit progress",
+			"flowSteps": {
+				"choose": "Choose preset",
+				"plan": "Set plan",
+				"confirm": "Confirm"
+			},
+			"categoryFilter": "Habit categories",
+			"categories": {
+				"all": "All",
+				"sport": "Exercise",
+				"nutrition": "Nutrition",
+				"learning": "Learning",
+				"recovery": "Recovery",
+				"focus": "Focus"
+			},
 			"endDate": "End date (optional)",
 			"longTerm": "Long-term goal",
 			"longTermInherited": "The goal name follows “{{title}}”",
@@ -535,6 +550,7 @@
 			"displayUnits": {
 				"distance": "km",
 				"count": "cups",
+				"checklist": "items",
 				"duration": "min",
 				"check": "times",
 				"avoid": "days"
@@ -542,6 +558,7 @@
 			"planName": "Goal name",
 			"planTarget": "Target value",
 			"presets": {
+				"lightFood": "Light food",
 				"reading": "Reading",
 				"running": "Running",
 				"screenFree": "Less screen",
@@ -549,6 +566,7 @@
 				"water": "Water"
 			},
 			"placeholders": {
+				"light-food": "e.g. Eat lightly",
 				"reading-time": "e.g. Evening reading",
 				"running": "e.g. Morning run",
 				"screen-free": "e.g. No phone before bed",
@@ -573,10 +591,31 @@
 			"units": {
 				"avoid": "Avoid",
 				"check": "Check",
+				"checklist": "Checklist",
 				"count": "Count",
 				"distance": "Distance",
 				"duration": "Duration"
 			},
+			"foodRulesTitle": "Food rules",
+			"foodRulesHint": "Check each rule daily; custom rules join the same list",
+			"foodRulePlaceholder": "Add another food to avoid",
+			"addFoodRule": "Add food rule",
+			"removeFoodRule": "Remove {{label}}",
+			"lightFoodRules": {
+				"heaty": "Avoid heaty foods",
+				"spicy": "Avoid spicy food",
+				"greasy": "Avoid greasy food",
+				"drinks": "Avoid milk tea and soft drinks"
+			},
+			"reviewHabit": "Ready to create",
+			"reviewPeriod": "Plan period",
+			"reviewDays": "Active days",
+			"reviewDaily": "Daily target",
+			"reviewRuleCount": "{{count}} rules",
+			"reviewEnabled": "Enabled",
+			"reviewDisabled": "Off",
+			"todayPreviewHint": "Today: {{value}} {{unit}}",
+			"detailAction": "Check rules",
 			"steps": {
 				"card": { "title": "Name this loop card", "description": "Use a name you will recognize in today's six slots." },
 				"longTerm": { "title": "Set a long-term direction", "description": "This records direction without punishment or streak pressure." },
@@ -590,6 +629,74 @@
 			"details": "View details",
 			"reload": "Reload",
 			"title": "This page cannot open right now"
+		},
+		"record": {
+			"loading": "Loading this habit…",
+			"notFound": "This habit is unavailable.",
+			"target": "Today {{value}} {{unit}}",
+			"optionalHint": "Details are optional; add only what helps",
+			"note": "Add a short note (optional)",
+			"invalid": "Check the required value and number format.",
+			"save": "Save today's progress",
+			"units": { "minutes": "min" },
+			"kinds": {
+				"running": "Run record",
+				"water": "Water record",
+				"light-food": "Light food checklist",
+				"reading-time": "Reading record",
+				"sleep": "Sleep record",
+				"screen-free": "Screen-time record"
+			},
+			"running": {
+				"title": "Run details",
+				"distance": "Distance",
+				"duration": "Duration",
+				"pace": "Average pace",
+				"heartRate": "Average heart rate"
+			},
+			"water": {
+				"title": "Water details",
+				"cups": "Cups today",
+				"cupSize": "Cup size",
+				"morning": "Morning cups",
+				"afternoon": "Afternoon cups",
+				"evening": "Evening cups",
+				"types": { "water": "Water", "tea": "Tea", "coffee": "Coffee", "other": "Other" }
+			},
+			"reading": {
+				"title": "Reading details",
+				"book": "Book",
+				"duration": "Reading time",
+				"startPage": "Start page",
+				"endPage": "End page",
+				"chapter": "Chapter",
+				"reflection": "Notes or reflection"
+			},
+			"food": {
+				"title": "Today's food rules",
+				"hint": "{{done}} of {{total}} followed"
+			},
+			"sleep": {
+				"title": "Sleep details",
+				"onTime": "Slept on time",
+				"bedtime": "Bedtime",
+				"wakeTime": "Wake time",
+				"durationResult": "{{hours}} hours of sleep",
+				"feelings": { "tired": "Tired", "normal": "Okay", "refreshed": "Refreshed" }
+			},
+			"screen": {
+				"title": "Screen-time details",
+				"total": "Total screen time",
+				"shortVideo": "Short video",
+				"social": "Social",
+				"news": "News",
+				"other": "Other",
+				"moments": {
+					"after-waking": "No screen after waking",
+					"during-meals": "No screen during meals",
+					"before-sleep": "No screen before sleep"
+				}
+			}
 		},
 		"history": {
 			"confirmDelete": "Confirm deletion",
@@ -801,6 +908,10 @@
 		"today": {
 			"activeDayCount": "{{count}} active days",
 			"autoSaveLocal": "Saved locally",
+			"deleteError": "Delete did not finish. The habit and its records are still here.",
+			"deleteHabit": "Delete “{{title}}”",
+			"deletingHabit": "Deleting…",
+			"swipeDeleteHint": "Swipe left to delete",
 			"completeHabit": "Complete {{title}}",
 			"completeAction": "Check in",
 			"completedAction": "Completed",

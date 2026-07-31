@@ -6,11 +6,14 @@ import {
 	PiGearSix,
 	PiListChecks,
 	PiPlus,
+	PiTrash,
+	PiWarning,
 	PiWarningCircle,
 } from 'react-icons/pi';
 import { Link, useNavigate } from 'react-router';
 
 import { loadDailyHabitsInApp, type DailyHabitView, type DailyHabitsModel } from '@features/load-daily-habits';
+import { deleteUserCardInApp } from '@features/manage-user-card';
 import { saveDailyHabitInApp } from '@features/save-daily-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
@@ -33,7 +36,9 @@ interface TodayPageContentProps {
 	saveErrorIds: ReadonlySet<string>;
 	onChangeHabit: (habit: DailyHabitView, quantityBaseValue: number) => void;
 	onCompleteHabit: (habit: DailyHabitView) => void;
+	onDeleteHabit: (habit: DailyHabitView) => Promise<void>;
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
+	onOpenDetails?: (habit: DailyHabitView) => void;
 	onSelectDate: (localDate: string) => void;
 	onToggleCompleted: () => void;
 }
@@ -59,11 +64,16 @@ function TodayPageContent({
 	saveErrorIds,
 	onChangeHabit,
 	onCompleteHabit,
+	onDeleteHabit,
 	onSaveActual,
+	onOpenDetails,
 	onSelectDate,
 	onToggleCompleted,
 }: TodayPageContentProps) {
 	const { t, i18n } = useTranslation();
+	const [deleteTarget, setDeleteTarget] = useState<DailyHabitView | null>(null);
+	const [deletePending, setDeletePending] = useState(false);
+	const [deleteError, setDeleteError] = useState(false);
 	const completedRatio = model.scheduledCount === 0
 		? 0
 		: model.completedCount / model.scheduledCount;
@@ -126,6 +136,11 @@ function TodayPageContent({
 					onChange={onChangeHabit}
 					onComplete={onCompleteHabit}
 					onSaveActual={onSaveActual}
+					onOpenDetails={onOpenDetails}
+					onRequestDelete={(habit) => {
+						setDeleteError(false);
+						setDeleteTarget(habit);
+					}}
 					onToggleCompleted={onToggleCompleted}
 				/>
 			</div>
@@ -140,6 +155,56 @@ function TodayPageContent({
 					<span>{t('shell.today.createHabit')}</span>
 				</Link>
 			</nav>
+			{deleteTarget && (
+				<div className={styles.dialogBackdrop}>
+					<section
+						className={styles.deleteDialog}
+						role='alertdialog'
+						aria-modal='true'
+						aria-labelledby='today-delete-habit-title'
+						aria-describedby='today-delete-habit-description'
+					>
+						<span className={styles.warningIcon}><PiWarning aria-hidden='true' /></span>
+						<h2 id='today-delete-habit-title'>
+							{t('shell.deck.deleteTitle', { title: deleteTarget.title })}
+						</h2>
+						<p id='today-delete-habit-description'>{t('shell.deck.deleteDescription')}</p>
+						{deleteError && (
+							<p className={styles.deleteError} role='alert'>
+								{t('shell.today.deleteError')}
+							</p>
+						)}
+						<span className={styles.dialogActions}>
+							<button
+								type='button'
+								autoFocus
+								disabled={deletePending}
+								onClick={() => setDeleteTarget(null)}
+							>
+								{t('common.cancel')}
+							</button>
+							<button
+								className={styles.confirmDelete}
+								type='button'
+								disabled={deletePending}
+								onClick={() => {
+									setDeletePending(true);
+									setDeleteError(false);
+									void onDeleteHabit(deleteTarget)
+										.then(() => setDeleteTarget(null))
+										.catch(() => setDeleteError(true))
+										.finally(() => setDeletePending(false));
+								}}
+							>
+								<PiTrash aria-hidden='true' />
+								{t(deletePending
+									? 'shell.today.deletingHabit'
+									: 'habits.actions.delete')}
+							</button>
+						</span>
+					</section>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -179,7 +244,10 @@ function TodayPage() {
 	async function changeHabit(
 		habit: DailyHabitView,
 		quantityBaseValue: number,
-		details?: HabitActualEntry & { entryMethod: 'completed' | 'actual' },
+		details?: HabitActualEntry & {
+			entryMethod: 'completed' | 'actual';
+			recordDetails?: DailyHabitView['details'];
+		},
 	): Promise<void> {
 		if (!habit.scheduledToday) return;
 		const queuedSave = saveQueueRef.current!.enqueue(habit.id, async () => {
@@ -195,6 +263,7 @@ function TodayPage() {
 				averagePaceSecondsPerKm: details?.averagePaceSecondsPerKm,
 				averageHeartRateBpm: details?.averageHeartRateBpm,
 				note: details?.note,
+				details: details?.recordDetails,
 				nowIso: new Date().toISOString(),
 				submissionId: crypto.randomUUID(),
 			});
@@ -244,13 +313,25 @@ function TodayPage() {
 				void changeHabit(habit, habit.dailyTargetBase, {
 					quantityBaseValue: habit.dailyTargetBase,
 					entryMethod: 'completed',
+					durationSeconds: habit.durationSeconds,
+					averagePaceSecondsPerKm: habit.averagePaceSecondsPerKm,
+					averageHeartRateBpm: habit.averageHeartRateBpm,
+					note: habit.note,
+					recordDetails: habit.details,
 				});
+			}}
+			onDeleteHabit={async (habit) => {
+				await deleteUserCardInApp(habit.id);
+				setModel(await load());
 			}}
 			onSaveActual={(habit, entry) => {
 				void changeHabit(habit, entry.quantityBaseValue, {
 					...entry,
 					entryMethod: 'actual',
 				});
+			}}
+			onOpenDetails={(habit) => {
+				navigate(APP_ROUTES.habitRecord(habit.id, todayLocalDate));
 			}}
 			onSelectDate={(localDate) => {
 				if (localDate !== todayLocalDate) {

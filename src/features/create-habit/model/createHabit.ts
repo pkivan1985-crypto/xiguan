@@ -6,7 +6,7 @@ import {
 	type CardTemplate,
 } from '@entities/card-template';
 import type { LongTermGoal, StageGoal } from '@entities/goal';
-import type { HabitDailyPlan, IsoWeekday, UserCard } from '@entities/user-card';
+import type { HabitConfiguration, HabitDailyPlan, IsoWeekday, UserCard } from '@entities/user-card';
 import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 import { parseLocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
@@ -34,6 +34,7 @@ export interface CreateHabitInput {
 	stage?: OptionalPlanInput;
 	stages?: readonly OptionalPlanInput[];
 	dailyPlan?: DailyPlanInput;
+	habitConfig?: HabitConfiguration;
 	nowIso: string;
 	ids: {
 		userCardId: string;
@@ -98,6 +99,7 @@ export async function createHabit(
 		officialCardId: template.id,
 		title: cardTitle,
 		dailyPlan,
+		habitConfig: input.habitConfig,
 		status: 'active',
 		sortOrder: await userCards.count(),
 		createdAt: input.nowIso,

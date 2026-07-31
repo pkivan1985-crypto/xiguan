@@ -24,9 +24,10 @@ describe('loadCardDeck', () => {
 		expect(view.slots).toEqual([null, null, null, null, null, null]);
 		expect(view.categories.map(({ id, enabled, cards }) => ({ id, enabled, cards: cards.length }))).toEqual([
 			{ id: 'sport', enabled: true, cards: 0 },
-			{ id: 'reading', enabled: true, cards: 0 },
-			{ id: 'life', enabled: true, cards: 0 },
-			{ id: 'output', enabled: false, cards: 0 },
+			{ id: 'nutrition', enabled: true, cards: 0 },
+			{ id: 'learning', enabled: true, cards: 0 },
+			{ id: 'recovery', enabled: true, cards: 0 },
+			{ id: 'focus', enabled: true, cards: 0 },
 		]);
 	});
 
@@ -102,9 +103,10 @@ describe('loadCardDeck', () => {
 
 		expect(view.categories.map((category) => ({ id: category.id, cards: category.cards.map((card) => card.title) }))).toEqual([
 			{ id: 'sport', cards: ['晨跑', '夜跑'] },
-			{ id: 'reading', cards: ['读书'] },
-			{ id: 'life', cards: [] },
-			{ id: 'output', cards: [] },
+			{ id: 'nutrition', cards: [] },
+			{ id: 'learning', cards: ['读书'] },
+			{ id: 'recovery', cards: [] },
+			{ id: 'focus', cards: [] },
 		]);
 		expect(view.archivedCount).toBe(1);
 		expect(view.archivedCards.map(({ id, title }) => ({ id, title }))).toEqual([

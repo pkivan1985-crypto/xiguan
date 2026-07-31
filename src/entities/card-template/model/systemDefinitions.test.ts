@@ -4,8 +4,14 @@ import { SYSTEM_CARD_TEMPLATES, SYSTEM_CATEGORIES } from './systemDefinitions';
 
 describe('system definitions', () => {
 	it('defines the approved habit categories and enables the daily recording presets', () => {
-		expect(SYSTEM_CATEGORIES.map(({ id }) => id)).toEqual(['sport', 'reading', 'life', 'output']);
-		expect(SYSTEM_CATEGORIES.filter(({ enabled }) => enabled).map(({ id }) => id)).toEqual(['sport', 'reading', 'life']);
+		expect(SYSTEM_CATEGORIES.map(({ id }) => id)).toEqual([
+			'sport',
+			'nutrition',
+			'learning',
+			'recovery',
+			'focus',
+		]);
+		expect(SYSTEM_CATEGORIES.every(({ enabled }) => enabled)).toBe(true);
 	});
 
 	it('defines five mainstream tracking presets with stable daily metadata', () => {
@@ -30,9 +36,15 @@ describe('system definitions', () => {
 		expect(SYSTEM_CARD_TEMPLATES.map(({ id, trackingType }) => [id, trackingType])).toEqual([
 			['running', 'quantity'],
 			['water', 'count'],
+			['light-food', 'checklist'],
 			['reading-time', 'duration'],
 			['sleep', 'check'],
 			['screen-free', 'avoid'],
 		]);
+		expect(SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'light-food')).toMatchObject({
+			categoryId: 'nutrition',
+			iconKey: 'leaf',
+			defaultDailyTargetBase: 4,
+		});
 	});
 });

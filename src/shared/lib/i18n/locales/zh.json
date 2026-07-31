@@ -476,6 +476,21 @@
 			"planCanvas": "习惯计划",
 			"chooseType": "选择记录方式",
 			"chooseTypeHint": "先选最接近的类型，以后每天直接点按记录。",
+			"flowProgress": "创建习惯进度",
+			"flowSteps": {
+				"choose": "选择预设",
+				"plan": "设置计划",
+				"confirm": "确认创建"
+			},
+			"categoryFilter": "习惯类目",
+			"categories": {
+				"all": "全部",
+				"sport": "运动",
+				"nutrition": "饮食健康",
+				"learning": "学习成长",
+				"recovery": "作息恢复",
+				"focus": "专注自律"
+			},
 			"endDate": "截止日期（可选）",
 			"longTerm": "长期目标",
 			"longTermInherited": "目标名称自动使用“{{title}}”",
@@ -540,6 +555,7 @@
 			"displayUnits": {
 				"distance": "km",
 				"count": "杯",
+				"checklist": "项",
 				"duration": "分钟",
 				"check": "次",
 				"avoid": "天"
@@ -547,6 +563,7 @@
 			"planName": "目标名称",
 			"planTarget": "目标数值",
 			"presets": {
+				"lightFood": "轻食",
 				"reading": "阅读",
 				"running": "跑步",
 				"screenFree": "少刷手机",
@@ -554,6 +571,7 @@
 				"water": "喝水"
 			},
 			"placeholders": {
+				"light-food": "例如：清淡饮食",
 				"reading-time": "例如：晚间阅读",
 				"running": "例如：晨跑",
 				"screen-free": "例如：睡前不刷手机",
@@ -578,10 +596,31 @@
 			"units": {
 				"avoid": "避免型",
 				"check": "完成型",
+				"checklist": "逐项遵守",
 				"count": "计数",
 				"distance": "距离",
 				"duration": "时长"
 			},
+			"foodRulesTitle": "饮食规则",
+			"foodRulesHint": "每天逐项记录，新增规则会加入同一清单",
+			"foodRulePlaceholder": "继续添加想避免的食物",
+			"addFoodRule": "添加饮食规则",
+			"removeFoodRule": "删除{{label}}",
+			"lightFoodRules": {
+				"heaty": "不吃上火食物",
+				"spicy": "不吃辣",
+				"greasy": "不吃肥腻食物",
+				"drinks": "不喝奶茶或饮料"
+			},
+			"reviewHabit": "即将创建",
+			"reviewPeriod": "计划周期",
+			"reviewDays": "执行日",
+			"reviewDaily": "每天目标",
+			"reviewRuleCount": "共 {{count}} 项规则",
+			"reviewEnabled": "已开启",
+			"reviewDisabled": "未开启",
+			"todayPreviewHint": "今天计划 {{value}} {{unit}}",
+			"detailAction": "逐项记录",
 			"steps": {
 				"card": { "title": "给这张循环卡起名", "description": "使用一个在今日六个位置中容易辨认的名称。" },
 				"longTerm": { "title": "设定一个长期方向", "description": "只记录方向，不使用惩罚或连续打卡压力。" },
@@ -595,6 +634,74 @@
 			"details": "查看详情",
 			"reload": "重新载入",
 			"title": "页面暂时无法打开"
+		},
+		"record": {
+			"loading": "正在读取这项习惯…",
+			"notFound": "这项习惯暂时不可用。",
+			"target": "今天计划 {{value}} {{unit}}",
+			"optionalHint": "详细内容都可选，只记录对你有帮助的",
+			"note": "简单记一下（可选）",
+			"invalid": "请检查必填数值和填写格式。",
+			"save": "保存今天的进度",
+			"units": { "minutes": "分钟" },
+			"kinds": {
+				"running": "跑步记录",
+				"water": "喝水记录",
+				"light-food": "轻食逐项记录",
+				"reading-time": "阅读记录",
+				"sleep": "睡眠记录",
+				"screen-free": "屏幕时间记录"
+			},
+			"running": {
+				"title": "跑步详情",
+				"distance": "实际公里数",
+				"duration": "运动用时",
+				"pace": "平均配速",
+				"heartRate": "平均心率"
+			},
+			"water": {
+				"title": "喝水详情",
+				"cups": "今天杯数",
+				"cupSize": "每杯容量",
+				"morning": "上午",
+				"afternoon": "下午",
+				"evening": "晚上",
+				"types": { "water": "白水", "tea": "茶", "coffee": "咖啡", "other": "其他" }
+			},
+			"reading": {
+				"title": "阅读详情",
+				"book": "书名",
+				"duration": "阅读时长",
+				"startPage": "开始页",
+				"endPage": "结束页",
+				"chapter": "章节",
+				"reflection": "摘录、收获或心得"
+			},
+			"food": {
+				"title": "今天的饮食规则",
+				"hint": "已做到 {{done}} / {{total}}"
+			},
+			"sleep": {
+				"title": "睡眠详情",
+				"onTime": "按计划时间入睡",
+				"bedtime": "实际入睡",
+				"wakeTime": "起床时间",
+				"durationResult": "睡眠约 {{hours}} 小时",
+				"feelings": { "tired": "疲惫", "normal": "一般", "refreshed": "精神" }
+			},
+			"screen": {
+				"title": "屏幕时间详情",
+				"total": "总屏幕时间",
+				"shortVideo": "短视频",
+				"social": "社交",
+				"news": "资讯",
+				"other": "其他",
+				"moments": {
+					"after-waking": "起床后无屏",
+					"during-meals": "吃饭时无屏",
+					"before-sleep": "睡前无屏"
+				}
+			}
 		},
 		"history": {
 			"confirmDelete": "确认删除",
@@ -806,6 +913,10 @@
 		"today": {
 			"activeDayCount": "累计 {{count}} 天",
 			"autoSaveLocal": "自动保存到本机",
+			"deleteError": "删除没有完成，习惯和记录仍然保留。",
+			"deleteHabit": "删除“{{title}}”",
+			"deletingHabit": "正在删除…",
+			"swipeDeleteHint": "左滑卡片可删除",
 			"completeHabit": "完成{{title}}",
 			"completeAction": "打卡",
 			"completedAction": "完成",
