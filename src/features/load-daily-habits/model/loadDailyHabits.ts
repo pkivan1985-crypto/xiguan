@@ -49,6 +49,15 @@ export interface DailyHabitView {
 	goalProgressRatio?: number;
 	scheduledToday: boolean;
 	recordedToday: boolean;
+	previousRecord?: DailyHabitPreviousRecord;
+}
+
+export interface DailyHabitPreviousRecord {
+	quantityBaseValue: number;
+	displayValue: string;
+	durationSeconds?: number;
+	averagePaceSecondsPerKm?: number;
+	averageHeartRateBpm?: number;
 }
 
 export interface DailyHabitsModel {
@@ -231,6 +240,13 @@ export async function loadDailyHabits(
 				goalProgressRatio: progress?.ratio,
 				scheduledToday,
 				recordedToday: todayRecord !== undefined,
+				previousRecord: previousRecord ? {
+					quantityBaseValue: previousRecord.quantityBaseValue,
+					displayValue: formatQuantityFromBase(previousRecord.quantityBaseValue, template.quantity),
+					durationSeconds: previousRecord.durationSeconds,
+					averagePaceSecondsPerKm: previousRecord.averagePaceSecondsPerKm,
+					averageHeartRateBpm: previousRecord.averageHeartRateBpm,
+				} : undefined,
 			}];
 		});
 	const scheduledHabits = habits.filter((habit) => habit.scheduledToday);
