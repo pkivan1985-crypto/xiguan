@@ -1,16 +1,24 @@
 /* eslint-disable i18next/no-literal-string -- Record kinds and option values are stable domain identifiers. */
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { IconType } from 'react-icons';
 import {
 	PiArrowLeft,
+	PiBowlFood,
 	PiBookOpenText,
+	PiCaretDown,
+	PiCaretUp,
 	PiCheck,
-	PiClock,
+	PiCoffee,
 	PiDrop,
+	PiFlame,
+	PiGauge,
 	PiHeartbeat,
 	PiLeaf,
 	PiMoonStars,
 	PiNotePencil,
+	PiPepper,
+	PiRuler,
 	PiShieldCheck,
 	PiTimer,
 	PiX,
@@ -24,9 +32,22 @@ import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate, parseLocalDate } from '@shared/lib/date';
 import { HabitGlyph } from '@widgets/habit-glyph';
 
+import {
+	currentTrainingDetails,
+	initialRunningRecordValues,
+	plannedRunningDistance,
+	previousTrainingDetails,
+	type RunningRecordValueSource,
+} from '../model/runningRecordDefaults';
 import styles from './HabitRecordPage.module.css';
 
 const SCREEN_MOMENTS = ['after-waking', 'during-meals', 'before-sleep'] as const;
+const FOOD_RULE_ICONS: Record<string, IconType> = {
+	'avoid-heaty': PiFlame,
+	'avoid-spicy': PiPepper,
+	'avoid-greasy': PiBowlFood,
+	'avoid-sugary-drinks': PiCoffee,
+};
 
 function numberOrUndefined(value: string): number | undefined {
 	if (!value.trim()) return undefined;
@@ -53,6 +74,24 @@ function minutesBetween(start: string, end: string): number | undefined {
 	return minutes;
 }
 
+function BlockTitle({ icon: Icon, title, hint }: { icon: IconType; title: string; hint: string }) {
+	return <header className={styles.blockTitle}><Icon aria-hidden='true' /><div><strong>{title}</strong><small>{hint}</small></div></header>;
+}
+
+interface FieldProps {
+	label: string;
+	value: string;
+	onChange: (value: string) => void;
+	unit?: string;
+	placeholder?: string;
+	icon?: ReactNode;
+	inputType?: 'number' | 'text';
+}
+
+function Field({ label, value, onChange, unit, placeholder, icon, inputType = 'number' }: FieldProps) {
+	return <label className={styles.field}><span>{icon}{label}</span><div><input type={inputType} inputMode={inputType === 'number' ? 'decimal' : undefined} min={inputType === 'number' ? '0' : undefined} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />{unit && <small>{unit}</small>}</div></label>;
+}
+
 function HabitRecordPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
@@ -70,6 +109,8 @@ function HabitRecordPage() {
 	const [duration, setDuration] = useState('');
 	const [pace, setPace] = useState('');
 	const [heartRate, setHeartRate] = useState('');
+	const [runningValueSource, setRunningValueSource] = useState<RunningRecordValueSource>('blank');
+	const [showRunningDetails, setShowRunningDetails] = useState(false);
 	const [note, setNote] = useState('');
 	const [cupSize, setCupSize] = useState('300');
 	const [morningCups, setMorningCups] = useState('');
@@ -102,9 +143,20 @@ function HabitRecordPage() {
 				const selected = model.habits.find(({ id }) => id === userCardId);
 				setHabit(selected);
 				if (selected) {
-					setActual(selected.quantityBaseValue > 0 ? selected.displayValue : '');
-					setDuration(selected.durationSeconds ? String(selected.durationSeconds / 60) : '');
-					setHeartRate(selected.averageHeartRateBpm ? String(selected.averageHeartRateBpm) : '');
+					if (selected.officialCardId === 'running') {
+						const initial = initialRunningRecordValues(selected);
+						const currentDetails = currentTrainingDetails(selected);
+						setActual(initial.distance);
+						setRunningValueSource(initial.source);
+						setDuration(selected.recordedToday ? currentDetails.duration : '');
+						setPace(selected.recordedToday ? currentDetails.pace : '');
+						setHeartRate(selected.recordedToday ? currentDetails.heartRate : '');
+						setShowRunningDetails(Boolean(selected.recordedToday && (currentDetails.duration || currentDetails.pace || currentDetails.heartRate)));
+					} else {
+						setActual(selected.quantityBaseValue > 0 ? selected.displayValue : '');
+						setDuration(selected.durationSeconds ? String(selected.durationSeconds / 60) : '');
+						setHeartRate(selected.averageHeartRateBpm ? String(selected.averageHeartRateBpm) : '');
+					}
 					setNote(selected.note ?? '');
 					const details = selected.details;
 					if (details?.kind === 'water') {
@@ -262,6 +314,11 @@ function HabitRecordPage() {
 
 	const rules = habit.habitConfig?.kind === 'light-food' ? habit.habitConfig.rules : [];
 	const sleepDuration = minutesBetween(bedtime, wakeTime);
+	const planDistance = plannedRunningDistance(habit);
+	const reusableTrainingDetails = previousTrainingDetails(habit);
+	const hasReusableTrainingDetails = Boolean(
+		reusableTrainingDetails.duration || reusableTrainingDetails.pace || reusableTrainingDetails.heartRate,
+	);
 	const kindLabel = t(habit.officialCardId === 'water'
 		? 'shell.record.kinds.water'
 		: habit.officialCardId === 'light-food'
@@ -287,19 +344,29 @@ function HabitRecordPage() {
 					<div><small>{kindLabel}</small><strong>{habit.title}</strong><span>{t('shell.record.target', { value: habit.dailyTargetBase / habit.basePerDisplayUnit, unit: habit.displayUnit })}</span></div>
 				</section>
 
-				{habit.officialCardId === 'running' && <RunningFields />}
-				{habit.officialCardId === 'water' && <WaterFields />}
-				{habit.officialCardId === 'reading-time' && <ReadingFields />}
+				{habit.officialCardId === 'running' && renderRunningFields()}
+				{habit.officialCardId === 'water' && renderWaterFields()}
+				{habit.officialCardId === 'reading-time' && renderReadingFields()}
 				{habit.officialCardId === 'light-food' && (
 					<section className={styles.block}>
 						<BlockTitle icon={PiLeaf} title={t('shell.record.food.title')} hint={t('shell.record.food.hint', { done: checkedRules.length, total: rules.length })} />
-						<div className={styles.checkList}>
-							{rules.map((rule) => <label key={rule.id}><PiLeaf aria-hidden='true' /><span>{rule.label}</span><input type='checkbox' checked={checkedRules.includes(rule.id)} onChange={() => setCheckedRules((current) => current.includes(rule.id) ? current.filter((id) => id !== rule.id) : [...current, rule.id])} /></label>)}
+						<div className={`${styles.checkList} ${styles.foodCheckList}`}>
+							{rules.map((rule) => {
+								const RuleIcon = FOOD_RULE_ICONS[rule.id] ?? PiLeaf;
+								return (
+									<label key={rule.id}>
+										<RuleIcon aria-hidden='true' />
+										<span>{rule.label}</span>
+										<input type='checkbox' checked={checkedRules.includes(rule.id)} onChange={() => setCheckedRules((current) => current.includes(rule.id) ? current.filter((id) => id !== rule.id) : [...current, rule.id])} />
+										<i className={styles.checkState} aria-hidden='true'><PiCheck /></i>
+									</label>
+								);
+							})}
 						</div>
 					</section>
 				)}
-				{habit.officialCardId === 'sleep' && <SleepFields />}
-				{habit.officialCardId === 'screen-free' && <ScreenFields />}
+				{habit.officialCardId === 'sleep' && renderSleepFields()}
+				{habit.officialCardId === 'screen-free' && renderScreenFields()}
 
 				<label className={styles.note}>
 					<PiNotePencil aria-hidden='true' />
@@ -311,23 +378,65 @@ function HabitRecordPage() {
 		</main>
 	);
 
-	function BlockTitle({ icon: Icon, title, hint }: { icon: typeof PiLeaf; title: string; hint: string }) {
-		return <header className={styles.blockTitle}><Icon aria-hidden='true' /><div><strong>{title}</strong><small>{hint}</small></div></header>;
+	function selectRunningDistance(value: string, source: RunningRecordValueSource) {
+		setActual(value);
+		setRunningValueSource(source);
 	}
 
-	function RunningFields() {
-		return <section className={styles.block}>
-			<BlockTitle icon={PiTimer} title={t('shell.record.running.title')} hint={t('shell.record.optionalHint')} />
-			<div className={styles.grid}>
-				<Field label={t('shell.record.running.distance')} value={actual} onChange={setActual} unit={habit!.displayUnit} />
-				<Field label={t('shell.record.running.duration')} value={duration} onChange={setDuration} unit={t('shell.record.units.minutes')} />
-				<Field label={t('shell.record.running.pace')} value={pace} onChange={setPace} placeholder='06:30' icon={<PiClock />} inputType='text' />
-				<Field label={t('shell.record.running.heartRate')} value={heartRate} onChange={setHeartRate} unit='bpm' icon={<PiHeartbeat />} />
+	function reusePreviousTrainingDetails() {
+		setDuration(reusableTrainingDetails.duration);
+		setPace(reusableTrainingDetails.pace);
+		setHeartRate(reusableTrainingDetails.heartRate);
+		setShowRunningDetails(true);
+	}
+
+	function renderRunningFields() {
+		const sourceLabel = runningValueSource === 'previous'
+			? t('shell.record.running.previousSource')
+			: runningValueSource === 'plan'
+				? t('shell.record.running.planSource')
+				: runningValueSource === 'current'
+					? t('shell.record.running.currentSource')
+					: t('shell.record.running.customSource');
+
+		return <section className={`${styles.block} ${styles.runningBlock}`}>
+			<BlockTitle icon={PiRuler} title={t('shell.record.running.prompt')} hint={t('shell.record.running.editHint')} />
+			<label className={styles.distanceEditor}>
+				<span>{sourceLabel}</span>
+				<div>
+					<input type='number' inputMode='decimal' min='0' step='any' value={actual} onChange={(event) => { setActual(event.target.value); setRunningValueSource('blank'); }} />
+					<strong>{habit!.displayUnit}</strong>
+				</div>
+			</label>
+			<div className={styles.quickValues} aria-label={t('shell.record.running.quickValues')}>
+				{habit!.previousRecord && <button type='button' aria-pressed={runningValueSource === 'previous'} onClick={() => selectRunningDistance(habit!.previousRecord!.displayValue, 'previous')}><small>{t('shell.record.running.previousValue')}</small><strong>{habit!.previousRecord!.displayValue} {habit!.displayUnit}</strong></button>}
+				<button type='button' aria-pressed={runningValueSource === 'plan'} onClick={() => selectRunningDistance(planDistance, 'plan')}><small>{t('shell.record.running.todayPlan')}</small><strong>{planDistance} {habit!.displayUnit}</strong></button>
+				<button type='button' aria-pressed={actual === '3'} onClick={() => selectRunningDistance('3', 'blank')}><strong>3 {habit!.displayUnit}</strong></button>
+				<button type='button' aria-pressed={actual === '5'} onClick={() => selectRunningDistance('5', 'blank')}><strong>5 {habit!.displayUnit}</strong></button>
 			</div>
+			<button className={styles.detailsToggle} type='button' aria-expanded={showRunningDetails} onClick={() => setShowRunningDetails((current) => !current)}>
+				<span><PiGauge aria-hidden='true' />{t('shell.record.running.moreDetails')}<small>{t('shell.record.running.detailsHint')}</small></span>
+				{showRunningDetails ? <PiCaretUp aria-hidden='true' /> : <PiCaretDown aria-hidden='true' />}
+			</button>
+			{showRunningDetails && <div className={styles.runningDetails}>
+				{hasReusableTrainingDetails && <div className={styles.previousMetrics}>
+					<span>{t('shell.record.running.previousMetrics', {
+						duration: reusableTrainingDetails.duration || '—',
+						pace: reusableTrainingDetails.pace || '—',
+						heartRate: reusableTrainingDetails.heartRate || '—',
+					})}</span>
+					<button type='button' onClick={reusePreviousTrainingDetails}>{t('shell.record.running.reusePrevious')}</button>
+				</div>}
+				<div className={styles.grid}>
+					<Field label={t('shell.record.running.duration')} value={duration} onChange={setDuration} unit={t('shell.record.units.minutes')} icon={<PiTimer />} />
+					<Field label={t('shell.record.running.pace')} value={pace} onChange={setPace} placeholder='06:30' icon={<PiGauge />} inputType='text' />
+					<Field label={t('shell.record.running.heartRate')} value={heartRate} onChange={setHeartRate} unit='bpm' icon={<PiHeartbeat />} />
+				</div>
+			</div>}
 		</section>;
 	}
 
-	function WaterFields() {
+	function renderWaterFields() {
 		return <section className={styles.block}>
 			<BlockTitle icon={PiDrop} title={t('shell.record.water.title')} hint={t('shell.record.optionalHint')} />
 			<div className={styles.grid}>
@@ -341,7 +450,7 @@ function HabitRecordPage() {
 		</section>;
 	}
 
-	function ReadingFields() {
+	function renderReadingFields() {
 		return <section className={styles.block}>
 			<BlockTitle icon={PiBookOpenText} title={t('shell.record.reading.title')} hint={t('shell.record.optionalHint')} />
 			<label className={styles.wideField}><span>{t('shell.record.reading.book')}</span><input value={bookTitle} onChange={(event) => setBookTitle(event.target.value)} /></label>
@@ -355,7 +464,7 @@ function HabitRecordPage() {
 		</section>;
 	}
 
-	function SleepFields() {
+	function renderSleepFields() {
 		return <section className={styles.block}>
 			<BlockTitle icon={PiMoonStars} title={t('shell.record.sleep.title')} hint={sleepDuration ? t('shell.record.sleep.durationResult', { hours: (sleepDuration / 60).toFixed(1) }) : t('shell.record.optionalHint')} />
 			<label className={styles.toggle}><span>{t('shell.record.sleep.onTime')}</span><input type='checkbox' checked={onTime} onChange={(event) => setOnTime(event.target.checked)} /></label>
@@ -368,7 +477,7 @@ function HabitRecordPage() {
 		</section>;
 	}
 
-	function ScreenFields() {
+	function renderScreenFields() {
 		return <section className={styles.block}>
 			<BlockTitle icon={PiShieldCheck} title={t('shell.record.screen.title')} hint={t('shell.record.optionalHint')} />
 			<Field label={t('shell.record.screen.total')} value={screenMinutes} onChange={setScreenMinutes} unit={t('shell.record.units.minutes')} />
@@ -380,10 +489,6 @@ function HabitRecordPage() {
 			</div>
 			<div className={styles.checkList}>{SCREEN_MOMENTS.map((moment) => <label key={moment}><PiShieldCheck aria-hidden='true' /><span>{t(`shell.record.screen.moments.${moment}`)}</span><input type='checkbox' checked={screenFreeMoments.includes(moment)} onChange={() => setScreenFreeMoments((current) => current.includes(moment) ? current.filter((item) => item !== moment) : [...current, moment])} /></label>)}</div>
 		</section>;
-	}
-
-	function Field({ label, value, onChange, unit, placeholder, icon, inputType = 'number' }: { label: string; value: string; onChange: (value: string) => void; unit?: string; placeholder?: string; icon?: ReactNode; inputType?: 'number' | 'text' }) {
-		return <label className={styles.field}><span>{icon}{label}</span><div><input type={inputType} inputMode={inputType === 'number' ? 'decimal' : undefined} min={inputType === 'number' ? '0' : undefined} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />{unit && <small>{unit}</small>}</div></label>;
 	}
 }
 

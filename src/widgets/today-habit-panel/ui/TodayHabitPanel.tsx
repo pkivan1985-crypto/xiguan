@@ -2,11 +2,11 @@
 import { useRef, useState, type FormEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-	PiArrowLeft,
 	PiCaretDown,
 	PiCheck,
 	PiCheckCircle,
 	PiClock,
+	PiHandSwipeLeft,
 	PiHeartbeat,
 	PiMoon,
 	PiNotePencil,
@@ -702,7 +702,7 @@ function TodayHabitPanel({
 		>
 			{habits.length > 0 && onRequestDelete && (
 				<p className={styles.swipeHint}>
-					<PiArrowLeft aria-hidden='true' />
+					<PiHandSwipeLeft aria-hidden='true' />
 					<span>{t('shell.today.swipeDeleteHint')}</span>
 				</p>
 			)}

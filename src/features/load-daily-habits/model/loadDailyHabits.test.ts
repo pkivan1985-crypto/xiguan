@@ -267,4 +267,42 @@ describe('loadDailyHabits', () => {
 			activeDays: 1,
 		});
 	});
+
+	it('exposes the nearest prior effective record without treating today as previous history', async () => {
+		await database.table('userCards').add({
+			id: 'run',
+			officialCardId: 'running',
+			title: 'Morning run',
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-07-20T00:00:00.000Z',
+			updatedAt: '2026-07-20T00:00:00.000Z',
+		});
+		await database.table('actionRecords').bulkAdd([
+			{
+				id: 'run-previous', userCardId: 'run', localDate: '2026-07-29', quantityBaseValue: 3_250,
+				durationSeconds: 1_800, averagePaceSecondsPerKm: 360, averageHeartRateBpm: 148,
+				firstSavedAt: '2026-07-29T08:00:00.000Z', lastSavedAt: '2026-07-29T08:00:00.000Z', lastSubmissionId: 'previous',
+			},
+			{
+				id: 'run-deleted', userCardId: 'run', localDate: '2026-07-30', quantityBaseValue: 9_000,
+				deletedAt: '2026-07-30T09:00:00.000Z', firstSavedAt: '2026-07-30T08:00:00.000Z', lastSavedAt: '2026-07-30T08:00:00.000Z', lastSubmissionId: 'deleted',
+			},
+			{
+				id: 'run-today', userCardId: 'run', localDate: '2026-07-31', quantityBaseValue: 4_000,
+				firstSavedAt: '2026-07-31T08:00:00.000Z', lastSavedAt: '2026-07-31T08:00:00.000Z', lastSubmissionId: 'today',
+			},
+		]);
+
+		expect((await loadDailyHabits(database, '2026-07-31')).habits[0]).toMatchObject({
+			quantityBaseValue: 4_000,
+			previousRecord: {
+				quantityBaseValue: 3_250,
+				displayValue: '3.25',
+				durationSeconds: 1_800,
+				averagePaceSecondsPerKm: 360,
+				averageHeartRateBpm: 148,
+			},
+		});
+	});
 });

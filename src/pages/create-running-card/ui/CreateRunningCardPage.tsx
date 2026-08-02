@@ -17,7 +17,7 @@ import {
 	FiTrash2,
 	FiX,
 } from 'react-icons/fi';
-import { PiLeaf } from 'react-icons/pi';
+import { PiArrowRight, PiLeaf } from 'react-icons/pi';
 import type { IconType } from 'react-icons';
 import { useNavigate } from 'react-router';
 
@@ -750,6 +750,7 @@ function CreateRunningCardPage() {
 				>
 					{flowStep === 2 ? <FiCheck aria-hidden='true' /> : null}
 					{t(flowStep === 2 ? 'shell.createCard.createHabit' : 'shell.createCard.continue')}
+					{flowStep < 2 ? <PiArrowRight aria-hidden='true' /> : null}
 				</button>
 			</footer>
 		</main>

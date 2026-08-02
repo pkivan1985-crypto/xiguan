@@ -9,6 +9,10 @@ import {
 	PiCaretUp,
 	PiDotsThree,
 	PiFlagPennant,
+	PiBookOpen,
+	PiLeaf,
+	PiPersonSimpleRun,
+	PiSquaresFour,
 	PiTarget,
 	PiTrash,
 	PiWarning,
@@ -79,6 +83,12 @@ interface CardDeckProps {
 }
 
 const FILTERS: readonly DeckFilterId[] = ['all', 'sport', 'reading', 'life'];
+const FILTER_ICONS = {
+	all: PiSquaresFour,
+	sport: PiPersonSimpleRun,
+	reading: PiBookOpen,
+	life: PiLeaf,
+} satisfies Record<DeckFilterId, typeof PiSquaresFour>;
 const WEEKDAYS: readonly IsoWeekday[] = [1, 2, 3, 4, 5, 6, 7];
 
 function trimDeckQuantity(value: string): string {
@@ -442,17 +452,22 @@ function CardDeck({
 				role='group'
 				aria-label={copy.filtersLabel}
 			>
-				{FILTERS.map((filter) => (
-					<button
-						type='button'
-						aria-pressed={state.filter === filter}
-						data-filter={filter}
-						onClick={() => changeFilter(filter)}
-						key={filter}
-					>
-						<span className={styles.filterLabel}>{copy.filters[filter]}</span>
-					</button>
-				))}
+				{FILTERS.map((filter) => {
+					const FilterIcon = FILTER_ICONS[filter];
+
+					return (
+						<button
+							type='button'
+							aria-pressed={state.filter === filter}
+							data-filter={filter}
+							onClick={() => changeFilter(filter)}
+							key={filter}
+						>
+							<FilterIcon aria-hidden='true' />
+							<span className={styles.filterLabel}>{copy.filters[filter]}</span>
+						</button>
+					);
+				})}
 			</div>
 
 			<h2 className={styles.sectionTitle}>{copy.active}</h2>
