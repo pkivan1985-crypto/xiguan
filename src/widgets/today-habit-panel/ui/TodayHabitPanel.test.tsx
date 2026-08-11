@@ -251,6 +251,21 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('>记录进度</span>');
 	});
 
+	it('keeps an explicit completed check-in locked when edited progress is below the plan', () => {
+		const html = renderPanel({
+			renderedHabits: [{
+				...habits[0]!,
+				quantityBaseValue: 3_000,
+				displayValue: '3.00',
+				entryMethod: 'completed',
+			}],
+		});
+
+		expect(html).toContain('data-recorded="true"');
+		expect(html).toMatch(/class="[^"]*completeAction[^"]*" disabled="" data-recorded="true"/);
+		expect(html).toContain('>完成</span>');
+	});
+
 	it('uses the unified quick action and dedicated detail entry on the Today route', () => {
 		const checklist: DailyHabitView = {
 			...habits[1]!,

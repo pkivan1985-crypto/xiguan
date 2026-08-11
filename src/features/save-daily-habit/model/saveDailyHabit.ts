@@ -118,6 +118,10 @@ export async function saveDailyHabit(
 	const displayValue = template.quantity.maxDecimalPlaces === 0
 		? String(input.quantityBaseValue / template.quantity.basePerDisplayUnit)
 		: formatQuantityFromBase(input.quantityBaseValue, template.quantity);
+	const entryMethod = existingRecord?.entryMethod === 'completed'
+		&& input.entryMethod === 'actual'
+		? 'completed'
+		: input.entryMethod;
 	const batch = await saveTodayOutcome(database, {
 		localDate: input.localDate,
 		currentLocalDate: input.currentLocalDate,
@@ -127,7 +131,7 @@ export async function saveDailyHabit(
 		confirmedOverLimit: true,
 		actionRecordDetails: {
 			[input.userCardId]: {
-				entryMethod: input.entryMethod,
+				entryMethod,
 				plannedQuantityBaseValue: input.plannedQuantityBaseValue,
 				carryInBaseValue: input.carryInBaseValue,
 				carryOutBaseValue: input.plannedQuantityBaseValue === undefined

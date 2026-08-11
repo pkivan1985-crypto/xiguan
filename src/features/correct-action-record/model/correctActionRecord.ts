@@ -163,7 +163,7 @@ export async function correctActionRecord(
 			let nextRecord: ActionRecord = {
 				...record,
 				quantityBaseValue: input.quantityBaseValue!,
-				entryMethod: 'adjustment',
+				entryMethod: record.entryMethod === 'completed' ? 'completed' : 'adjustment',
 				carryOutBaseValue: record.plannedQuantityBaseValue === undefined
 					? record.carryOutBaseValue
 					: Math.max(0, record.plannedQuantityBaseValue - input.quantityBaseValue!),

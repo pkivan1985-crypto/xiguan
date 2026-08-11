@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { FiActivity, FiClock, FiHeart, FiTrash2, FiX } from 'react-icons/fi';
 import { parseQuantityToBase } from '@entities/card-template';
 import type { HistoryRecordModel } from '@features/load-history';
+import { SegmentedPaceInput } from '@shared/ui/segmented-pace-input/SegmentedPaceInput';
 
 type ConfirmationKind = 'update' | 'delete';
 
@@ -163,17 +164,14 @@ function ActionRecordEditor({ record, saving, error, onSave, onDelete, onClose }
 									placeholder={t('shell.today.optional')}
 								/>
 							</label>
-							<label>
-								<FiActivity aria-hidden='true' />
-								<span>{t('shell.today.averagePace')}</span>
-								<input
-									type='text'
-									inputMode='numeric'
-									value={paceText}
-									onChange={(event) => { setPaceText(event.target.value); setInvalid(false); }}
-									placeholder='06:30'
-								/>
-							</label>
+							<SegmentedPaceInput
+								className={styles.paceField}
+								label={t('shell.today.averagePace')}
+								value={paceText}
+								onChange={(value) => { setPaceText(value); setInvalid(false); }}
+								invalid={invalid && Boolean(paceText) && parsePace(paceText) === undefined}
+								icon={<FiActivity aria-hidden='true' />}
+							/>
 							<label>
 								<FiHeart aria-hidden='true' />
 								<span>{t('shell.today.averageHeartRate')}</span>

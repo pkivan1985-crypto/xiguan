@@ -30,6 +30,7 @@ import { loadDailyHabitsInApp, type DailyHabitView } from '@features/load-daily-
 import { saveDailyHabitInApp } from '@features/save-daily-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate, parseLocalDate } from '@shared/lib/date';
+import { SegmentedPaceInput } from '@shared/ui/segmented-pace-input/SegmentedPaceInput';
 import { HabitGlyph } from '@widgets/habit-glyph';
 
 import {
@@ -429,7 +430,14 @@ function HabitRecordPage() {
 				</div>}
 				<div className={styles.grid}>
 					<Field label={t('shell.record.running.duration')} value={duration} onChange={setDuration} unit={t('shell.record.units.minutes')} icon={<PiTimer />} />
-					<Field label={t('shell.record.running.pace')} value={pace} onChange={setPace} placeholder='06:30' icon={<PiGauge />} inputType='text' />
+					<SegmentedPaceInput
+						className={styles.paceField}
+						label={t('shell.record.running.pace')}
+						value={pace}
+						onChange={setPace}
+						invalid={error && Boolean(pace) && paceSeconds(pace) === undefined}
+						icon={<PiGauge />}
+					/>
 					<Field label={t('shell.record.running.heartRate')} value={heartRate} onChange={setHeartRate} unit='bpm' icon={<PiHeartbeat />} />
 				</div>
 			</div>}

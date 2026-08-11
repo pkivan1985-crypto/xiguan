@@ -132,6 +132,30 @@ describe('correctActionRecord', () => {
 		});
 	});
 
+	it('preserves an explicit completed check-in while correcting its value and details', async () => {
+		await seed([record({
+			entryMethod: 'completed',
+			durationSeconds: 2_400,
+		})]);
+
+		await correctActionRecord(database, {
+			...updateInput,
+			details: {
+				durationSeconds: 1_980,
+				averagePaceSecondsPerKm: 396,
+				note: '补充训练详情',
+			},
+		});
+
+		expect(await database.tableFor<ActionRecord>('actionRecords').get('record-1')).toMatchObject({
+			quantityBaseValue: 5_000,
+			entryMethod: 'completed',
+			durationSeconds: 1_980,
+			averagePaceSecondsPerKm: 396,
+			note: '补充训练详情',
+		});
+	});
+
 	it('rejects a future record date before opening a correction transaction', async () => {
 		await seed();
 
