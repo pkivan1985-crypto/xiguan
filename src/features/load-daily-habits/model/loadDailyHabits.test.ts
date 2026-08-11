@@ -31,6 +31,7 @@ describe('loadDailyHabits', () => {
 			userCardId: 'run',
 			localDate: '2026-07-25',
 			quantityBaseValue: 2500,
+			entryMethod: 'completed',
 			firstSavedAt: '2026-07-25T01:00:00.000Z',
 			lastSavedAt: '2026-07-25T01:00:00.000Z',
 			lastSubmissionId: 'save-a',
@@ -48,6 +49,7 @@ describe('loadDailyHabits', () => {
 			displayUnit: 'km',
 			stepBase: 500,
 			dailyTargetBase: 5000,
+			entryMethod: 'completed',
 			scheduledToday: true,
 			recordedToday: true,
 		});
@@ -61,6 +63,7 @@ describe('loadDailyHabits', () => {
 			recordedToday: false,
 		});
 		expect(result.scheduledCount).toBe(2);
+		expect(result.completedCount).toBe(1);
 	});
 
 	it('does not offer a card for a historical date before the card existed', async () => {

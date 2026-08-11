@@ -83,7 +83,8 @@ export function resolveSwipeReveal({
 
 function isCompleted(habit: DailyHabitView): boolean {
 	return habit.scheduledToday
-		&& habit.quantityBaseValue >= habit.dailyTargetBase;
+		&& (habit.entryMethod === 'completed'
+			|| habit.quantityBaseValue >= habit.dailyTargetBase);
 }
 
 function number(value: number, maximumFractionDigits = 2): string {

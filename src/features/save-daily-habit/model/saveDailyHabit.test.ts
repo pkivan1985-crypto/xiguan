@@ -122,6 +122,41 @@ describe('saveDailyHabit', () => {
 		});
 	});
 
+	it('preserves an explicit completed check-in when later details use an actual value', async () => {
+		await saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: LOCAL_DATE,
+			currentLocalDate: LOCAL_DATE,
+			quantityBaseValue: 5_000,
+			entryMethod: 'completed',
+			plannedQuantityBaseValue: 5_000,
+			carryInBaseValue: 0,
+			nowIso: '2026-07-25T02:00:00.000Z',
+			submissionId: 'complete-run',
+		});
+
+		await saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: LOCAL_DATE,
+			currentLocalDate: LOCAL_DATE,
+			quantityBaseValue: 3_000,
+			entryMethod: 'actual',
+			plannedQuantityBaseValue: 5_000,
+			carryInBaseValue: 0,
+			durationSeconds: 1_800,
+			note: '补充训练详情',
+			nowIso: '2026-07-25T03:00:00.000Z',
+			submissionId: 'edit-run-details',
+		});
+
+		expect(await database.table('actionRecords').get(`card-a:${LOCAL_DATE}`)).toMatchObject({
+			quantityBaseValue: 3_000,
+			entryMethod: 'completed',
+			durationSeconds: 1_800,
+			note: '补充训练详情',
+		});
+	});
+
 	it('stores preset-specific optional details without changing the cumulative fact', async () => {
 		await saveDailyHabit(database, {
 			userCardId: 'card-a',

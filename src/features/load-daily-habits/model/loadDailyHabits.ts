@@ -45,6 +45,7 @@ export interface DailyHabitView {
 	averagePaceSecondsPerKm?: number;
 	averageHeartRateBpm?: number;
 	note?: string;
+	entryMethod?: ActionRecord['entryMethod'];
 	goalTitle?: string;
 	goalProgressRatio?: number;
 	scheduledToday: boolean;
@@ -236,6 +237,7 @@ export async function loadDailyHabits(
 				averagePaceSecondsPerKm: todayRecord?.averagePaceSecondsPerKm,
 				averageHeartRateBpm: todayRecord?.averageHeartRateBpm,
 				note: todayRecord?.note,
+				entryMethod: todayRecord?.entryMethod,
 				goalTitle: primaryGoal?.title,
 				goalProgressRatio: progress?.ratio,
 				scheduledToday,
@@ -256,7 +258,8 @@ export async function loadDailyHabits(
 		outcomeDates: [...new Set(effectiveRecords.map((record) => record.localDate))].sort(),
 		habits,
 		completedCount: scheduledHabits.filter(
-			(habit) => habit.quantityBaseValue >= habit.dailyTargetBase,
+			(habit) => habit.entryMethod === 'completed'
+				|| habit.quantityBaseValue >= habit.dailyTargetBase,
 		).length,
 		scheduledCount: scheduledHabits.length,
 	};
