@@ -35,8 +35,8 @@
 	padding: 0 6px;
 	font-size: 15px;
 	font-variant-numeric: tabular-nums;
-	text-align: center;
 	color: var(--text-color);
+	text-align: center;
 	outline: 0;
 	background: var(--surface-raised, var(--background-color));
 	border: 1px solid var(--border-color);
@@ -52,8 +52,8 @@
 
 .control small {
 	font-size: 11px;
-	white-space: nowrap;
 	color: var(--muted-color);
+	white-space: nowrap;
 }
 
 .control input:focus {

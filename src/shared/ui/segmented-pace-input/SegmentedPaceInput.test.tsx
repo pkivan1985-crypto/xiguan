@@ -2,10 +2,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
-	paceValueFromSegments,
-	parsePaceSegments,
 	SegmentedPaceInput,
 } from './SegmentedPaceInput';
+import {
+	paceValueFromSegments,
+	parsePaceSegments,
+} from './segmentedPace';
 
 describe('SegmentedPaceInput', () => {
 	it('splits canonical pace values into minute and second groups', () => {
@@ -17,6 +19,7 @@ describe('SegmentedPaceInput', () => {
 	it('removes punctuation and letters while keeping at most two digits per group', () => {
 		expect(paceValueFromSegments('a067', '3b05')).toBe('06:30');
 		expect(paceValueFromSegments('', '9')).toBe(':9');
+		expect(paceValueFromSegments('', '')).toBe('');
 	});
 
 	it('renders two numeric groups with fixed punctuation and unit', () => {

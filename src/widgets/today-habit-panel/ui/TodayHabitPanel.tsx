@@ -19,6 +19,7 @@ import {
 } from 'react-icons/pi';
 
 import type { DailyHabitView } from '@features/load-daily-habits';
+import { SegmentedPaceInput } from '@shared/ui/segmented-pace-input/SegmentedPaceInput';
 import { HabitGlyph } from '@widgets/habit-glyph';
 
 import styles from './TodayHabitPanel.module.css';
@@ -224,17 +225,17 @@ function ActualEntryEditor({
 							placeholder={t('shell.today.optional')}
 						/>
 					</label>
-					<label>
-						<PiTimer aria-hidden='true' />
-						<span>{t('shell.today.averagePace')}</span>
-						<input
-							type='text'
-							inputMode='numeric'
-							value={pace}
-							onChange={(event) => setPace(event.target.value)}
-							placeholder='06:30'
-						/>
-					</label>
+					<SegmentedPaceInput
+						className={styles.paceField}
+						label={t('shell.today.averagePace')}
+						value={pace}
+						onChange={(value) => {
+							setPace(value);
+							setInvalid(false);
+						}}
+						invalid={invalid && Boolean(pace) && parsePaceText(pace) === undefined}
+						icon={<PiTimer aria-hidden='true' />}
+					/>
 					<label>
 						<PiHeartbeat aria-hidden='true' />
 						<span>{t('shell.today.averageHeartRate')}</span>

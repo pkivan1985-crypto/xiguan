@@ -6,12 +6,11 @@ import {
 	type ReactNode,
 } from 'react';
 
+import {
+	paceValueFromSegments,
+	parsePaceSegments,
+} from './segmentedPace';
 import styles from './SegmentedPaceInput.module.css';
-
-export interface PaceSegments {
-	minutes: string;
-	seconds: string;
-}
 
 interface SegmentedPaceInputProps {
 	label: string;
@@ -21,22 +20,6 @@ interface SegmentedPaceInputProps {
 	invalid?: boolean;
 	icon?: ReactNode;
 	className?: string;
-}
-
-function paceDigits(value: string): string {
-	return value.replace(/\D/g, '').slice(0, 2);
-}
-
-export function parsePaceSegments(value: string): PaceSegments {
-	const [minutes = '', seconds = ''] = value.split(':', 2);
-	return {
-		minutes: paceDigits(minutes),
-		seconds: paceDigits(seconds),
-	};
-}
-
-export function paceValueFromSegments(minutes: string, seconds: string): string {
-	return `${paceDigits(minutes)}:${paceDigits(seconds)}`;
 }
 
 export function SegmentedPaceInput({
@@ -53,7 +36,7 @@ export function SegmentedPaceInput({
 	const { minutes, seconds } = parsePaceSegments(value);
 
 	function changeMinutes(event: ChangeEvent<HTMLInputElement>) {
-		const nextMinutes = paceDigits(event.target.value);
+		const nextMinutes = parsePaceSegments(`${event.target.value}:`).minutes;
 		onChange(paceValueFromSegments(nextMinutes, seconds));
 		if (nextMinutes.length === 2) secondsRef.current?.focus();
 	}

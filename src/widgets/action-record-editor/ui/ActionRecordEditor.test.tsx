@@ -47,7 +47,12 @@ describe('ActionRecordEditor', () => {
 		/>);
 		expect(html).toContain('shell.today.durationMinutes');
 		expect(html).toContain('value="30"');
-		expect(html).toContain('value="6:30"');
+		expect(html).toContain('role="group"');
+		expect(html).toContain('aria-label="shell.today.averagePace"');
+		expect(html).toContain('value="6"');
+		expect(html).toContain('value="30"');
+		expect(html).toContain('>:</span>');
+		expect(html).toContain('>/km</small>');
 		expect(html).toContain('value="148"');
 		expect(html).toContain('value="河边慢跑"');
 	});
