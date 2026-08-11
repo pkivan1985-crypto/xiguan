@@ -1,0 +1,70 @@
+.field {
+	display: grid;
+	gap: 6px;
+	min-width: 0;
+}
+
+.field > span {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	min-width: 0;
+	font-size: 0.58rem;
+	color: var(--muted-color);
+}
+
+.field > span svg {
+	flex: 0 0 auto;
+	width: 15px;
+	height: 15px;
+	color: var(--accent-color);
+}
+
+.control {
+	display: grid;
+	grid-template-columns: minmax(44px, 1fr) auto minmax(44px, 1fr) auto;
+	gap: 5px;
+	align-items: center;
+	min-width: 0;
+}
+
+.control input {
+	width: 100%;
+	min-width: 0;
+	height: 44px;
+	padding: 0 6px;
+	font-size: 15px;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+	color: var(--text-color);
+	outline: 0;
+	background: var(--surface-raised, var(--background-color));
+	border: 1px solid var(--border-color);
+	border-radius: 11px;
+}
+
+.control > span {
+	font-size: 17px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-color);
+}
+
+.control small {
+	font-size: 11px;
+	white-space: nowrap;
+	color: var(--muted-color);
+}
+
+.control input:focus {
+	border-color: var(--accent-color);
+	box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.control[data-invalid='true'] input {
+	border-color: var(--error-color);
+}
+
+.control input:disabled {
+	opacity: 0.5;
+}

@@ -11,6 +11,15 @@ export { ModalLayout } from './modal-layout/ui/ModalLayout';
 export { Overlay } from './overlay/Overlay';
 export { Placeholder } from './placeholder/Placeholder';
 export { SectionHeader } from './section-header/SectionHeader';
+export {
+	paceValueFromSegments,
+	parsePaceSegments,
+	SegmentedPaceInput,
+} from './segmented-pace-input/SegmentedPaceInput';
+export type {
+	PaceSegments,
+	SegmentedPaceInputProps,
+} from './segmented-pace-input/SegmentedPaceInput';
 export { ShellSection } from './shell-section/ShellSection';
 export { SegmentedControl } from './segmented-control/SegmentedControl';
 export { Switch } from './switch/Switch';
