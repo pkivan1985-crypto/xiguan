@@ -883,6 +883,7 @@
 			"goalsTab": "Goals",
 			"loadError": "Progress cannot be read right now.",
 			"loading": "Reading real progress…",
+			"monthlyCheckIns": "{{count}} successful check-ins this month",
 			"longTermProgressLabel": "{{title}} long-term goal progress",
 			"longPlans": "Long-term plans",
 			"noPlans": "No goals yet. You can start with daily records.",

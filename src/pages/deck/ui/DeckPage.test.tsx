@@ -119,6 +119,14 @@ describe('DeckPage', () => {
 			new URL('./DeckPage.module.css', import.meta.url),
 			'utf8',
 		);
+		const headerCss = readFileSync(
+			new URL('../../../widgets/mobile-page-header/ui/MobilePageHeader.module.css', import.meta.url),
+			'utf8',
+		);
+		const todayCss = readFileSync(
+			new URL('../../today/ui/TodayPage.module.css', import.meta.url),
+			'utf8',
+		);
 		const appShellCss = readFileSync(
 			new URL('../../../widgets/app-shell/ui/AppShell.module.css', import.meta.url),
 			'utf8',
@@ -137,7 +145,9 @@ describe('DeckPage', () => {
 		);
 
 		expect(deckCss).toMatch(/\.page\s*\{[^}]*gap:\s*0;/s);
-		expect(deckCss).toMatch(/\.headerActions\s*\{[^}]*gap:\s*0;/s);
+		expect(deckCss).toMatch(/\.page\s*\{[^}]*max-width:\s*390px;/s);
+		expect(headerCss).toMatch(/\.header\s*\{[^}]*min-height:\s*54px;/s);
+		expect(todayCss).toMatch(/\.page\s*\{[^}]*padding-top:\s*0;/s);
 		expect(appShellCss).toMatch(
 			/\.navItem\s*\{[^}]*width:\s*48px;/s,
 		);
@@ -148,10 +158,10 @@ describe('DeckPage', () => {
 			/\.day::before\s*\{[^}]*width:\s*40px;/s,
 		);
 		expect(calendarCss).toMatch(
-			/\.date\s*\{[^}]*width:\s*38px;[^}]*height:\s*39px;/s,
+			/\.date\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;/s,
 		);
 		expect(calendarCss).toMatch(
-			/\.day::after\s*\{[^}]*inset:\s*-6px 0 -5px;/s,
+			/\.day::after\s*\{[^}]*inset:\s*-2px 0;/s,
 		);
 		expect(progressCss).toMatch(
 			/\.detailsLink,\s*\.allGoalsLink\s*\{[^}]*min-height:\s*44px;/s,

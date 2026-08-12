@@ -888,6 +888,7 @@
 			"goalsTab": "目标",
 			"loadError": "进展数据暂时无法读取。",
 			"loading": "正在读取真实进展…",
+			"monthlyCheckIns": "本月成功打卡 {{count}} 次",
 			"longTermProgressLabel": "{{title}}长期目标进度",
 			"longPlans": "长期规划",
 			"noPlans": "还没有设置目标，也可以先从每天记录开始。",

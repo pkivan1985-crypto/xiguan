@@ -96,11 +96,13 @@ describe('OutcomeCalendar', () => {
 		languageState.resolvedLanguage = 'zh-CN';
 	});
 
-	it('keeps a 44px touch contract while preserving the compact visible date cell', () => {
+	it('keeps a 44px touch contract without letting selected and outcome states overlap rows', () => {
 		const css = readFileSync(new URL('./OutcomeCalendar.module.css', import.meta.url), 'utf8');
 
-		expect(css).toMatch(/\.day\s*\{[^}]*height:\s*33px;/s);
-		expect(css).toMatch(/\.day::after\s*\{[^}]*inset:\s*-6px 0 -5px;/s);
+		expect(css).toMatch(/\.grid\s*\{[^}]*row-gap:\s*3px;/s);
+		expect(css).toMatch(/\.day\s*\{[^}]*height:\s*40px;/s);
+		expect(css).toMatch(/\.day::after\s*\{[^}]*inset:\s*-2px 0;/s);
+		expect(css).toMatch(/\.date\s*\{[^}]*height:\s*38px;/s);
 	});
 
 	it('uses the parent mobile content width instead of a narrower desktop-only cap', () => {
