@@ -13,9 +13,9 @@
 	width: 44px;
 	height: 44px;
 	font-size: 26px;
-	color: var(--text-color);
+	color: var(--muted-color);
 	background: transparent;
-	border-radius: 13px;
+	border-radius: 50%;
 }
 
 .segmented {
@@ -23,7 +23,7 @@
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	height: 32px;
 	padding: 3px;
-	margin-top: -14px;
+	margin-top: 0;
 	background: var(--surface-color);
 	border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
 	border-radius: var(--radius-pill);
@@ -67,7 +67,7 @@
 	display: grid;
 	gap: 10px;
 	min-width: 0;
-	margin-top: -4px;
+	margin-top: 0;
 }
 
 .calendarPanel {
@@ -77,8 +77,8 @@
 .selectedDay {
 	display: grid;
 	gap: 5px;
-	padding-top: 8px;
-	margin-top: 5px;
+	padding-top: 10px;
+	margin-top: 10px;
 	border-top: 1px solid var(--border-color);
 }
 

@@ -117,11 +117,18 @@ function correctionErrorKey(error: unknown):
 	return 'shell.history.saveError';
 }
 
-function ProgressHeader() {
+interface ProgressHeaderProps {
+	monthlyCheckInCount?: number;
+}
+
+function ProgressHeader({ monthlyCheckInCount = 0 }: ProgressHeaderProps) {
 	const { t } = useTranslation();
 	return (
 		<MobilePageHeader
 			title={t('shell.nav.progress')}
+			description={t('shell.progress.monthlyCheckIns', {
+				count: monthlyCheckInCount,
+			})}
 			settingsAction={(
 				<Link
 					className={styles.settingsAction}
@@ -166,10 +173,14 @@ function ProgressPageContent({
 	);
 	const tabs = buildProgressTabModel(activeTab);
 	const activeTabId = tabs.find(({ selected }) => selected)!.id;
+	const monthPrefix = `${dashboard.year}-${String(dashboard.monthIndex + 1).padStart(2, '0')}`;
+	const monthlyCheckInCount = history.groups
+		.filter((group) => group.localDate.startsWith(monthPrefix))
+		.reduce((count, group) => count + group.records.length, 0);
 
 	return (
 		<div className={styles.page}>
-			<ProgressHeader />
+			<ProgressHeader monthlyCheckInCount={monthlyCheckInCount} />
 			<div
 				className={styles.segmented}
 				role='tablist'

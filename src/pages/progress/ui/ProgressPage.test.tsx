@@ -38,6 +38,7 @@ const translations: Record<string, string> = {
 	'shell.progress.durationValue': '时长 {{value}} 分钟',
 	'shell.progress.paceValue': '平均配速 {{value}} /km',
 	'shell.progress.heartRateValue': '平均心率 {{value}} bpm',
+	'shell.progress.monthlyCheckIns': '本月成功打卡 {{count}} 次',
 	'shell.progress.recordValue': '{{value}} {{unit}}',
 	'shell.progress.selectedDayHint': '点击日期查看当天记录',
 	'shell.progress.selectedDayTitle': '{{date}} · {{count}} 项成果',
@@ -297,6 +298,7 @@ describe('ProgressPage', () => {
 		);
 
 		expect(html).toContain('<h1>进展</h1>');
+		expect(html).toContain('本月成功打卡 1 次');
 		expect(html).toContain('href="/settings"');
 		expect(html).toContain('role="tablist"');
 		expect(html).toMatch(/aria-selected="true"><svg[^>]*>.*<\/svg>月历<\/button>/s);

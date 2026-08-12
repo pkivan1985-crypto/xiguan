@@ -1,7 +1,7 @@
 .calendar {
 	width: 100%;
 	height: 435px;
-	padding: 4px 16px 8px;
+	padding: 8px 16px 12px;
 	overflow: hidden;
 	background: var(--surface-color);
 	border: 1px solid var(--border-color);
@@ -20,7 +20,7 @@
 	grid-template-columns: 44px 1fr 44px;
 	align-items: center;
 	min-height: 44px;
-	margin-bottom: 2px;
+	margin-bottom: 4px;
 }
 
 .header h3 {
@@ -55,8 +55,12 @@
 	justify-items: center;
 }
 
+.grid {
+	row-gap: 3px;
+}
+
 .weekdays {
-	margin-bottom: 1px;
+	margin-bottom: 4px;
 	font-size: 13px;
 	line-height: 20px;
 	color: var(--muted-color);
@@ -68,7 +72,7 @@
 	display: grid;
 	place-items: center;
 	width: 44px;
-	height: 33px;
+	height: 40px;
 	padding: 0;
 	font-size: 15px;
 	line-height: 20px;
@@ -80,7 +84,7 @@
 
 .day::after {
 	position: absolute;
-	inset: -6px 0 -5px;
+	inset: -2px 0;
 	content: '';
 }
 
@@ -96,7 +100,7 @@
 	display: grid;
 	place-items: center;
 	width: 38px;
-	height: 39px;
+	height: 38px;
 	border: 1px solid transparent;
 	border-radius: 10px;
 }
@@ -107,7 +111,7 @@
 
 .outcomeMarker {
 	position: absolute;
-	bottom: 1px;
+	bottom: 2px;
 	display: grid;
 	place-items: center;
 	width: 10px;

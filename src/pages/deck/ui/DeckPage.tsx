@@ -48,24 +48,24 @@ function DeckPageContent({
 					active: activeCount,
 					archived: view.archivedCount,
 				})}
+				settingsAction={(
+					<Link
+						className={styles.settingsAction}
+						to={APP_ROUTES.SETTINGS}
+						aria-label={t('shell.actions.openSettings')}
+					>
+						<PiGearSix aria-hidden='true' />
+					</Link>
+				)}
 				primaryAction={(
-					<div className={styles.headerActions}>
-						<Link
-							className={styles.settingsAction}
-							to={APP_ROUTES.SETTINGS}
-							aria-label={t('shell.actions.openSettings')}
-						>
-							<PiGearSix aria-hidden='true' />
-						</Link>
-						<button
-							className={styles.createAction}
-							type='button'
-							onClick={onCreateHabit}
-						>
-							<PiPlus aria-hidden='true' />
-							{t('shell.deck.newHabit')}
-						</button>
-					</div>
+					<button
+						className={styles.createAction}
+						type='button'
+						onClick={onCreateHabit}
+					>
+						<PiPlus aria-hidden='true' />
+						{t('shell.deck.newHabit')}
+					</button>
 				)}
 			/>
 

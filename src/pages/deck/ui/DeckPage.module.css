@@ -2,16 +2,8 @@
 	display: grid;
 	gap: 0;
 	width: 100%;
-	max-width: 398px;
+	max-width: 390px;
 	margin: 0 auto;
-}
-
-.headerActions {
-	display: grid;
-	grid-template-columns: auto;
-	gap: 0;
-	justify-items: end;
-	margin-top: -6px;
 }
 
 .settingsAction {
@@ -19,9 +11,9 @@
 	place-items: center;
 	width: 44px;
 	height: 44px;
-	font-size: 25px;
-	color: var(--text-color);
-	border-radius: 14px;
+	font-size: 26px;
+	color: var(--muted-color);
+	border-radius: 50%;
 }
 
 .createAction {
