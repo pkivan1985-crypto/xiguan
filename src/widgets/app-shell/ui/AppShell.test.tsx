@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 
 import { AppShell } from './AppShell';
 
@@ -63,5 +64,14 @@ describe('AppShell primary navigation', () => {
 		expect(html).toContain('<header');
 		expect(html).toContain('>设置<');
 		expect(html).not.toContain('aria-label="打开设置"');
+	});
+
+	it('keeps navigation labels accessible while presenting an icon-only mobile bar', () => {
+		const html = renderShell('/');
+		const css = readFileSync(new URL('./AppShell.module.css', import.meta.url), 'utf8');
+
+		expect(html.match(/class="[^"]*navLabel[^"]*"/g)).toHaveLength(3);
+		expect(css).toMatch(/\.navLabel\s*\{[^}]*position:\s*absolute;[^}]*width:\s*1px;/s);
+		expect(css).toMatch(/\.navItem\s*\{[^}]*min-height:\s*48px;/s);
 	});
 });

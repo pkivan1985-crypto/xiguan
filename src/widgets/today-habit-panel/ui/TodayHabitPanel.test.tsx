@@ -17,6 +17,8 @@ const translations: Record<string, string> = {
 	'shell.today.completeAction': '打卡',
 	'shell.today.completedAction': '完成',
 	'shell.today.enterActual': '记录进度',
+	'shell.today.openDetails': '查看{{title}}详情',
+	'shell.today.detailsAction': '详情',
 	'shell.createCard.detailAction': '逐项记录',
 	'shell.today.completedFold': '已完成 {{count}} 项',
 	'shell.today.dailyProgress': '今日 {{current}} / {{target}} {{unit}}',
@@ -284,6 +286,43 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('>打卡</span>');
 		expect(html).toContain('>逐项记录</span>');
 		expect(html).not.toContain('aria-label="增加轻食计划"');
+	});
+
+	it('uses details and one check-in control for an unfinished quantity habit', () => {
+		const html = renderPanel({
+			renderedHabits: [{
+				...habits[0]!,
+				quantityBaseValue: 0,
+				displayValue: '0.00',
+				recordedToday: false,
+			}],
+			openDetails: true,
+		});
+
+		expect(html).toContain('aria-label="查看跑步详情"');
+		expect(html).toContain('>详情</span>');
+		expect(html).toContain('aria-label="完成跑步"');
+		expect(html).toContain('data-layout="detail-check"');
+		expect(html).toMatch(/class="[^"]*checkAction[^"]*" aria-label="完成跑步"/);
+		expect(html).not.toContain('aria-label="减少跑步"');
+		expect(html).not.toContain('aria-label="增加跑步"');
+		expect(html).not.toContain('data-recorded="true"');
+	});
+
+	it('locks the same check-in control after the quantity habit is completed', () => {
+		const html = renderPanel({
+			renderedHabits: [{
+				...habits[0]!,
+				quantityBaseValue: 5_000,
+				displayValue: '5.00',
+			}],
+			openDetails: true,
+		});
+
+		expect(html).toContain('aria-label="完成跑步"');
+		expect(html).toMatch(/class="[^"]*checkAction[^"]*" disabled="" data-recorded="true"/);
+		expect(html).not.toContain('aria-label="减少跑步"');
+		expect(html).not.toContain('aria-label="增加跑步"');
 	});
 
 	it('keeps a rest-day habit visible without exposing recording controls', () => {

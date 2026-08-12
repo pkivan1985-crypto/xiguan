@@ -637,7 +637,7 @@
 			"optionalHint": "Details are optional; add only what helps",
 			"note": "Add a short note (optional)",
 			"invalid": "Check the required value and number format.",
-			"save": "Save today's progress",
+			"save": "Save record",
 			"units": { "minutes": "min" },
 			"kinds": {
 				"running": "Run record",
@@ -648,7 +648,7 @@
 				"screen-free": "Screen-time record"
 			},
 			"running": {
-				"title": "Run details",
+				"title": "Run record",
 				"prompt": "How far did you run?",
 				"editHint": "Your previous result is prefilled and can be edited",
 				"quickValues": "Quick distances",
@@ -662,6 +662,10 @@
 				"detailsHint": "Optional; you can save without it",
 				"previousMetrics": "Previous: {{duration}} min · pace {{pace}} · {{heartRate}} bpm",
 				"reusePrevious": "Reuse previous",
+				"previousDistance": "Previous {{value}} {{unit}}",
+				"reuseDistance": "Use this value",
+				"completionLocked": "Editing details will not undo completion",
+				"completedStatus": "Completed",
 				"distance": "Distance",
 				"duration": "Duration",
 				"pace": "Average pace",
@@ -983,7 +987,9 @@
 			"todayCompleted": "Confirmed today",
 			"todayPending": "Waiting for confirmation",
 			"undoHabit": "Undo {{title}}",
-			"viewTodaySummary": "View today's summary",
+			"viewTodaySummary": "Today's summary",
+			"detailsAction": "Details",
+			"openDetails": "View {{title}} details",
 			"viewTodaySummaryHint": "Calendar and goal progress are under Progress",
 			"weekLabel": "This week",
 			"weekdays": {

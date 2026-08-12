@@ -106,7 +106,7 @@ function TodayPageContent({
 			</div>
 			<section className={styles.overview} aria-label={t('shell.today.overviewLabel')}>
 				<strong>
-					{t('shell.today.overview', {
+					{t('shell.today.overviewProgressValue', {
 						completed: model.completedCount,
 						total: model.scheduledCount,
 					})}
@@ -125,7 +125,7 @@ function TodayPageContent({
 				>
 					<i style={{ width: `${completedRatio * 100}%` }} />
 				</span>
-				<small>{t('shell.today.autoSaveLocal')}</small>
+				<small className={styles.visuallyHidden}>{t('shell.today.autoSaveLocal')}</small>
 			</section>
 			<div className={styles.panelSlot}>
 				<TodayHabitPanel

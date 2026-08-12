@@ -119,6 +119,15 @@
 	display: grid;
 	gap: 2px;
 	min-width: 0;
+	color: inherit;
+	text-align: left;
+	background: transparent;
+	border: 0;
+}
+
+.habitCopy:disabled {
+	cursor: default;
+	opacity: 1;
 }
 
 .habitCopy > strong {
@@ -375,6 +384,63 @@
 	min-width: 0;
 }
 
+.quantityActions[data-layout='detail-check'] {
+	grid-template-columns: minmax(42px, auto) 44px;
+	gap: 10px;
+	width: auto;
+}
+
+.quantityActions[data-layout='detail-check'] > button {
+	min-height: 44px;
+	padding: 0;
+}
+
+.quantityActions[data-layout='detail-check'] .detailAction {
+	min-width: 42px;
+	padding-inline: 6px;
+	color: var(--accent-color);
+	background: transparent;
+}
+
+.quantityActions .checkAction {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	color: var(--muted-color);
+	background: transparent;
+	border: 1px solid var(--border-color);
+	border-radius: 50%;
+}
+
+.quantityActions .checkAction svg {
+	width: 20px;
+	height: 20px;
+}
+
+.quantityActions .checkAction:disabled[data-recorded='true'] {
+	color: #081714;
+	cursor: default;
+	background: var(--sport-color);
+	border-color: var(--sport-color);
+	opacity: 1;
+}
+
+.detailOnlyAction {
+	display: inline-flex;
+	gap: 5px;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0 10px;
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--accent-color);
+	background: var(--accent-soft);
+	border-radius: 13px;
+}
+
 .trainingFields label > svg {
 	width: 15px;
 	height: 15px;
@@ -449,25 +515,6 @@
 	border-top: 1px solid var(--border-color);
 }
 
-.swipeHint {
-	display: flex;
-	gap: 6px;
-	align-items: center;
-	justify-content: flex-end;
-	min-height: 32px;
-	padding: 4px 16px;
-	font-size: 11px;
-	line-height: 16px;
-	color: var(--muted-color);
-	border-bottom: 1px solid var(--border-color);
-}
-
-.swipeHint svg {
-	width: 15px;
-	height: 15px;
-	color: var(--danger-color, #ff8585);
-}
-
 .completedFold svg {
 	width: 18px;
 	height: 18px;
@@ -511,6 +558,15 @@
 		width: 82px;
 	}
 
+	.quantityActions[data-layout='detail-check'] {
+		grid-template-columns: 42px 44px;
+		width: 96px;
+	}
+
+	.quantityActions[data-layout='detail-check'] .detailAction {
+		min-height: 44px;
+	}
+
 	.quantityActions > button {
 		min-height: 34px;
 	}
@@ -525,7 +581,7 @@
 }
 
 @media (max-width: 410px) {
-	.quantityActions > button:not(.undoQuantity) svg {
+	.quantityActions > button:not(.undoQuantity, .checkAction) svg {
 		display: none;
 	}
 }

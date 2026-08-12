@@ -131,7 +131,8 @@ describe('TodayPage', () => {
 
 		expect(html).toContain('<h1>今天</h1>');
 		expect(html).toContain('7月25日 周六');
-		expect(html).toContain('已完成 1 / 1');
+		expect(html).toContain('>1 / 1</strong>');
+		expect(html).not.toContain('>已完成 1 / 1</strong>');
 		expect(html).toContain('role="progressbar"');
 		expect(html).toContain('aria-label="今日完成进度"');
 		expect(html).toContain('aria-valuenow="1"');
@@ -177,10 +178,10 @@ describe('TodayPage', () => {
 			</MemoryRouter>,
 		);
 
-		expect(html).toContain('已完成 1 / 1');
+		expect(html).toContain('>1 / 1</strong>');
 		expect(html).toContain('data-habit-id="rest-run"');
 		expect(html).toContain('今日休息');
-		expect(html).not.toContain('已完成 1 / 2');
+		expect(html).not.toContain('>1 / 2</strong>');
 	});
 
 	it('serializes deferred saves while keeping queued rows pending and errors isolated', async () => {
@@ -277,7 +278,7 @@ describe('TodayPage', () => {
 		expect(english.shell.today.overview).toBe('{{completed}} / {{total}} done');
 		expect(english.shell.today.autoSaveLocal).toBe('Saved locally');
 		expect(css).toContain(
-			'grid-template-columns: minmax(0, auto) minmax(56px, 1fr) minmax(0, auto);',
+			'grid-template-columns: minmax(38px, auto) minmax(56px, 1fr);',
 		);
 		expect(css).toMatch(
 			/\.overview strong,\s*\.overview small\s*\{[^}]*min-width:\s*0;[^}]*overflow:\s*hidden;/s,
