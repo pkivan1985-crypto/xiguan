@@ -6,7 +6,6 @@ import {
 	PiCheck,
 	PiCheckCircle,
 	PiClock,
-	PiHandSwipeLeft,
 	PiHeartbeat,
 	PiMoon,
 	PiNotePencil,
@@ -354,7 +353,32 @@ function HabitControl({
 			</span>
 		);
 	}
-	if (onOpenDetails) {
+	if (onOpenDetails && habit.trackingType === 'quantity') {
+		return (
+			<div className={styles.quantityActions} data-layout='detail-check'>
+				<button
+					type='button'
+					className={styles.detailAction}
+					disabled={pending}
+					aria-label={t('shell.today.openDetails', { title: habit.title })}
+					onClick={onOpenDetails}
+				>
+					<span>{t('shell.today.detailsAction')}</span>
+				</button>
+				<button
+					type='button'
+					className={styles.checkAction}
+					disabled={pending || completed}
+					data-recorded={completed || undefined}
+					aria-label={t('shell.today.completeHabit', { title: habit.title })}
+					onClick={completed ? undefined : onComplete}
+				>
+					<PiCheck aria-hidden='true' />
+				</button>
+			</div>
+		);
+	}
+	if (onOpenDetails && habit.trackingType === 'checklist') {
 		return (
 			<div className={styles.quantityActions}>
 				<button
@@ -376,21 +400,8 @@ function HabitControl({
 					onClick={onOpenDetails}
 				>
 					<PiPencilSimple aria-hidden='true' />
-					<span>{t(habit.trackingType === 'checklist'
-						? 'shell.createCard.detailAction'
-						: 'shell.today.enterActual')}</span>
+					<span>{t('shell.createCard.detailAction')}</span>
 				</button>
-				{completed && (
-					<button
-						type='button'
-						className={styles.undoQuantity}
-						disabled={pending || habit.quantityBaseValue === 0}
-						aria-label={t('shell.today.decreaseHabit', { title: habit.title })}
-						onClick={() => onChange(0)}
-					>
-						<PiX aria-hidden='true' />
-					</button>
-				)}
 			</div>
 		);
 	}
@@ -520,10 +531,23 @@ function HabitRow({
 				label={habit.title}
 				decorative
 			/>
-			<div className={styles.habitCopy}>
-				<strong>{habit.title}</strong>
-				<HabitSupportingCopy habit={habit} context={context} />
-			</div>
+			{onOpenDetails ? (
+				<button
+					type='button'
+					className={styles.habitCopy}
+					disabled={pending}
+					aria-label={t('shell.today.openDetails', { title: habit.title })}
+					onClick={onOpenDetails}
+				>
+					<strong>{habit.title}</strong>
+					<HabitSupportingCopy habit={habit} context={context} />
+				</button>
+			) : (
+				<div className={styles.habitCopy}>
+					<strong>{habit.title}</strong>
+					<HabitSupportingCopy habit={habit} context={context} />
+				</div>
+			)}
 			<HabitControl
 				habit={habit}
 				pending={pending}
@@ -702,12 +726,6 @@ function TodayHabitPanel({
 			data-testid='today-habit-panel'
 			data-context={context}
 		>
-			{habits.length > 0 && onRequestDelete && (
-				<p className={styles.swipeHint}>
-					<PiHandSwipeLeft aria-hidden='true' />
-					<span>{t('shell.today.swipeDeleteHint')}</span>
-				</p>
-			)}
 			{habits.length === 0 ? (
 				<div className={styles.empty}>
 					<strong>{t('shell.today.emptyTitle')}</strong>

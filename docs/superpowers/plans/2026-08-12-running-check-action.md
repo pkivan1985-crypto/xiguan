@@ -31,7 +31,7 @@
 - Consumes: `isCompleted(habit: DailyHabitView): boolean`, `onComplete(): void`, `onOpenDetails(): void`
 - Produces: the existing quantity-with-details control group with a details button and one disabled-after-completion check-in button
 
-- [ ] **Step 1: Write the failing structural tests**
+- [x] **Step 1: Write the failing structural tests**
 
 Replace the old quantity stepper expectation with unfinished and completed assertions:
 
@@ -67,7 +67,7 @@ it('locks the same check button after the quantity habit is completed', () => {
 
 Production mutation caught: restoring either step button, using a different control branch, or allowing the completed check button to remain enabled makes at least one test fail.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run:
 
@@ -77,7 +77,7 @@ npm test -- src/widgets/today-habit-panel/ui/TodayHabitPanel.test.tsx
 
 Expected: FAIL because the rendered branch still contains `data-layout="stepper"`, decrease/increase labels, and no `checkAction`.
 
-- [ ] **Step 3: Implement the minimal component change**
+- [x] **Step 3: Implement the minimal component change**
 
 In `HabitControl`, replace the quantity-with-details stepper branch with:
 
@@ -111,7 +111,7 @@ if (onOpenDetails && habit.trackingType === 'quantity') {
 
 Import `PiCheck` from `react-icons/pi` and remove `PiMinus` only if no other branch still uses it.
 
-- [ ] **Step 4: Implement the single-circle visual state**
+- [x] **Step 4: Implement the single-circle visual state**
 
 Replace the stepper-specific CSS with a two-control layout:
 
@@ -157,7 +157,7 @@ Replace the stepper-specific CSS with a two-control layout:
 
 The outer button supplies the only circle; `PiCheck` supplies only the check mark.
 
-- [ ] **Step 5: Run focused tests and verify GREEN**
+- [x] **Step 5: Run focused tests and verify GREEN**
 
 Run:
 
@@ -167,7 +167,7 @@ npm test -- src/widgets/today-habit-panel/ui/TodayHabitPanel.test.tsx src/pages/
 
 Expected: PASS.
 
-- [ ] **Step 6: Run the complete project gate**
+- [x] **Step 6: Run the complete project gate**
 
 Run:
 
@@ -177,7 +177,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\invoke-toolchain.ps1 npm run 
 
 Expected: all tests, TypeScript, ESLint, Stylelint, Vite/PWA build, and audits pass; only already-documented non-blocking warnings may remain.
 
-- [ ] **Step 7: Verify the selected visual target in the in-app browser**
+- [x] **Step 7: Verify the selected visual target in the in-app browser**
 
 At 390 × 844 CSS pixels, verify:
 
@@ -189,7 +189,9 @@ At 390 × 844 CSS pixels, verify:
 
 Append the source image, final screenshot, viewport measurements, interaction evidence, and `final result: passed` to `design-qa.md`.
 
-- [ ] **Step 8: Record the local implementation checkpoint**
+- [x] **Step 8: Record the local implementation checkpoint**
+
+Account-switch note (2026-08-12): implementation, full verification, and browser QA are complete. The takeover agent reviewed the complete approved R5.1/R5.2 diff and recorded one coherent local implementation checkpoint without staging protected `index.html` or user-material directories. See `HANDOFF-20260812-037`.
 
 Stage only the explicit files from this task:
 

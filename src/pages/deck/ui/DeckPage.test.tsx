@@ -138,7 +138,10 @@ describe('DeckPage', () => {
 
 		expect(deckCss).toMatch(/\.page\s*\{[^}]*gap:\s*0;/s);
 		expect(deckCss).toMatch(/\.headerActions\s*\{[^}]*gap:\s*0;/s);
-		expect(appShellCss).not.toMatch(
+		expect(appShellCss).toMatch(
+			/\.navItem\s*\{[^}]*width:\s*48px;/s,
+		);
+		expect(appShellCss).toMatch(
 			/\.navItem\.active\s*\{[^}]*background:/s,
 		);
 		expect(weekStripCss).toMatch(

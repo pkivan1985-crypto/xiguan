@@ -642,7 +642,7 @@
 			"optionalHint": "详细内容都可选，只记录对你有帮助的",
 			"note": "简单记一下（可选）",
 			"invalid": "请检查必填数值和填写格式。",
-			"save": "保存今天的进度",
+			"save": "保存记录",
 			"units": { "minutes": "分钟" },
 			"kinds": {
 				"running": "跑步记录",
@@ -653,7 +653,7 @@
 				"screen-free": "屏幕时间记录"
 			},
 			"running": {
-				"title": "跑步详情",
+				"title": "跑步记录",
 				"prompt": "本次跑了多少？",
 				"editHint": "已带入上次记录，可直接修改",
 				"quickValues": "常用公里数",
@@ -667,6 +667,10 @@
 				"detailsHint": "选填，不填也可以保存",
 				"previousMetrics": "上次：{{duration}} 分钟 · 配速 {{pace}} · {{heartRate}} bpm",
 				"reusePrevious": "沿用上次",
+				"previousDistance": "上次 {{value}} {{unit}}",
+				"reuseDistance": "一键沿用",
+				"completionLocked": "修改详情不会取消完成状态",
+				"completedStatus": "已打卡",
 				"distance": "实际公里数",
 				"duration": "运动用时",
 				"pace": "平均配速",
@@ -988,7 +992,9 @@
 			"todayCompleted": "今日已确认",
 			"todayPending": "今日待确认",
 			"undoHabit": "撤销{{title}}",
-			"viewTodaySummary": "查看今日汇总",
+			"viewTodaySummary": "今日汇总",
+			"detailsAction": "详情",
+			"openDetails": "查看{{title}}详情",
 			"viewTodaySummaryHint": "月历和目标进展都在进展页",
 			"weekLabel": "本周日期",
 			"weekdays": {

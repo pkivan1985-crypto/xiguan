@@ -6,8 +6,6 @@ import {
 	PiArrowLeft,
 	PiBowlFood,
 	PiBookOpenText,
-	PiCaretDown,
-	PiCaretUp,
 	PiCheck,
 	PiCoffee,
 	PiDrop,
@@ -16,9 +14,10 @@ import {
 	PiHeartbeat,
 	PiLeaf,
 	PiMoonStars,
+	PiMinus,
 	PiNotePencil,
 	PiPepper,
-	PiRuler,
+	PiPlus,
 	PiShieldCheck,
 	PiTimer,
 	PiX,
@@ -75,6 +74,17 @@ function minutesBetween(start: string, end: string): number | undefined {
 	return minutes;
 }
 
+function localDateLabel(localDate: string, locale: string): string {
+	const [year, month, day] = localDate.split('-').map(Number);
+	const date = new Date(year!, month! - 1, day!, 12);
+	const datePart = new Intl.DateTimeFormat(locale, {
+		month: 'long',
+		day: 'numeric',
+	}).format(date);
+	const weekdayPart = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+	return `${datePart} ${weekdayPart}`;
+}
+
 function BlockTitle({ icon: Icon, title, hint }: { icon: IconType; title: string; hint: string }) {
 	return <header className={styles.blockTitle}><Icon aria-hidden='true' /><div><strong>{title}</strong><small>{hint}</small></div></header>;
 }
@@ -94,7 +104,7 @@ function Field({ label, value, onChange, unit, placeholder, icon, inputType = 'n
 }
 
 function HabitRecordPage() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
 	const { userCardId = '' } = useParams();
 	const [searchParams] = useSearchParams();
@@ -111,7 +121,6 @@ function HabitRecordPage() {
 	const [pace, setPace] = useState('');
 	const [heartRate, setHeartRate] = useState('');
 	const [runningValueSource, setRunningValueSource] = useState<RunningRecordValueSource>('blank');
-	const [showRunningDetails, setShowRunningDetails] = useState(false);
 	const [note, setNote] = useState('');
 	const [cupSize, setCupSize] = useState('300');
 	const [morningCups, setMorningCups] = useState('');
@@ -152,7 +161,6 @@ function HabitRecordPage() {
 						setDuration(selected.recordedToday ? currentDetails.duration : '');
 						setPace(selected.recordedToday ? currentDetails.pace : '');
 						setHeartRate(selected.recordedToday ? currentDetails.heartRate : '');
-						setShowRunningDetails(Boolean(selected.recordedToday && (currentDetails.duration || currentDetails.pace || currentDetails.heartRate)));
 					} else {
 						setActual(selected.quantityBaseValue > 0 ? selected.displayValue : '');
 						setDuration(selected.durationSeconds ? String(selected.durationSeconds / 60) : '');
@@ -317,9 +325,8 @@ function HabitRecordPage() {
 	const sleepDuration = minutesBetween(bedtime, wakeTime);
 	const planDistance = plannedRunningDistance(habit);
 	const reusableTrainingDetails = previousTrainingDetails(habit);
-	const hasReusableTrainingDetails = Boolean(
-		reusableTrainingDetails.duration || reusableTrainingDetails.pace || reusableTrainingDetails.heartRate,
-	);
+	const isRunning = habit.officialCardId === 'running';
+	const completionLocked = habit.entryMethod === 'completed';
 	const kindLabel = t(habit.officialCardId === 'water'
 		? 'shell.record.kinds.water'
 		: habit.officialCardId === 'light-food'
@@ -333,17 +340,22 @@ function HabitRecordPage() {
 						: 'shell.record.kinds.running');
 
 	return (
-		<main className={styles.page}>
-			<header className={styles.header}>
-				<button type='button' onClick={() => navigate(-1)} aria-label={t('shell.createCard.back')}><PiArrowLeft aria-hidden='true' /></button>
-				<div><small>{localDate}</small><h1>{habit.title}</h1></div>
+		<main className={`${styles.page} ${isRunning ? styles.runningPage : ''}`}>
+			<header className={`${styles.header} ${isRunning ? styles.runningHeader : ''}`}>
+				{!isRunning && <button type='button' onClick={() => navigate(-1)} aria-label={t('shell.createCard.back')}><PiArrowLeft aria-hidden='true' /></button>}
+				<div>
+					<small>{isRunning
+						? localDateLabel(localDate, i18n.resolvedLanguage ?? i18n.language)
+						: localDate}</small>
+					<h1>{isRunning ? t('shell.record.running.title') : habit.title}</h1>
+				</div>
 				<button type='button' onClick={() => navigate(APP_ROUTES.HOME)} aria-label={t('shell.createCard.close')}><PiX aria-hidden='true' /></button>
 			</header>
-			<form className={styles.form} onSubmit={submit}>
-				<section className={styles.hero}>
+			<form className={`${styles.form} ${isRunning ? styles.runningForm : ''}`} onSubmit={submit}>
+				{!isRunning && <section className={styles.hero}>
 					<HabitGlyph iconKey={habit.iconKey} accent={habit.accent} label={habit.title} decorative size='lg' />
 					<div><small>{kindLabel}</small><strong>{habit.title}</strong><span>{t('shell.record.target', { value: habit.dailyTargetBase / habit.basePerDisplayUnit, unit: habit.displayUnit })}</span></div>
-				</section>
+				</section>}
 
 				{habit.officialCardId === 'running' && renderRunningFields()}
 				{habit.officialCardId === 'water' && renderWaterFields()}
@@ -373,8 +385,14 @@ function HabitRecordPage() {
 					<PiNotePencil aria-hidden='true' />
 					<textarea maxLength={280} value={note} onChange={(event) => setNote(event.target.value)} placeholder={t('shell.record.note')} />
 				</label>
+				{isRunning && completionLocked && (
+					<p className={styles.completionLock}>
+						<PiShieldCheck aria-hidden='true' />
+						{t('shell.record.running.completionLocked')}
+					</p>
+				)}
 				{error && <p className={styles.error} role='alert'>{t('shell.record.invalid')}</p>}
-				<button className={styles.save} type='submit' disabled={saving}><PiCheck aria-hidden='true' />{t('shell.record.save')}</button>
+				<button className={`${styles.save} ${isRunning ? styles.runningSave : ''}`} type='submit' disabled={saving}><PiCheck aria-hidden='true' />{t('shell.record.save')}</button>
 			</form>
 		</main>
 	);
@@ -384,11 +402,20 @@ function HabitRecordPage() {
 		setRunningValueSource(source);
 	}
 
-	function reusePreviousTrainingDetails() {
+	function reusePreviousRecord() {
+		if (habit?.previousRecord) {
+			selectRunningDistance(habit.previousRecord.displayValue, 'previous');
+		}
 		setDuration(reusableTrainingDetails.duration);
 		setPace(reusableTrainingDetails.pace);
 		setHeartRate(reusableTrainingDetails.heartRate);
-		setShowRunningDetails(true);
+	}
+
+	function adjustRunningDistance(direction: -1 | 1) {
+		const current = Number(actual) || 0;
+		const step = habit!.stepBase / habit!.basePerDisplayUnit;
+		setActual(String(Math.max(0, current + direction * step)));
+		setRunningValueSource('blank');
 	}
 
 	function renderRunningFields() {
@@ -401,33 +428,36 @@ function HabitRecordPage() {
 					: t('shell.record.running.customSource');
 
 		return <section className={`${styles.block} ${styles.runningBlock}`}>
-			<BlockTitle icon={PiRuler} title={t('shell.record.running.prompt')} hint={t('shell.record.running.editHint')} />
+			<header className={styles.runValueHeader}>
+				<div>
+					<strong>{habit!.title}</strong>
+					<small>{t('shell.record.target', { value: planDistance, unit: habit!.displayUnit })}</small>
+				</div>
+				{completionLocked && (
+					<span className={styles.completedStatus}>
+						<PiCheck aria-hidden='true' />
+						{t('shell.record.running.completedStatus')}
+					</span>
+				)}
+			</header>
 			<label className={styles.distanceEditor}>
 				<span>{sourceLabel}</span>
 				<div>
 					<input type='number' inputMode='decimal' min='0' step='any' value={actual} onChange={(event) => { setActual(event.target.value); setRunningValueSource('blank'); }} />
 					<strong>{habit!.displayUnit}</strong>
+					<span className={styles.distanceActions}>
+						<button type='button' aria-label={t('shell.today.decreaseHabit', { title: habit!.title })} onClick={() => adjustRunningDistance(-1)}><PiMinus aria-hidden='true' /></button>
+						<button type='button' aria-label={t('shell.today.increaseHabit', { title: habit!.title })} onClick={() => adjustRunningDistance(1)}><PiPlus aria-hidden='true' /></button>
+					</span>
 				</div>
 			</label>
-			<div className={styles.quickValues} aria-label={t('shell.record.running.quickValues')}>
-				{habit!.previousRecord && <button type='button' aria-pressed={runningValueSource === 'previous'} onClick={() => selectRunningDistance(habit!.previousRecord!.displayValue, 'previous')}><small>{t('shell.record.running.previousValue')}</small><strong>{habit!.previousRecord!.displayValue} {habit!.displayUnit}</strong></button>}
-				<button type='button' aria-pressed={runningValueSource === 'plan'} onClick={() => selectRunningDistance(planDistance, 'plan')}><small>{t('shell.record.running.todayPlan')}</small><strong>{planDistance} {habit!.displayUnit}</strong></button>
-				<button type='button' aria-pressed={actual === '3'} onClick={() => selectRunningDistance('3', 'blank')}><strong>3 {habit!.displayUnit}</strong></button>
-				<button type='button' aria-pressed={actual === '5'} onClick={() => selectRunningDistance('5', 'blank')}><strong>5 {habit!.displayUnit}</strong></button>
-			</div>
-			<button className={styles.detailsToggle} type='button' aria-expanded={showRunningDetails} onClick={() => setShowRunningDetails((current) => !current)}>
-				<span><PiGauge aria-hidden='true' />{t('shell.record.running.moreDetails')}<small>{t('shell.record.running.detailsHint')}</small></span>
-				{showRunningDetails ? <PiCaretUp aria-hidden='true' /> : <PiCaretDown aria-hidden='true' />}
-			</button>
-			{showRunningDetails && <div className={styles.runningDetails}>
-				{hasReusableTrainingDetails && <div className={styles.previousMetrics}>
-					<span>{t('shell.record.running.previousMetrics', {
-						duration: reusableTrainingDetails.duration || '—',
-						pace: reusableTrainingDetails.pace || '—',
-						heartRate: reusableTrainingDetails.heartRate || '—',
-					})}</span>
-					<button type='button' onClick={reusePreviousTrainingDetails}>{t('shell.record.running.reusePrevious')}</button>
-				</div>}
+			{habit!.previousRecord && (
+				<button className={styles.previousDistance} type='button' onClick={reusePreviousRecord}>
+					<span>{t('shell.record.running.previousDistance', { value: habit!.previousRecord!.displayValue, unit: habit!.displayUnit })}</span>
+					<strong>{t('shell.record.running.reuseDistance')}</strong>
+				</button>
+			)}
+			<div className={styles.runningDetails}>
 				<div className={styles.grid}>
 					<Field label={t('shell.record.running.duration')} value={duration} onChange={setDuration} unit={t('shell.record.units.minutes')} icon={<PiTimer />} />
 					<SegmentedPaceInput
@@ -440,7 +470,7 @@ function HabitRecordPage() {
 					/>
 					<Field label={t('shell.record.running.heartRate')} value={heartRate} onChange={setHeartRate} unit='bpm' icon={<PiHeartbeat />} />
 				</div>
-			</div>}
+			</div>
 		</section>;
 	}
 

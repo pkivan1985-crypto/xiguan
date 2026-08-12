@@ -51,7 +51,7 @@ function AppShell() {
 						className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
 					>
 						<Icon aria-hidden='true' />
-						<span>{label}</span>
+						<span className={styles.navLabel}>{label}</span>
 					</NavLink>
 				))}
 			</nav>

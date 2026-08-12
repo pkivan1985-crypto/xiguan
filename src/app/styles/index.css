@@ -14,6 +14,7 @@
 	--page-bg: #071417;
 	--surface-color: #0e2027;
 	--surface-secondary: #132932;
+	--surface-raised: #0c2833;
 	--text-color: #f5f8fb;
 	--muted-color: #97a8b8;
 	--accent-color: #2594ff;
@@ -36,7 +37,7 @@
 	--section-gap: 16px;
 	--surface-padding: 16px;
 	--surface-padding-large: 18px;
-	--bottom-nav-height: 72px;
+	--bottom-nav-height: 68px;
 	--shadow-sm: 0 8px 22px rgb(0 0 0 / 14%);
 	--shadow-md: 0 18px 48px rgb(0 0 0 / 20%);
 

@@ -55,8 +55,8 @@
 
 .overview {
 	display: grid;
-	grid-template-columns: minmax(0, auto) minmax(56px, 1fr) minmax(0, auto);
-	gap: 12px;
+	grid-template-columns: minmax(38px, auto) minmax(56px, 1fr);
+	gap: 16px;
 	align-items: center;
 	min-height: 22px;
 	padding: 0;
@@ -71,8 +71,8 @@
 }
 
 .overview strong {
-	font-size: 15px;
-	font-weight: 650;
+	font-size: 16px;
+	font-weight: 750;
 	line-height: 22px;
 	white-space: nowrap;
 }
@@ -82,6 +82,18 @@
 	line-height: 20px;
 	color: var(--muted-color);
 	white-space: nowrap;
+}
+
+.visuallyHidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	white-space: nowrap;
+	border: 0;
+	clip-path: inset(50%);
 }
 
 .overview > .overviewProgress {
@@ -110,9 +122,9 @@
 	grid-template-columns: 1fr 1px 1fr;
 	align-items: center;
 	width: calc(100% + 12px);
-	min-height: 44px;
+	min-height: 40px;
 	margin-inline: -6px;
-	margin-top: 16px;
+	margin-top: 10px;
 }
 
 .primaryActions a {
@@ -121,16 +133,16 @@
 	align-items: center;
 	justify-content: center;
 	min-width: 0;
-	min-height: 44px;
-	font-size: 15px;
+	min-height: 40px;
+	font-size: 14px;
 	line-height: 22px;
 	color: var(--accent-color);
 }
 
 .primaryActions a svg {
 	flex: none;
-	width: 24px;
-	height: 24px;
+	width: 20px;
+	height: 20px;
 }
 
 .primaryActions > i {
