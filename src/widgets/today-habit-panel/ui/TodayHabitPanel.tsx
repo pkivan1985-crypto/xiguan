@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- The approved task boundary keeps the tested interaction helpers beside this panel. */
-import { useRef, useState, type FormEvent, type PointerEvent } from 'react';
+import { useRef, useState, type FormEvent, type MouseEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
 	PiCaretDown,
@@ -65,7 +65,8 @@ export function nextHabitQuantity(
 }
 
 const SWIPE_ACTION_WIDTH = 84;
-const SWIPE_REVEAL_THRESHOLD = 42;
+const SWIPE_REVEAL_THRESHOLD = 28;
+const SWIPE_CLOSE_THRESHOLD = 18;
 
 export function resolveSwipeReveal({
 	deltaX,
@@ -77,7 +78,7 @@ export function resolveSwipeReveal({
 	wasRevealed: boolean;
 }): boolean {
 	if (Math.abs(deltaY) > Math.abs(deltaX)) return wasRevealed;
-	if (wasRevealed) return deltaX < SWIPE_REVEAL_THRESHOLD;
+	if (wasRevealed) return deltaX < SWIPE_CLOSE_THRESHOLD;
 	return deltaX <= -SWIPE_REVEAL_THRESHOLD;
 }
 
@@ -636,6 +637,7 @@ function SwipeableHabitRow({
 }) {
 	const { t } = useTranslation();
 	const gestureRef = useRef<SwipeGesture | null>(null);
+	const suppressNextClickRef = useRef(false);
 	const [dragging, setDragging] = useState(false);
 	const [dragOffset, setDragOffset] = useState(0);
 	const swipeEnabled = Boolean(onRequestDelete);
@@ -647,7 +649,8 @@ function SwipeableHabitRow({
 		if (!swipeEnabled || rowProps.pending) return;
 		const target = event.target;
 		// eslint-disable-next-line i18next/no-literal-string -- This is an interaction selector, not user-facing copy.
-		if (target instanceof Element && target.closest('button, a, input, textarea, select')) return;
+		if (target instanceof Element && target.closest('a, input, textarea, select, [contenteditable="true"]')) return;
+		suppressNextClickRef.current = false;
 		gestureRef.current = {
 			pointerId: event.pointerId,
 			startOffset: revealed ? -SWIPE_ACTION_WIDTH : 0,
@@ -667,9 +670,11 @@ function SwipeableHabitRow({
 		if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 8) {
 			gestureRef.current = null;
 			setDragging(false);
+			event.currentTarget.releasePointerCapture?.(event.pointerId);
 			return;
 		}
 		if (Math.abs(deltaX) < 6) return;
+		suppressNextClickRef.current = true;
 		event.preventDefault();
 		setDragOffset(Math.max(
 			-SWIPE_ACTION_WIDTH,
@@ -697,6 +702,23 @@ function SwipeableHabitRow({
 		setDragging(false);
 	}
 
+	function captureClick(event: MouseEvent<HTMLDivElement>) {
+		if (suppressNextClickRef.current) {
+			suppressNextClickRef.current = false;
+			event.preventDefault();
+			event.stopPropagation();
+			return;
+		}
+		const target = event.target;
+		// eslint-disable-next-line i18next/no-literal-string -- This is an interaction selector, not user-facing copy.
+		const deleteAction = target instanceof Element && target.closest('[data-testid="delete-habit-action"]');
+		if (revealed && !deleteAction) {
+			event.preventDefault();
+			event.stopPropagation();
+			onReveal(false);
+		}
+	}
+
 	return (
 		<div
 			className={styles.swipeShell}
@@ -707,6 +729,8 @@ function SwipeableHabitRow({
 			onPointerMove={pointerMove}
 			onPointerUp={finishPointer}
 			onPointerCancel={cancelPointer}
+			onLostPointerCapture={cancelPointer}
+			onClickCapture={captureClick}
 			role='listitem'
 		>
 			{onRequestDelete && (

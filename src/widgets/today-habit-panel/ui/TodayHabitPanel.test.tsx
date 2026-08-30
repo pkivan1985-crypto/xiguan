@@ -201,11 +201,12 @@ describe('TodayHabitPanel', () => {
 		expect(nextHabitQuantity({ ...habits[4]!, quantityBaseValue: 0 }, 'toggle')).toBe(1);
 	});
 
-	it('reveals only after a deliberate horizontal swipe to the left', () => {
-		expect(resolveSwipeReveal({ deltaX: -52, deltaY: 4, wasRevealed: false })).toBe(true);
-		expect(resolveSwipeReveal({ deltaX: -18, deltaY: 2, wasRevealed: false })).toBe(false);
+	it('reveals with a short deliberate left swipe and closes with an easier right swipe', () => {
+		expect(resolveSwipeReveal({ deltaX: -28, deltaY: 4, wasRevealed: false })).toBe(true);
+		expect(resolveSwipeReveal({ deltaX: -20, deltaY: 2, wasRevealed: false })).toBe(false);
 		expect(resolveSwipeReveal({ deltaX: -58, deltaY: 72, wasRevealed: false })).toBe(false);
-		expect(resolveSwipeReveal({ deltaX: 52, deltaY: 4, wasRevealed: true })).toBe(false);
+		expect(resolveSwipeReveal({ deltaX: 17, deltaY: 2, wasRevealed: true })).toBe(true);
+		expect(resolveSwipeReveal({ deltaX: 18, deltaY: 4, wasRevealed: true })).toBe(false);
 	});
 
 	it('renders five tracking types as rows inside one unified panel', () => {
