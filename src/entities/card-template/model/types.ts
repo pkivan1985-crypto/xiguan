@@ -12,7 +12,7 @@ export interface CardTemplate {
 	version: number;
 	defaultStageMode: StageCompletionMode;
 	trackingType?: HabitTrackingType;
-	iconKey?: 'activity' | 'droplet' | 'book' | 'moon' | 'shield' | 'leaf';
+	iconKey?: 'activity' | 'droplet' | 'book' | 'moon' | 'shield' | 'leaf' | 'receipt';
 	accent?: 'blue' | 'cyan' | 'green' | 'amber' | 'violet';
 	defaultDailyTargetBase?: number;
 	stepBase?: number;

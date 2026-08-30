@@ -8,6 +8,7 @@ export const SYSTEM_CATEGORIES: readonly CategoryDefinition[] = Object.freeze([
 	{ id: 'learning', title: '学习成长', sortOrder: 2, enabled: true },
 	{ id: 'recovery', title: '作息恢复', sortOrder: 3, enabled: true },
 	{ id: 'focus', title: '专注自律', sortOrder: 4, enabled: true },
+	{ id: 'life-management', title: '生活管理', sortOrder: 5, enabled: true },
 ]);
 
 export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
@@ -135,6 +136,27 @@ export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
 			basePerDisplayUnit: 1,
 			maxDecimalPlaces: 0,
 			confirmationThresholdDisplay: 1,
+		},
+	},
+	{
+		id: 'extra-expense',
+		categoryId: 'life-management',
+		title: '额外开支',
+		sortOrder: 0,
+		enabled: true,
+		version: 1,
+		defaultStageMode: 'quantity',
+		trackingType: 'quantity',
+		iconKey: 'receipt',
+		accent: 'amber',
+		defaultDailyTargetBase: 100,
+		stepBase: 100,
+		quantity: {
+			baseUnit: 'cent',
+			displayUnit: '元',
+			basePerDisplayUnit: 100,
+			maxDecimalPlaces: 2,
+			confirmationThresholdDisplay: 1_000_000,
 		},
 	},
 ]);

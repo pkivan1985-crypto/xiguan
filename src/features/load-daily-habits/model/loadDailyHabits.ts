@@ -36,6 +36,7 @@ export interface DailyHabitView {
 	dailyTargetBase: number;
 	carryInBaseValue: number;
 	totalQuantityBaseValue: number;
+	monthQuantityBaseValue?: number;
 	activeDays: number;
 	supportsTrainingDetails: boolean;
 	officialCardId?: string;
@@ -50,6 +51,8 @@ export interface DailyHabitView {
 	goalProgressRatio?: number;
 	scheduledToday: boolean;
 	recordedToday: boolean;
+	recordSavedAt?: string;
+	expenseEntryCount?: number;
 	previousRecord?: DailyHabitPreviousRecord;
 }
 
@@ -64,6 +67,7 @@ export interface DailyHabitPreviousRecord {
 export interface DailyHabitsModel {
 	localDate: LocalDate;
 	outcomeDates: LocalDate[];
+	expenseDates?: LocalDate[];
 	habits: DailyHabitView[];
 	completedCount: number;
 	scheduledCount: number;
@@ -135,7 +139,7 @@ export async function loadDailyHabits(
 	const stageGoals = database.tableFor<StageGoal>('stageGoals');
 	const data = await database.transaction('r', [templates, cards, records, longTermGoals, stageGoals], async () => ({
 		templates: await templates.toArray(),
-		cards: await cards.where('status').equals('active').toArray(),
+		cards: await cards.toArray(),
 		records: await records.toArray(),
 		longTermGoals: await longTermGoals.toArray(),
 		stageGoals: await stageGoals.toArray(),
@@ -156,16 +160,20 @@ export async function loadDailyHabits(
 	}
 	const todayWeekday = weekday(localDate);
 	const habits = data.cards
+		.filter((card) => card.status === 'active')
 		.filter((card) => cardExistedOnDate(card, localDate))
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DailyHabitView[] => {
 			const template = templatesById.get(card.officialCardId);
 			if (!template?.enabled) return [];
 			const cardRecords = recordsByCard.get(card.id) ?? [];
+			const monthPrefix = `${localDate.slice(0, 7)}-`;
 			const todayRecord = todayRecords.get(card.id);
 			const scheduledByPlan = !card.dailyPlan
 				|| card.dailyPlan.weekdays.includes(todayWeekday);
-			const scheduledToday = scheduledByPlan || todayRecord !== undefined;
+			const scheduledToday = card.officialCardId === 'extra-expense'
+				? false
+				: scheduledByPlan || todayRecord !== undefined;
 			const quantityBaseValue = todayRecord?.quantityBaseValue ?? 0;
 			const trackingType = template.trackingType ?? 'quantity';
 			const longTermGoal = currentLongTermGoal(data.longTermGoals, card.id, localDate);
@@ -229,6 +237,9 @@ export async function loadDailyHabits(
 					?? configuredDailyTarget + carryInBaseValue,
 				carryInBaseValue,
 				totalQuantityBaseValue: cardRecords.reduce((total, record) => total + record.quantityBaseValue, 0),
+				monthQuantityBaseValue: cardRecords
+					.filter((record) => record.localDate.startsWith(monthPrefix))
+					.reduce((total, record) => total + record.quantityBaseValue, 0),
 				activeDays: new Set(cardRecords.map((record) => record.localDate)).size,
 				supportsTrainingDetails: card.officialCardId === 'running',
 				habitConfig: card.habitConfig,
@@ -242,6 +253,12 @@ export async function loadDailyHabits(
 				goalProgressRatio: progress?.ratio,
 				scheduledToday,
 				recordedToday: todayRecord !== undefined,
+				recordSavedAt: todayRecord?.lastSavedAt,
+				expenseEntryCount: card.officialCardId === 'extra-expense' && todayRecord
+					? todayRecord.details?.kind === 'extra-expense' && 'entries' in todayRecord.details
+						? todayRecord.details.entries.length
+						: 1
+					: 0,
 				previousRecord: previousRecord ? {
 					quantityBaseValue: previousRecord.quantityBaseValue,
 					displayValue: formatQuantityFromBase(previousRecord.quantityBaseValue, template.quantity),
@@ -255,7 +272,13 @@ export async function loadDailyHabits(
 
 	return {
 		localDate,
-		outcomeDates: [...new Set(effectiveRecords.map((record) => record.localDate))].sort(),
+		outcomeDates: [...new Set(effectiveRecords
+			.filter((record) => data.cards.find((card) => card.id === record.userCardId)?.officialCardId !== 'extra-expense')
+			.map((record) => record.localDate))].sort(),
+		expenseDates: [...new Set(effectiveRecords
+			.filter((record) => record.localDate.startsWith(`${localDate.slice(0, 7)}-`)
+				&& data.cards.find((card) => card.id === record.userCardId)?.officialCardId === 'extra-expense')
+			.map((record) => record.localDate))].sort(),
 		habits,
 		completedCount: scheduledHabits.filter(
 			(habit) => habit.entryMethod === 'completed'

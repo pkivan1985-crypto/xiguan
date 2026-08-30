@@ -9,16 +9,19 @@ interface WeekStripProps {
 	selectedLocalDate: string;
 	todayLocalDate: string;
 	outcomeDates: readonly string[];
+	expenseDates?: readonly string[];
 	onSelect: (localDate: string) => void;
 }
 
-function WeekStrip({ selectedLocalDate, todayLocalDate, outcomeDates, onSelect }: WeekStripProps) {
+function WeekStrip({ selectedLocalDate, todayLocalDate, outcomeDates, expenseDates = [], onSelect }: WeekStripProps) {
 	const { t } = useTranslation();
+	const expenses = new Set(expenseDates);
 	const weekdayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 	return (
 		<div className={styles.strip} aria-label={t('shell.today.weekLabel')}>
 			{buildWeekDays(selectedLocalDate, outcomeDates).map((day) => {
 				const state = buildWeekDayState(day, selectedLocalDate, todayLocalDate);
+				const hasExpense = expenses.has(day.localDate);
 				return (
 					<button
 						type='button'
@@ -31,7 +34,7 @@ function WeekStrip({ selectedLocalDate, todayLocalDate, outcomeDates, onSelect }
 					>
 						<small>{t(`shell.today.weekdays.${weekdayKeys[day.weekdayIndex]}`)}</small>
 						<strong>{day.dayOfMonth}</strong>
-						<span className={styles.marker}>
+						<span className={styles.marker} data-marker-pair={state.hasOutcome && hasExpense ? 'true' : undefined}>
 							{state.hasOutcome && (
 								<span aria-label={t('shell.today.outcomeDate')}>
 									{state.selected
@@ -39,6 +42,7 @@ function WeekStrip({ selectedLocalDate, todayLocalDate, outcomeDates, onSelect }
 										: <PiCheckCircleFill aria-hidden='true' />}
 								</span>
 							)}
+							{hasExpense && <span className={styles.expenseMarker} data-expense-marker='true' aria-hidden='true'><PiCircleFill /></span>}
 						</span>
 					</button>
 				);

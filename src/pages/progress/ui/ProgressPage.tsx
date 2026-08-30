@@ -13,7 +13,7 @@ import {
 	PiTarget,
 	PiX,
 } from 'react-icons/pi';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 
 import {
 	buildHistoryDateHref,
@@ -176,7 +176,9 @@ function ProgressPageContent({
 	const monthPrefix = `${dashboard.year}-${String(dashboard.monthIndex + 1).padStart(2, '0')}`;
 	const monthlyCheckInCount = history.groups
 		.filter((group) => group.localDate.startsWith(monthPrefix))
-		.reduce((count, group) => count + group.records.length, 0);
+		.reduce((count, group) => count + group.records.filter(
+			(record) => record.officialCardId !== 'extra-expense',
+		).length, 0);
 
 	return (
 		<div className={styles.page}>
@@ -220,6 +222,7 @@ function ProgressPageContent({
 							year={dashboard.year}
 							monthIndex={dashboard.monthIndex}
 							outcomeDates={dashboard.outcomeDates}
+							expenseDates={dashboard.expenseDates ?? []}
 							todayLocalDate={todayLocalDate}
 							selectedDate={selectedDate}
 							onSelectDate={onSelectDate}
@@ -316,8 +319,12 @@ function ProgressPageContent({
 															className={styles.editRecordButton}
 															onClick={() => onEditRecord(record.id)}
 														>
-															<PiPencilSimple aria-hidden='true' />
-															{t('shell.progress.editRecord')}
+															{record.officialCardId === 'extra-expense'
+																? <PiEye aria-hidden='true' />
+																: <PiPencilSimple aria-hidden='true' />}
+															{t(record.officialCardId === 'extra-expense'
+																? 'shell.progress.expenseDetails'
+																: 'shell.progress.editRecord')}
 														</button>
 													)}
 												</article>
@@ -385,6 +392,7 @@ interface BackfillSheetProps {
 	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
 	onComplete: (habit: DailyHabitView) => void;
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
+	onOpenDetails: (habit: DailyHabitView) => void;
 	onClose: () => void;
 }
 
@@ -396,11 +404,12 @@ function BackfillSheet({
 	onChange,
 	onComplete,
 	onSaveActual,
+	onOpenDetails,
 	onClose,
 }: BackfillSheetProps) {
 	const { t, i18n } = useTranslation();
 	const habits = model.habits.filter(
-		(habit) => habit.scheduledToday && !habit.recordedToday,
+		(habit) => habit.officialCardId === 'extra-expense' || (habit.scheduledToday && !habit.recordedToday),
 	);
 	const dateLabel = shortDateLabel(
 		localDate,
@@ -448,6 +457,7 @@ function BackfillSheet({
 					onChange={onChange}
 					onComplete={onComplete}
 					onSaveActual={onSaveActual}
+					onOpenDetails={onOpenDetails}
 					onToggleCompleted={() => undefined}
 				/>
 				<p className={styles.backfillHint}>{t('shell.progress.backfillHint')}</p>
@@ -458,6 +468,7 @@ function BackfillSheet({
 
 function ProgressPage() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const now = useMemo(() => new Date(), []);
 	const todayLocalDate = formatLocalDate(now);
@@ -530,7 +541,7 @@ function ProgressPage() {
 		|| (month.year === now.getFullYear() && month.monthIndex < now.getMonth());
 	const backfillableHabits = backfillModel?.localDate === selectedDate
 		? backfillModel.habits.filter(
-		(habit) => habit.scheduledToday && !habit.recordedToday,
+		(habit) => habit.officialCardId === 'extra-expense' || (habit.scheduledToday && !habit.recordedToday),
 		)
 		: [];
 	const selectedRecord = history?.groups
@@ -688,6 +699,11 @@ function ProgressPage() {
 			backfillAvailable={backfillableHabits.length > 0}
 			onOpenBackfill={() => setBackfillOpen(true)}
 			onEditRecord={(recordId) => {
+				const record = history.groups.flatMap(({ records }) => records).find(({ id }) => id === recordId);
+				if (record?.officialCardId === 'extra-expense' && record.userCardId) {
+					navigate(APP_ROUTES.habitRecord(record.userCardId, record.localDate));
+					return;
+				}
 				correctionIds.current = {};
 				setCorrectionError(undefined);
 				setSelectedRecordId(recordId);
@@ -713,6 +729,10 @@ function ProgressPage() {
 						...entry,
 						entryMethod: 'actual',
 					});
+				}}
+				onOpenDetails={(habit) => {
+					setBackfillOpen(false);
+					navigate(APP_ROUTES.habitRecord(habit.id, selectedDate));
 				}}
 				onClose={() => setBackfillOpen(false)}
 				/>

@@ -13,7 +13,7 @@ export interface SaveDailyHabitInput {
 	userCardId: string;
 	localDate: string;
 	currentLocalDate: string;
-	recordingContext?: 'today' | 'backfill';
+	recordingContext?: 'today' | 'backfill' | 'correction';
 	quantityBaseValue: number;
 	entryMethod?: ActionRecord['entryMethod'];
 	plannedQuantityBaseValue?: number;
@@ -99,6 +99,7 @@ export async function saveDailyHabit(
 				actionRecordId,
 				operation: 'delete',
 				currentLocalDate: input.currentLocalDate,
+				recordLocalDate: input.localDate,
 				nowIso: input.nowIso,
 				correctionId: input.submissionId,
 			});
@@ -125,7 +126,7 @@ export async function saveDailyHabit(
 	const batch = await saveTodayOutcome(database, {
 		localDate: input.localDate,
 		currentLocalDate: input.currentLocalDate,
-		recordingContext: input.recordingContext,
+		recordingContext: input.recordingContext === 'correction' ? 'backfill' : input.recordingContext,
 		nowIso: input.nowIso,
 		submissionId: input.submissionId,
 		confirmedOverLimit: true,

@@ -48,6 +48,13 @@ export async function setUserCardArchived(
 	return database.transaction('rw', [userCards], async () => {
 		const card = await userCards.get(userCardId);
 		if (!card) throw new Error('USER_CARD_NOT_FOUND');
+		if (!input.archived && card.officialCardId === 'extra-expense') {
+			const activeExpenseCard = await userCards
+				.where('officialCardId').equals('extra-expense')
+				.filter((candidate) => candidate.id !== card.id && candidate.status === 'active')
+				.first();
+			if (activeExpenseCard) throw new Error('ACTIVE_EXTRA_EXPENSE_CARD_EXISTS');
+		}
 		const updatedCard: UserCard = {
 			...card,
 			status: input.archived ? 'archived' : 'active',

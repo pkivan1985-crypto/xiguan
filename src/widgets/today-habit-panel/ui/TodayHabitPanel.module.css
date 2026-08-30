@@ -427,6 +427,12 @@
 	opacity: 1;
 }
 
+.quantityActions .checkAction[data-expense-recorded='true'] {
+	color: #201604;
+	background: #f2b94b;
+	border-color: #f2b94b;
+}
+
 .detailOnlyAction {
 	display: inline-flex;
 	gap: 5px;

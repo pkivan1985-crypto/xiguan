@@ -105,7 +105,8 @@
 	border-radius: 10px;
 }
 
-.outcome .date {
+.outcome .date,
+.date:has(.expenseMarker) {
 	padding-bottom: 8px;
 }
 
@@ -120,6 +121,20 @@
 	color: #071417;
 	background: var(--achievement-color);
 	border-radius: 50%;
+}
+
+.expenseMarker {
+	position: absolute;
+	bottom: 2px;
+	left: calc(50% + 3px);
+	width: 8px;
+	height: 8px;
+	background: #f2b94b;
+	border-radius: 50%;
+}
+
+.date[data-marker-pair='true'] .outcomeMarker {
+	right: calc(50% + 2px);
 }
 
 .selected .date {

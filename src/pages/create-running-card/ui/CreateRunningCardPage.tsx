@@ -17,7 +17,7 @@ import {
 	FiTrash2,
 	FiX,
 } from 'react-icons/fi';
-import { PiArrowRight, PiLeaf } from 'react-icons/pi';
+import { PiArrowRight, PiLeaf, PiReceipt } from 'react-icons/pi';
 import type { IconType } from 'react-icons';
 import { useNavigate } from 'react-router';
 
@@ -42,6 +42,7 @@ const PRESETS = [
 	{ id: 'reading-time', categoryId: 'learning', icon: FiBookOpen, labelKey: 'shell.createCard.presets.reading', unitKey: 'shell.createCard.units.duration', displayUnitKey: 'shell.createCard.displayUnits.duration', accent: 'amber', decimals: 0, dailyDefault: 30 },
 	{ id: 'sleep', categoryId: 'recovery', icon: FiMoon, labelKey: 'shell.createCard.presets.sleep', unitKey: 'shell.createCard.units.check', displayUnitKey: 'shell.createCard.displayUnits.check', accent: 'violet', decimals: 0, dailyDefault: 1 },
 	{ id: 'screen-free', categoryId: 'focus', icon: FiShield, labelKey: 'shell.createCard.presets.screenFree', unitKey: 'shell.createCard.units.avoid', displayUnitKey: 'shell.createCard.displayUnits.avoid', accent: 'blue', decimals: 0, dailyDefault: 1 },
+	{ id: 'extra-expense', categoryId: 'life-management', icon: PiReceipt, labelKey: 'shell.createCard.presets.extraExpense', unitKey: 'shell.createCard.units.money', displayUnitKey: 'shell.createCard.displayUnits.money', accent: 'amber', decimals: 2, dailyDefault: 1 },
 ] as const satisfies readonly {
 	id: string;
 	categoryId: string;
@@ -61,6 +62,7 @@ const CATEGORIES = [
 	{ id: 'learning', labelKey: 'shell.createCard.categories.learning' },
 	{ id: 'recovery', labelKey: 'shell.createCard.categories.recovery' },
 	{ id: 'focus', labelKey: 'shell.createCard.categories.focus' },
+	{ id: 'life-management', labelKey: 'shell.createCard.categories.lifeManagement' },
 ] as const;
 
 const DEFAULT_LIGHT_FOOD_RULES = [
@@ -139,6 +141,8 @@ function CreateRunningCardPage() {
 	})));
 	const [newFoodRule, setNewFoodRule] = useState('');
 	const selected = PRESETS.find((preset) => preset.id === templateId)!;
+	const isEventDriven = templateId === 'extra-expense';
+	const flowSteps: readonly ('choose' | 'plan' | 'confirm')[] = isEventDriven ? ['choose', 'confirm'] : ['choose', 'plan', 'confirm'];
 	const selectedUnit = t(selected.displayUnitKey);
 	const selectedWeekdaysCount = useMemo(() => {
 		if (!longEndDate) return 0;
@@ -151,7 +155,7 @@ function CreateRunningCardPage() {
 	const derivedLongTarget = String(selectedWeekdaysCount * (
 		templateId === 'light-food' ? foodRules.length : selected.dailyDefault
 	));
-	const usesDerivedTarget = ['light-food', 'sleep', 'screen-free'].includes(templateId);
+	const usesDerivedTarget = ['light-food', 'sleep', 'screen-free', 'extra-expense'].includes(templateId);
 	const planningTarget = usesDerivedTarget ? derivedLongTarget : longTarget;
 
 	function evenStages(count: number, current: readonly StageDraft[], endDate = longEndDate): StageDraft[] | null {
@@ -230,6 +234,7 @@ function CreateRunningCardPage() {
 	function selectPreset(id: string): void {
 		const next = PRESETS.find((preset) => preset.id === id)!;
 		setTemplateId(id);
+		if (id === 'extra-expense') setStagedPlanEnabled(false);
 		if (!titleCustomized) setCardTitle(t(next.labelKey));
 		setAutoDistribution(true);
 		setError(undefined);
@@ -434,6 +439,7 @@ function CreateRunningCardPage() {
 
 	function planReady(): boolean {
 		const hasName = Boolean(cardTitle.trim());
+		if (isEventDriven) return hasName;
 		const hasLongTarget = numeric(planningTarget) !== null;
 		const hasValidStages = !stagedPlanEnabled || (stages.length > 0 && stages.every((stage) => (
 			Boolean(stage.title.trim())
@@ -452,7 +458,7 @@ function CreateRunningCardPage() {
 
 	function continueFlow(): void {
 		if (flowStep === 0) {
-			setFlowStep(1);
+			setFlowStep(isEventDriven ? 2 : 1);
 			setError(undefined);
 			return;
 		}
@@ -481,7 +487,7 @@ function CreateRunningCardPage() {
 				templateId,
 				cardTitle,
 				startDate: today,
-				longTerm: { targetDisplay: planningTarget, endDate: longEndDate },
+				longTerm: isEventDriven ? undefined : { targetDisplay: planningTarget, endDate: longEndDate },
 				stages: stagedPlanEnabled ? stages.map((stage) => ({
 					title: stage.title,
 					targetDisplay: stage.target,
@@ -489,7 +495,7 @@ function CreateRunningCardPage() {
 					endDate: stage.endDate,
 					dailyTargetDisplay: stage.dailyTarget,
 				})) : undefined,
-				dailyPlan: {
+				dailyPlan: isEventDriven ? undefined : {
 					mode: planMode,
 					weekdays,
 					averageTargetDisplay: planMode === 'average' ? averageDailyTarget : undefined,
@@ -524,12 +530,13 @@ function CreateRunningCardPage() {
 
 			<section className={styles.content}>
 				<ol className={styles.stepper} aria-label={t('shell.createCard.flowProgress')}>
-					{(['choose', 'plan', 'confirm'] as const).map((step, index) => (
-						<li key={step} data-active={flowStep === index} data-complete={flowStep > index}>
-							<span>{flowStep > index ? <FiCheck aria-hidden='true' /> : index + 1}</span>
+					{flowSteps.map((step, index) => {
+						const actualStep = step === 'confirm' ? 2 : index;
+						return <li key={step} data-active={flowStep === actualStep} data-complete={flowStep > actualStep}>
+							<span>{flowStep > actualStep ? <FiCheck aria-hidden='true' /> : index + 1}</span>
 							<small>{t(`shell.createCard.flowSteps.${step}`)}</small>
-						</li>
-					))}
+						</li>;
+					})}
 				</ol>
 
 				{flowStep === 0 && (
@@ -717,17 +724,17 @@ function CreateRunningCardPage() {
 							<span className={`${styles.identityIcon} ${styles[selected.accent]}`}><selected.icon aria-hidden='true' /></span>
 							<div><small>{t('shell.createCard.reviewHabit')}</small><h2>{cardTitle}</h2></div>
 						</header>
-						<dl>
+						{isEventDriven ? <p className={styles.eventDrivenHint}>{t('shell.createCard.eventDrivenHint')}</p> : <dl>
 							<div><dt>{t('shell.createCard.reviewPeriod')}</dt><dd>{longDurationDays} {t('shell.createCard.daysUnit')} · {longEndDate}</dd></div>
 							<div><dt>{t('shell.createCard.reviewDays')}</dt><dd>{weekdays.map((day) => t(`shell.createCard.weekdays.${day}`)).join('、')}</dd></div>
 							<div><dt>{t('shell.createCard.reviewDaily')}</dt><dd>{averageDailyTarget} {selectedUnit}</dd></div>
 							{templateId === 'light-food' && <div><dt>{t('shell.createCard.foodRulesTitle')}</dt><dd>{t('shell.createCard.reviewRuleCount', { count: foodRules.length })}</dd></div>}
 							<div><dt>{t('shell.createCard.stagedPlan')}</dt><dd>{t(stagedPlanEnabled ? 'shell.createCard.reviewEnabled' : 'shell.createCard.reviewDisabled')}</dd></div>
-						</dl>
+						</dl>}
 						<div className={styles.todayPreview}>
 							<selected.icon aria-hidden='true' />
-							<div><strong>{cardTitle}</strong><small>{t('shell.createCard.todayPreviewHint', { value: averageDailyTarget, unit: selectedUnit })}</small></div>
-							<span>{templateId === 'light-food' ? t('shell.createCard.detailAction') : t('shell.today.completeAction')}</span>
+							<div><strong>{cardTitle}</strong><small>{isEventDriven ? t('shell.createCard.eventDrivenHint') : t('shell.createCard.todayPreviewHint', { value: averageDailyTarget, unit: selectedUnit })}</small></div>
+							<span>{templateId === 'light-food' || isEventDriven ? t('shell.createCard.detailAction') : t('shell.today.completeAction')}</span>
 						</div>
 					</section>
 				)}
@@ -738,7 +745,7 @@ function CreateRunningCardPage() {
 				<button
 					type='button'
 					className={styles.secondary}
-					onClick={() => flowStep === 0 ? navigate(APP_ROUTES.DECK) : setFlowStep((flowStep - 1) as 0 | 1)}
+					onClick={() => flowStep === 0 ? navigate(APP_ROUTES.DECK) : setFlowStep(isEventDriven ? 0 : (flowStep - 1) as 0 | 1)}
 				>
 					{t(flowStep === 0 ? 'shell.createCard.cancel' : 'shell.createCard.previous')}
 				</button>

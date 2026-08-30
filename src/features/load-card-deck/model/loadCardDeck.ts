@@ -34,7 +34,7 @@ export interface DeckCardView {
 	dailyTargetBase?: number;
 	dailyPlan?: HabitDailyPlan;
 	todayStatus: {
-		kind: 'completed' | 'rest' | 'target';
+		kind: 'completed' | 'rest' | 'target' | 'event';
 		targetBase?: number;
 	};
 }
@@ -132,6 +132,7 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 			const todayRecord = effectiveRecords.find((record) => (
 				record.userCardId === card.id && record.localDate === localDate
 			));
+			const eventDriven = card.officialCardId === 'extra-expense';
 			const scheduledToday = !card.dailyPlan || card.dailyPlan.weekdays.includes(todayWeekday);
 			const completedToday = todayRecord !== undefined && todayRecord.quantityBaseValue >= dailyTargetBase;
 			return [{
@@ -147,6 +148,8 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 				dailyPlan: card.dailyPlan,
 				todayStatus: completedToday
 					? { kind: 'completed' }
+					: eventDriven
+						? { kind: 'event' }
 					: scheduledToday
 						? { kind: 'target', targetBase: dailyTargetBase }
 						: { kind: 'rest' },

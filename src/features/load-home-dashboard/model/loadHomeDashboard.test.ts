@@ -37,6 +37,7 @@ describe('loadHomeDashboard', () => {
 			hasCards: false,
 			goalSummaries: [],
 			outcomeDates: [],
+			expenseDates: [],
 			outcomeDayCount: 0,
 			year: 2026,
 			monthIndex: 6,
@@ -86,6 +87,66 @@ describe('loadHomeDashboard', () => {
 				targetQuantityBase: 20_000,
 				progress: { quantityBaseValue: 5_000, ratio: 0.25 },
 			},
+		});
+	});
+
+	it('separates ordinary success dates from extra-expense dates', async () => {
+		await createCard('run', '晨跑');
+		await database.table('userCards').add({
+			id: 'expense', officialCardId: 'extra-expense', title: '额外开支', status: 'active', sortOrder: 1,
+			createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z',
+		});
+		await database.table('actionRecords').bulkAdd([
+			{ id: 'run:2026-07-02', userCardId: 'run', localDate: '2026-07-02', quantityBaseValue: 1000, firstSavedAt: '2026-07-02T08:00:00.000Z', lastSavedAt: '2026-07-02T08:00:00.000Z', lastSubmissionId: 'run' },
+			{ id: 'expense:2026-07-02', userCardId: 'expense', localDate: '2026-07-02', quantityBaseValue: 1200, firstSavedAt: '2026-07-02T09:00:00.000Z', lastSavedAt: '2026-07-02T09:00:00.000Z', lastSubmissionId: 'expense-a' },
+			{ id: 'expense:2026-07-03', userCardId: 'expense', localDate: '2026-07-03', quantityBaseValue: 3500, firstSavedAt: '2026-07-03T09:00:00.000Z', lastSavedAt: '2026-07-03T09:00:00.000Z', lastSubmissionId: 'expense-b' },
+		]);
+
+		const model = await loadHomeDashboard(database, { year: 2026, monthIndex: 6 });
+
+		expect(model.outcomeDates).toEqual(['2026-07-02']);
+		expect(model.expenseDates).toEqual(['2026-07-02', '2026-07-03']);
+	});
+
+	it('keeps extra-expense activity out of goal planning summaries', async () => {
+		await database.table('userCards').add({
+			id: 'expense', officialCardId: 'extra-expense', title: '额外开支', status: 'active', sortOrder: 0,
+			createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z',
+		});
+		await database.table('actionRecords').add({
+			id: 'expense:2026-07-03', userCardId: 'expense', localDate: '2026-07-03', quantityBaseValue: 3500,
+			firstSavedAt: '2026-07-03T09:00:00.000Z', lastSavedAt: '2026-07-03T09:00:00.000Z',
+			lastSubmissionId: 'expense-a',
+		});
+
+		const model = await loadHomeDashboard(database, { year: 2026, monthIndex: 6 });
+
+		expect(model).toMatchObject({
+			hasCards: false,
+			goalSummaries: [],
+			outcomeDates: [],
+			expenseDates: ['2026-07-03'],
+		});
+	});
+
+	it('preserves yellow expense dates after the expense card is archived', async () => {
+		await database.table('userCards').add({
+			id: 'expense', officialCardId: 'extra-expense', title: '额外开支', status: 'archived', sortOrder: 0,
+			createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-20T00:00:00.000Z',
+		});
+		await database.table('actionRecords').add({
+			id: 'expense:2026-07-03', userCardId: 'expense', localDate: '2026-07-03', quantityBaseValue: 3500,
+			firstSavedAt: '2026-07-03T09:00:00.000Z', lastSavedAt: '2026-07-03T09:00:00.000Z',
+			lastSubmissionId: 'expense-a',
+		});
+
+		const model = await loadHomeDashboard(database, { year: 2026, monthIndex: 6 });
+
+		expect(model).toMatchObject({
+			hasCards: false,
+			goalSummaries: [],
+			outcomeDates: [],
+			expenseDates: ['2026-07-03'],
 		});
 	});
 

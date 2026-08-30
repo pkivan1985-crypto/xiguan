@@ -19,6 +19,7 @@ const translations: Record<string, string> = {
 	'shell.today.enterActual': '记录进度',
 	'shell.today.openDetails': '查看{{title}}详情',
 	'shell.today.detailsAction': '详情',
+	'shell.today.expenseSummary': '今日 ¥{{today}} · 本月 ¥{{month}}',
 	'shell.createCard.detailAction': '逐项记录',
 	'shell.today.completedFold': '已完成 {{count}} 项',
 	'shell.today.dailyProgress': '今日 {{current}} / {{target}} {{unit}}',
@@ -323,6 +324,31 @@ describe('TodayHabitPanel', () => {
 		expect(html).toMatch(/class="[^"]*checkAction[^"]*" disabled="" data-recorded="true"/);
 		expect(html).not.toContain('aria-label="减少跑步"');
 		expect(html).not.toContain('aria-label="增加跑步"');
+	});
+
+	it('shows extra expense today and month totals without a direct completion shortcut', () => {
+		const html = renderPanel({
+			renderedHabits: [{
+				...habits[0]!,
+				id: 'expense',
+				officialCardId: 'extra-expense',
+				title: '额外开支',
+				iconKey: 'receipt',
+				accent: 'amber',
+				quantityBaseValue: 6_800,
+				monthQuantityBaseValue: 42_600,
+				displayValue: '68.00',
+				displayUnit: '元',
+				basePerDisplayUnit: 100,
+				dailyTargetBase: 100,
+				recordedToday: true,
+			}],
+			openDetails: true,
+		});
+
+		expect(html).toContain('今日 ¥68 · 本月 ¥426');
+		expect(html).toContain('aria-label="查看额外开支详情"');
+		expect(html).not.toContain('aria-label="完成额外开支"');
 	});
 
 	it('keeps a rest-day habit visible without exposing recording controls', () => {

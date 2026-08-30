@@ -63,8 +63,8 @@ describe('saveTodayOutcome', () => {
 		await table('todayDrafts').add({ ...makeDraft(), slots: [0, 1, 2, 3, 4, 5].map((slotIndex) => ({ slotIndex, userCardId: null, valueText: '' })) });
 
 		await expect(saveTodayOutcome(database, validInput('submission-empty'))).rejects.toThrow('TODAY_DRAFT_EMPTY');
-		expect(await table('categoryDefinitions').count()).toBe(5);
-		expect(await table('cardTemplates').count()).toBe(6);
+		expect(await table('categoryDefinitions').count()).toBe(6);
+		expect(await table('cardTemplates').count()).toBe(7);
 		expect(await table('actionRecords').count()).toBe(0);
 		expect(await table('outcomeBatches').count()).toBe(0);
 		expect(await table('todayDrafts').get(LOCAL_DATE)).toMatchObject({ status: 'editing' });

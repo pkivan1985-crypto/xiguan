@@ -18,6 +18,10 @@ import {
 	PiNotePencil,
 	PiPepper,
 	PiPlus,
+	PiPencilSimple,
+	PiReceipt,
+	PiShoppingBag,
+	PiWallet,
 	PiShieldCheck,
 	PiTimer,
 	PiX,
@@ -39,6 +43,13 @@ import {
 	previousTrainingDetails,
 	type RunningRecordValueSource,
 } from '../model/runningRecordDefaults';
+import {
+	buildExpenseLineItem,
+	mergeExpenseLineItem,
+	normalizeExpenseEntries,
+	removeExpenseLineItem,
+	type ExpenseRecordFormValues,
+} from '../model/expenseRecord';
 import styles from './HabitRecordPage.module.css';
 
 const SCREEN_MOMENTS = ['after-waking', 'during-meals', 'before-sleep'] as const;
@@ -108,6 +119,7 @@ function HabitRecordPage() {
 	const navigate = useNavigate();
 	const { userCardId = '' } = useParams();
 	const [searchParams] = useSearchParams();
+	const expenseEntryId = searchParams.get('entry');
 	const localDate = useMemo(
 		() => parseLocalDate(searchParams.get('date') ?? formatLocalDate(new Date())),
 		[searchParams],
@@ -144,6 +156,13 @@ function HabitRecordPage() {
 	const [newsMinutes, setNewsMinutes] = useState('');
 	const [otherMinutes, setOtherMinutes] = useState('');
 	const [screenFreeMoments, setScreenFreeMoments] = useState<Array<(typeof SCREEN_MOMENTS)[number]>>([]);
+	const [expenseItem, setExpenseItem] = useState('');
+	const [expenseReason, setExpenseReason] = useState('');
+	const [bankBalance, setBankBalance] = useState('');
+	const [earnBackDays, setEarnBackDays] = useState('');
+	const [compensation, setCompensation] = useState('');
+	const [necessity, setNecessity] = useState<ExpenseRecordFormValues['necessity']>('necessary');
+	const [occurredTime, setOccurredTime] = useState(() => new Date().toTimeString().slice(0, 5));
 
 	useEffect(() => {
 		let active = true;
@@ -161,6 +180,8 @@ function HabitRecordPage() {
 						setDuration(selected.recordedToday ? currentDetails.duration : '');
 						setPace(selected.recordedToday ? currentDetails.pace : '');
 						setHeartRate(selected.recordedToday ? currentDetails.heartRate : '');
+					} else if (selected.officialCardId === 'extra-expense') {
+						setActual('');
 					} else {
 						setActual(selected.quantityBaseValue > 0 ? selected.displayValue : '');
 						setDuration(selected.durationSeconds ? String(selected.durationSeconds / 60) : '');
@@ -199,12 +220,39 @@ function HabitRecordPage() {
 						setOtherMinutes(details.otherMinutes === undefined ? '' : String(details.otherMinutes));
 						setScreenFreeMoments(details.screenFreeMoments ?? []);
 					}
+					if (selected.officialCardId === 'extra-expense' && expenseEntryId && expenseEntryId !== 'new') {
+						const expense = normalizeExpenseEntries(details, {
+							fallbackId: `legacy-${localDate}`,
+							fallbackAmountCents: selected.quantityBaseValue,
+							fallbackTimestamp: selected.recordSavedAt ?? new Date().toISOString(),
+						}).find(({ id }) => id === expenseEntryId);
+						if (expense) {
+							setActual(String(expense.amountCents / 100));
+							setExpenseItem(expense.item);
+							setExpenseReason(expense.reason);
+							setBankBalance(expense.bankBalanceCents === undefined ? '' : String(expense.bankBalanceCents / 100));
+							setEarnBackDays(expense.earnBackDays === undefined ? '' : String(expense.earnBackDays));
+							setCompensation(expense.compensation ?? '');
+							setNecessity(expense.necessity);
+							setOccurredTime(expense.occurredTime);
+						}
+					}
+					if (selected.officialCardId === 'extra-expense' && expenseEntryId === 'new') {
+						setActual('');
+						setExpenseItem('');
+						setExpenseReason('');
+						setBankBalance('');
+						setEarnBackDays('');
+						setCompensation('');
+						setNecessity('necessary');
+						setOccurredTime(new Date().toTimeString().slice(0, 5));
+					}
 				}
 				setLoading(false);
 			})
 			.catch(() => { if (active) { setLoading(false); setError(true); } });
 		return () => { active = false; };
-	}, [localDate, userCardId]);
+	}, [expenseEntryId, localDate, userCardId]);
 
 	function buildEntry(): { quantityBaseValue: number; details?: HabitRecordDetails } | null {
 		if (!habit) return null;
@@ -326,7 +374,95 @@ function HabitRecordPage() {
 	const planDistance = plannedRunningDistance(habit);
 	const reusableTrainingDetails = previousTrainingDetails(habit);
 	const isRunning = habit.officialCardId === 'running';
+	const isExpense = habit.officialCardId === 'extra-expense';
+	const expenseEntries = isExpense ? normalizeExpenseEntries(habit.details, {
+		fallbackId: `legacy-${localDate}`,
+		fallbackAmountCents: habit.quantityBaseValue,
+		fallbackTimestamp: habit.recordSavedAt ?? new Date().toISOString(),
+	}) : [];
 	const completionLocked = habit.entryMethod === 'completed';
+
+	function expenseRoute(entry?: string): string {
+		const base = APP_ROUTES.habitRecord(userCardId, localDate);
+		return entry ? `${base}&entry=${encodeURIComponent(entry)}` : base;
+	}
+
+	async function saveExpense(event: FormEvent) {
+		event.preventDefault();
+		if (!habit || !expenseEntryId) return;
+		const existing = expenseEntries.find(({ id }) => id === expenseEntryId);
+		const nowIso = new Date().toISOString();
+		const line = buildExpenseLineItem({
+			amount: actual, item: expenseItem, reason: expenseReason, bankBalance,
+			earnBackDays, compensation, necessity, occurredTime,
+		}, { id: existing?.id ?? crypto.randomUUID(), nowIso, createdAt: existing?.createdAt });
+		if (!line) { setError(true); return; }
+		const aggregate = mergeExpenseLineItem(habit.details, line, {
+			fallbackId: `legacy-${localDate}`,
+			fallbackAmountCents: habit.quantityBaseValue,
+			fallbackTimestamp: habit.recordSavedAt ?? nowIso,
+		});
+		setSaving(true);
+		setError(false);
+		try {
+			const currentLocalDate = formatLocalDate(new Date());
+			await saveDailyHabitInApp({
+				userCardId: habit.id, localDate, currentLocalDate,
+				recordingContext: localDate < currentLocalDate
+					? (habit.recordedToday ? 'correction' : 'backfill')
+					: 'today',
+				quantityBaseValue: aggregate.quantityBaseValue, entryMethod: 'actual',
+				details: aggregate.details,
+				nowIso, submissionId: crypto.randomUUID(),
+			});
+			navigate(expenseRoute(), { replace: true });
+		} catch { setError(true); } finally { setSaving(false); }
+	}
+
+	async function deleteExpenseEntry(id: string) {
+		if (!window.confirm(t('shell.record.expense.deleteConfirm'))) return;
+		const nowIso = new Date().toISOString();
+		const aggregate = removeExpenseLineItem(habit!.details, id, {
+			fallbackId: `legacy-${localDate}`,
+			fallbackAmountCents: habit!.quantityBaseValue,
+			fallbackTimestamp: habit!.recordSavedAt ?? nowIso,
+		});
+		setSaving(true);
+		try {
+			const currentLocalDate = formatLocalDate(new Date());
+			await saveDailyHabitInApp({
+				userCardId: habit!.id, localDate, currentLocalDate,
+				recordingContext: localDate < currentLocalDate ? 'correction' : 'today',
+				quantityBaseValue: aggregate.quantityBaseValue, entryMethod: 'actual',
+				details: aggregate.quantityBaseValue ? aggregate.details : undefined,
+				nowIso, submissionId: crypto.randomUUID(),
+			});
+			navigate(expenseRoute(), { replace: true });
+		} catch { setError(true); } finally { setSaving(false); }
+	}
+
+	if (isExpense && !expenseEntryId) {
+		const todayValue = expenseEntries.reduce((total, entry) => total + entry.amountCents, 0) / 100;
+		const monthValue = (habit.monthQuantityBaseValue ?? 0) / habit.basePerDisplayUnit;
+		return <main className={`${styles.page} ${styles.expensePage} ${styles.expenseSummaryPage}`}>
+			<header className={`${styles.header} ${styles.expenseHeader}`}>
+				<button type='button' onClick={() => navigate(-1)} aria-label={t('shell.createCard.back')}><PiArrowLeft /></button>
+				<div><small>{localDate}</small><h1>{t('shell.record.expense.summaryTitle')}</h1></div>
+				<button type='button' onClick={() => navigate(APP_ROUTES.HOME)} aria-label={t('shell.createCard.close')}><PiX /></button>
+			</header>
+			<section className={styles.expenseSummary}>
+				<div><small>{t('shell.record.expense.todayTotal')}</small><strong>¥{todayValue.toFixed(2)}</strong><span>{t('shell.record.expense.entryCount', { count: expenseEntries.length })}</span></div>
+				<div><small>{t('shell.record.expense.monthTotal')}</small><strong>¥{monthValue.toFixed(2)}</strong></div>
+			</section>
+			<section className={styles.expenseEntryList}>
+				{expenseEntries.length === 0 ? <p>{t('shell.record.expense.empty')}</p> : expenseEntries.map((entry) => <button type='button' key={entry.id} onClick={() => navigate(expenseRoute(entry.id))}>
+					<span><strong>{entry.item}</strong><small>{entry.occurredTime} · {t(`shell.record.expense.necessityOptions.${entry.necessity}`)}</small></span>
+					<b>¥{(entry.amountCents / 100).toFixed(2)}</b><PiPencilSimple />
+				</button>)}
+			</section>
+			<button className={`${styles.save} ${styles.expenseSave}`} type='button' onClick={() => navigate(expenseRoute('new'))}><PiPlus />{t('shell.record.expense.addEntry')}</button>
+		</main>;
+	}
 	const kindLabel = t(habit.officialCardId === 'water'
 		? 'shell.record.kinds.water'
 		: habit.officialCardId === 'light-food'
@@ -337,22 +473,24 @@ function HabitRecordPage() {
 					? 'shell.record.kinds.sleep'
 					: habit.officialCardId === 'screen-free'
 						? 'shell.record.kinds.screen-free'
-						: 'shell.record.kinds.running');
+						: habit.officialCardId === 'extra-expense'
+							? 'shell.record.kinds.extra-expense'
+							: 'shell.record.kinds.running');
 
 	return (
-		<main className={`${styles.page} ${isRunning ? styles.runningPage : ''}`}>
-			<header className={`${styles.header} ${isRunning ? styles.runningHeader : ''}`}>
+		<main className={`${styles.page} ${isRunning ? styles.runningPage : ''} ${isExpense ? styles.expensePage : ''}`}>
+			<header className={`${styles.header} ${isRunning ? styles.runningHeader : ''} ${isExpense ? styles.expenseHeader : ''}`}>
 				{!isRunning && <button type='button' onClick={() => navigate(-1)} aria-label={t('shell.createCard.back')}><PiArrowLeft aria-hidden='true' /></button>}
 				<div>
 					<small>{isRunning
 						? localDateLabel(localDate, i18n.resolvedLanguage ?? i18n.language)
 						: localDate}</small>
-					<h1>{isRunning ? t('shell.record.running.title') : habit.title}</h1>
+					<h1>{isRunning ? t('shell.record.running.title') : isExpense ? t(expenseEntryId === 'new' ? 'shell.record.expense.title' : 'shell.record.expense.editTitle') : habit.title}</h1>
 				</div>
 				<button type='button' onClick={() => navigate(APP_ROUTES.HOME)} aria-label={t('shell.createCard.close')}><PiX aria-hidden='true' /></button>
 			</header>
-			<form className={`${styles.form} ${isRunning ? styles.runningForm : ''}`} onSubmit={submit}>
-				{!isRunning && <section className={styles.hero}>
+			<form className={`${styles.form} ${isRunning ? styles.runningForm : ''} ${isExpense ? styles.expenseForm : ''}`} onSubmit={isExpense ? saveExpense : submit}>
+				{!isRunning && !isExpense && <section className={styles.hero}>
 					<HabitGlyph iconKey={habit.iconKey} accent={habit.accent} label={habit.title} decorative size='lg' />
 					<div><small>{kindLabel}</small><strong>{habit.title}</strong><span>{t('shell.record.target', { value: habit.dailyTargetBase / habit.basePerDisplayUnit, unit: habit.displayUnit })}</span></div>
 				</section>}
@@ -380,11 +518,12 @@ function HabitRecordPage() {
 				)}
 				{habit.officialCardId === 'sleep' && renderSleepFields()}
 				{habit.officialCardId === 'screen-free' && renderScreenFields()}
+				{habit.officialCardId === 'extra-expense' && renderExpenseFields()}
 
-				<label className={styles.note}>
+				{!isExpense && <label className={styles.note}>
 					<PiNotePencil aria-hidden='true' />
 					<textarea maxLength={280} value={note} onChange={(event) => setNote(event.target.value)} placeholder={t('shell.record.note')} />
-				</label>
+				</label>}
 				{isRunning && completionLocked && (
 					<p className={styles.completionLock}>
 						<PiShieldCheck aria-hidden='true' />
@@ -392,7 +531,8 @@ function HabitRecordPage() {
 					</p>
 				)}
 				{error && <p className={styles.error} role='alert'>{t('shell.record.invalid')}</p>}
-				<button className={`${styles.save} ${isRunning ? styles.runningSave : ''}`} type='submit' disabled={saving}><PiCheck aria-hidden='true' />{t('shell.record.save')}</button>
+				<button className={`${styles.save} ${isRunning ? styles.runningSave : ''} ${isExpense ? styles.expenseSave : ''}`} type='submit' disabled={saving}><PiCheck aria-hidden='true' />{t(isExpense ? 'shell.record.expense.save' : 'shell.record.save')}</button>
+				{isExpense && expenseEntryId !== 'new' && <button className={styles.expenseDelete} type='button' disabled={saving} onClick={() => void deleteExpenseEntry(expenseEntryId!)}>{t('shell.record.expense.delete')}</button>}
 			</form>
 		</main>
 	);
@@ -527,6 +667,40 @@ function HabitRecordPage() {
 			</div>
 			<div className={styles.checkList}>{SCREEN_MOMENTS.map((moment) => <label key={moment}><PiShieldCheck aria-hidden='true' /><span>{t(`shell.record.screen.moments.${moment}`)}</span><input type='checkbox' checked={screenFreeMoments.includes(moment)} onChange={() => setScreenFreeMoments((current) => current.includes(moment) ? current.filter((item) => item !== moment) : [...current, moment])} /></label>)}</div>
 		</section>;
+	}
+
+	function renderExpenseFields() {
+		const monthValue = (habit!.monthQuantityBaseValue ?? 0) / habit!.basePerDisplayUnit;
+		const todayValue = habit!.quantityBaseValue / habit!.basePerDisplayUnit;
+
+		return <>
+			<section className={styles.expenseIntro}>
+				<PiReceipt aria-hidden='true' />
+				<div><strong>{t('shell.record.expense.prompt')}</strong><small>{t('shell.record.expense.hint')}</small></div>
+			</section>
+			<section className={styles.expenseSummary}>
+				<div><small>{t('shell.record.expense.monthTotal')}</small><strong>¥{monthValue.toFixed(2)}</strong></div>
+				<div><small>{t('shell.record.expense.todayTotal')}</small><strong>¥{todayValue.toFixed(2)}</strong></div>
+			</section>
+			<section className={`${styles.block} ${styles.expenseBlock}`}>
+				<label className={styles.expenseAmount}>
+					<span>¥</span>
+					<input type='number' inputMode='decimal' min='0.01' step='0.01' value={actual} onChange={(event) => setActual(event.target.value)} placeholder='0.00' autoFocus />
+				</label>
+				<label className={styles.expenseTextField}><PiTimer aria-hidden='true' /><span>{t('shell.record.expense.time')}</span><input type='time' value={occurredTime} onChange={(event) => setOccurredTime(event.target.value)} /></label>
+				<label className={styles.expenseTextField}><PiShoppingBag aria-hidden='true' /><span>{t('shell.record.expense.item')}</span><input value={expenseItem} maxLength={80} onChange={(event) => setExpenseItem(event.target.value)} /></label>
+				<label className={styles.expenseTextField}><PiReceipt aria-hidden='true' /><span>{t('shell.record.expense.reason')}</span><textarea value={expenseReason} maxLength={280} onChange={(event) => setExpenseReason(event.target.value)} /></label>
+				<div className={styles.grid}>
+					<Field label={t('shell.record.expense.bankBalance')} value={bankBalance} onChange={setBankBalance} unit={t('shell.record.expense.yuan')} icon={<PiWallet />} />
+					<Field label={t('shell.record.expense.earnBackDays')} value={earnBackDays} onChange={setEarnBackDays} unit={t('shell.record.expense.days')} />
+				</div>
+				<label className={styles.expenseTextField}><PiWallet aria-hidden='true' /><span>{t('shell.record.expense.compensation')}</span><textarea value={compensation} maxLength={280} onChange={(event) => setCompensation(event.target.value)} /></label>
+				<fieldset className={styles.necessity}>
+					<legend>{t('shell.record.expense.necessity')}</legend>
+					{(['necessary', 'delayable', 'impulse'] as const).map((value) => <button key={value} type='button' aria-pressed={necessity === value} onClick={() => setNecessity(value)}>{necessity === value && <PiCheck aria-hidden='true' />}{t(`shell.record.expense.necessityOptions.${value}`)}</button>)}
+				</fieldset>
+			</section>
+		</>;
 	}
 }
 

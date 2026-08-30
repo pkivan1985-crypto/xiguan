@@ -40,6 +40,22 @@ describe('OutcomeCalendar', () => {
 		expect(html).toContain('2026-07-05 成果日');
 	});
 
+	it('renders one yellow expense marker beside an ordinary green marker', () => {
+		const html = renderToStaticMarkup(<OutcomeCalendar
+			year={2026}
+			monthIndex={6}
+			outcomeDates={['2026-07-02']}
+			expenseDates={['2026-07-02', '2026-07-03']}
+			todayLocalDate='2026-07-12'
+			onPreviousMonth={() => undefined}
+			onNextMonth={() => undefined}
+			canGoNext
+		/>);
+
+		expect(html.match(/data-expense-marker="true"/g)).toHaveLength(2);
+		expect(html).toContain('data-marker-pair="true"');
+	});
+
 	it('marks today without falsely marking it as an outcome day', () => {
 		const html = renderToStaticMarkup(<OutcomeCalendar
 			year={2026}

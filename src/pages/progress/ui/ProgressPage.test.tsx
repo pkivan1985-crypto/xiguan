@@ -30,6 +30,7 @@ const translations: Record<string, string> = {
 	'shell.progress.dailyRecord': '当日记录',
 	'shell.progress.details': '查看详情',
 	'shell.progress.editRecord': '修改记录',
+	'shell.progress.expenseDetails': '查看明细',
 	'shell.progress.goalsTab': '目标',
 	'shell.progress.noRecords': '这一天还没有真实记录。',
 	'shell.progress.plans': '总规划',
@@ -321,6 +322,35 @@ describe('ProgressPage', () => {
 		expect(html).not.toContain('早睡');
 		expect(html).not.toContain('所选记录');
 		expect(html).not.toContain('长期规划');
+	});
+
+	it('keeps event-driven expense records out of the successful check-in count', () => {
+		const ProgressPageContent = progressContent();
+		expect(ProgressPageContent).toBeTypeOf('function');
+		if (!ProgressPageContent) return;
+		const historyWithExpense: HistoryModel = {
+			groups: [...history.groups, {
+				localDate: '2026-07-24',
+				records: [{
+					id: 'expense:2026-07-24', userCardId: 'expense', localDate: '2026-07-24', cardTitle: '额外开支', officialCardId: 'extra-expense',
+					quantityBaseValue: 5_200, displayValue: '52.00', displayUnit: '元', basePerDisplayUnit: 100,
+					maxDecimalPlaces: 2, confirmationThresholdDisplay: 100_000, lastSavedAt: '2026-07-24T08:00:00.000Z',
+					canCorrect: true, relationAvailable: true,
+				}],
+			}],
+		};
+
+		const html = renderToStaticMarkup(<MemoryRouter><ProgressPageContent
+			activeTab='calendar' dashboard={dashboard} history={historyWithExpense}
+			selectedDate='2026-07-24' todayLocalDate='2026-07-25' canGoNext={false}
+			onChangeTab={vi.fn()} onNextMonth={vi.fn()} onPreviousMonth={vi.fn()} onSelectDate={vi.fn()}
+			onEditRecord={vi.fn()}
+		/></MemoryRouter>);
+
+		expect(html).toContain('本月成功打卡 1 次');
+		expect(html).not.toContain('本月成功打卡 2 次');
+		expect(html).toContain('查看明细');
+		expect(html).not.toContain('修改记录');
 	});
 
 	it('offers direct correction for a saved calendar record', () => {

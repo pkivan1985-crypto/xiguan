@@ -170,6 +170,8 @@ const copy: CardDeckCopy = {
 	daily: '每天',
 	days: '天',
 	details: '查看详情',
+	eventDriven: '有消费时记录',
+	eventDrivenHint: '无消费无需打卡',
 	deleteAction: '删除习惯',
 	deleteDescription: '这会删除习惯、目标、阶段和全部历史记录，且无法恢复。',
 	deleteTitle: (title) => `永久删除“${title}”？`,
@@ -313,6 +315,36 @@ describe('CardDeck', () => {
 		expect(html).toContain('每天');
 		expect(html).toContain('未设置目标');
 		expect(html).not.toContain('data-card-id="water" data-progress="0%"');
+	});
+
+	it('labels an expense card as on-demand instead of a daily goal', () => {
+		const expenseTemplate: CardTemplate = {
+			...waterTemplate,
+			id: 'extra-expense',
+			title: '额外开支',
+			iconKey: 'receipt',
+			accent: 'amber',
+			quantity: { ...waterTemplate.quantity, baseUnit: 'cent', displayUnit: '元', basePerDisplayUnit: 100, maxDecimalPlaces: 2 },
+		};
+		const html = renderToStaticMarkup(
+			<CardDeck
+				archivedCards={[]}
+				archivedCount={0}
+				categories={[{ id: 'life', title: '生活', enabled: true, cards: [{
+					id: 'expense', title: '额外开支', template: expenseTemplate, todayStatus: { kind: 'event' },
+				}] }]}
+				copy={copy}
+				onArchiveCard={vi.fn()}
+				onDeleteCard={vi.fn()}
+				onOpenGoalDetails={vi.fn()}
+				onRestoreCard={vi.fn()}
+			/>,
+		);
+
+		expect(html).toContain('有消费时记录');
+		expect(html).toContain('无消费无需打卡');
+		expect(html).not.toContain('每天');
+		expect(html).not.toContain('未设置目标');
 	});
 
 	it('renders completed and rest states in the expanded card header', () => {

@@ -289,6 +289,17 @@ function HabitSupportingCopy({
 }) {
 	const { t } = useTranslation();
 	const completed = isCompleted(habit);
+	if (habit.officialCardId === 'extra-expense') {
+		return (
+			<small>
+				{t('shell.today.expenseSummary', {
+					today: number(habit.quantityBaseValue / habit.basePerDisplayUnit),
+					month: number((habit.monthQuantityBaseValue ?? 0) / habit.basePerDisplayUnit),
+					count: habit.expenseEntryCount ?? 0,
+				})}
+			</small>
+		);
+	}
 
 	if (!habit.scheduledToday) {
 		return <small>{t('shell.today.restDay')}</small>;
@@ -346,6 +357,32 @@ function HabitControl({
 	const { t } = useTranslation();
 	const completed = isCompleted(habit);
 
+	if (onOpenDetails && habit.officialCardId === 'extra-expense') {
+		const expenseRecorded = habit.recordedToday;
+		return (
+			<div className={styles.quantityActions} data-layout='detail-check'>
+				<button
+					type='button'
+					className={styles.detailAction}
+					disabled={pending}
+					onClick={onOpenDetails}
+				>
+					<span>{t('shell.today.detailsAction')}</span>
+				</button>
+				<button
+					type='button'
+					className={styles.checkAction}
+					disabled={pending || expenseRecorded}
+					data-recorded={expenseRecorded || undefined}
+					data-expense-recorded={expenseRecorded || undefined}
+					aria-label={t('shell.today.openDetails', { title: habit.title })}
+					onClick={expenseRecorded ? undefined : onOpenDetails}
+				>
+					<PiCheck aria-hidden='true' />
+				</button>
+			</div>
+		);
+	}
 	if (!habit.scheduledToday) {
 		return (
 			<span className={styles.restStatus} aria-label={t('shell.today.restDay')}>

@@ -28,6 +28,7 @@ describe('loadCardDeck', () => {
 			{ id: 'learning', enabled: true, cards: 0 },
 			{ id: 'recovery', enabled: true, cards: 0 },
 			{ id: 'focus', enabled: true, cards: 0 },
+			{ id: 'life-management', enabled: true, cards: 0 },
 		]);
 	});
 
@@ -107,6 +108,7 @@ describe('loadCardDeck', () => {
 			{ id: 'learning', cards: ['读书'] },
 			{ id: 'recovery', cards: [] },
 			{ id: 'focus', cards: [] },
+			{ id: 'life-management', cards: [] },
 		]);
 		expect(view.archivedCount).toBe(1);
 		expect(view.archivedCards.map(({ id, title }) => ({ id, title }))).toEqual([
@@ -153,5 +155,23 @@ describe('loadCardDeck', () => {
 			dailyTargetBase: 2_500,
 			todayStatus: { kind: 'target', targetBase: 2_500 },
 		});
+	});
+
+	it('describes an expense card as event-driven until that day has a record', async () => {
+		await database.table('userCards').add({
+			id: 'expense-card', officialCardId: 'extra-expense', title: '额外开支',
+			status: 'active', sortOrder: 0,
+			createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z',
+		});
+
+		const before = await loadCardDeck(database, '2026-07-27');
+		expect(before.categories.find(({ id }) => id === 'life-management')?.cards[0]?.todayStatus).toEqual({ kind: 'event' });
+
+		await database.table('actionRecords').add({
+			id: 'expense-card:2026-07-27', userCardId: 'expense-card', localDate: '2026-07-27', quantityBaseValue: 2_800,
+			firstSavedAt: '2026-07-27T02:00:00.000Z', lastSavedAt: '2026-07-27T02:00:00.000Z', lastSubmissionId: 'expense-a',
+		});
+		const after = await loadCardDeck(database, '2026-07-27');
+		expect(after.categories.find(({ id }) => id === 'life-management')?.cards[0]?.todayStatus).toEqual({ kind: 'completed' });
 	});
 });

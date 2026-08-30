@@ -19,4 +19,19 @@ describe('HabitRecordPage R5.1 presentation', () => {
 		expect(css).toMatch(/\.previousDistance\s*\{[^}]*min-height:\s*44px;/s);
 		expect(css).toMatch(/\.runningSave\s*\{[^}]*min-height:\s*52px;/s);
 	});
+
+	it('renders extra expense as a full-page reflection form instead of a bottom sheet', () => {
+		const source = readFileSync(new URL('./HabitRecordPage.tsx', import.meta.url), 'utf8');
+		const css = readFileSync(new URL('./HabitRecordPage.module.css', import.meta.url), 'utf8');
+
+		expect(source).toContain("habit.officialCardId === 'extra-expense'");
+		expect(source).toContain('styles.expensePage');
+		expect(source).toContain('buildExpenseLineItem');
+		expect(source).toContain('mergeExpenseLineItem');
+		expect(source).toContain('styles.expenseSummaryPage');
+		expect(source).toContain('styles.expenseEntryList');
+		expect(source).toContain("searchParams.get('entry')");
+		expect(css).toMatch(/\.expensePage\s*\{[^}]*min-height:\s*100dvh;/s);
+		expect(css).not.toContain('expenseSheet');
+	});
 });

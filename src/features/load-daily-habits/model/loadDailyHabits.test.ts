@@ -271,6 +271,69 @@ describe('loadDailyHabits', () => {
 		});
 	});
 
+	it('derives today and selected-month expense totals from effective records', async () => {
+		await database.table('userCards').add({
+			id: 'expense',
+			officialCardId: 'extra-expense',
+			title: '额外开支',
+			status: 'active',
+			sortOrder: 0,
+			createdAt: '2026-08-01T00:00:00.000Z',
+			updatedAt: '2026-08-01T00:00:00.000Z',
+		});
+		await database.table('actionRecords').bulkAdd([
+			{ id: 'expense-a', userCardId: 'expense', localDate: '2026-08-03', quantityBaseValue: 12_500, firstSavedAt: '2026-08-03T08:00:00.000Z', lastSavedAt: '2026-08-03T08:00:00.000Z', lastSubmissionId: 'expense-a' },
+			{ id: 'expense-b', userCardId: 'expense', localDate: '2026-08-26', quantityBaseValue: 6_800, firstSavedAt: '2026-08-26T08:00:00.000Z', lastSavedAt: '2026-08-26T08:00:00.000Z', lastSubmissionId: 'expense-b' },
+			{ id: 'expense-old', userCardId: 'expense', localDate: '2026-07-31', quantityBaseValue: 9_900, firstSavedAt: '2026-07-31T08:00:00.000Z', lastSavedAt: '2026-07-31T08:00:00.000Z', lastSubmissionId: 'expense-old' },
+			{ id: 'expense-deleted', userCardId: 'expense', localDate: '2026-08-20', quantityBaseValue: 50_000, deletedAt: '2026-08-20T09:00:00.000Z', firstSavedAt: '2026-08-20T08:00:00.000Z', lastSavedAt: '2026-08-20T08:00:00.000Z', lastSubmissionId: 'expense-deleted' },
+		]);
+
+		const result = await loadDailyHabits(database, '2026-08-26');
+		expect(result.habits[0]).toMatchObject({
+			officialCardId: 'extra-expense',
+			quantityBaseValue: 6_800,
+			monthQuantityBaseValue: 19_300,
+			displayValue: '68.00',
+			scheduledToday: false,
+			recordedToday: true,
+		});
+		expect(result).toMatchObject({ scheduledCount: 0, completedCount: 0 });
+		expect(result.outcomeDates).toEqual([]);
+		expect(result.expenseDates).toEqual(['2026-08-03', '2026-08-26']);
+	});
+
+	it('keeps an unrecorded expense card visible without treating it as missed work', async () => {
+		await database.table('userCards').add({
+			id: 'expense', officialCardId: 'extra-expense', title: '额外开支', status: 'active', sortOrder: 0,
+			createdAt: '2026-08-01T00:00:00.000Z', updatedAt: '2026-08-01T00:00:00.000Z',
+		});
+
+		const result = await loadDailyHabits(database, '2026-08-26');
+
+		expect(result.habits).toEqual([expect.objectContaining({
+			officialCardId: 'extra-expense', scheduledToday: false, recordedToday: false,
+		})]);
+		expect(result).toMatchObject({ scheduledCount: 0, completedCount: 0, expenseDates: [] });
+	});
+
+	it('keeps archived expense history yellow without showing the archived card today', async () => {
+		await database.table('userCards').add({
+			id: 'expense', officialCardId: 'extra-expense', title: '额外开支', status: 'archived', sortOrder: 0,
+			createdAt: '2026-08-01T00:00:00.000Z', updatedAt: '2026-08-20T00:00:00.000Z',
+		});
+		await database.table('actionRecords').add({
+			id: 'expense:2026-08-03', userCardId: 'expense', localDate: '2026-08-03', quantityBaseValue: 12_500,
+			firstSavedAt: '2026-08-03T08:00:00.000Z', lastSavedAt: '2026-08-03T08:00:00.000Z',
+			lastSubmissionId: 'expense-a',
+		});
+
+		const result = await loadDailyHabits(database, '2026-08-26');
+
+		expect(result.habits).toEqual([]);
+		expect(result.outcomeDates).toEqual([]);
+		expect(result.expenseDates).toEqual(['2026-08-03']);
+	});
+
 	it('exposes the nearest prior effective record without treating today as previous history', async () => {
 		await database.table('userCards').add({
 			id: 'run',
