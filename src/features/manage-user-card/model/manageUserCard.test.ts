@@ -75,6 +75,24 @@ describe('manageUserCard', () => {
 		expect(await database.table<ActionRecord>('actionRecords').count()).toBe(1);
 	});
 
+	it('does not restore an archived extra-expense card when another one is active', async () => {
+		await database.table<UserCard>('userCards').bulkAdd([
+			{
+				...card('expense-old', '旧额外开支'), officialCardId: 'extra-expense', status: 'archived',
+			},
+			{
+				...card('expense-active', '额外开支'), officialCardId: 'extra-expense', status: 'active',
+			},
+		]);
+
+		await expect(setUserCardArchived(
+			database,
+			{ userCardId: 'expense-old', archived: false, nowIso: '2026-07-26T10:00:00.000Z' },
+		)).rejects.toThrow('ACTIVE_EXTRA_EXPENSE_CARD_EXISTS');
+		expect(await database.table<UserCard>('userCards').get('expense-old'))
+			.toMatchObject({ status: 'archived', updatedAt: CREATED_AT });
+	});
+
 	it('permanently deletes one card and every reference while preserving other data', async () => {
 		await database.table<UserCard>('userCards').bulkAdd([
 			card('card-a', '晨跑'),

@@ -10,6 +10,7 @@ interface OutcomeCalendarProps {
 	year: number;
 	monthIndex: number;
 	outcomeDates: readonly string[];
+	expenseDates?: readonly string[];
 	todayLocalDate: string;
 	onPreviousMonth: () => void;
 	onNextMonth: () => void;
@@ -23,6 +24,7 @@ function OutcomeCalendar({
 	year,
 	monthIndex,
 	outcomeDates,
+	expenseDates = [],
 	todayLocalDate,
 	onPreviousMonth,
 	onNextMonth,
@@ -33,6 +35,7 @@ function OutcomeCalendar({
 }: OutcomeCalendarProps) {
 	const { t, i18n } = useTranslation();
 	const completed = new Set(outcomeDates);
+	const expenses = new Set(expenseDates);
 	const weekdays = Array.from(
 		{ length: 7 },
 		(_, index) => new Intl.DateTimeFormat(
@@ -59,6 +62,7 @@ function OutcomeCalendar({
 				{buildMonthCells(year, monthIndex).map((cell) => {
 					if (!cell.localDate) return <span className={styles.day} key={cell.key} aria-hidden='true' />;
 					const isOutcome = completed.has(cell.localDate);
+					const hasExpense = expenses.has(cell.localDate);
 					const isToday = cell.localDate === todayLocalDate;
 					const isSelected = cell.localDate === selectedDate;
 					return <button
@@ -73,7 +77,7 @@ function OutcomeCalendar({
 						disabled={!onSelectDate || cell.localDate > todayLocalDate}
 						onClick={() => onSelectDate?.(cell.localDate!)}
 					>
-						<span className={styles.date}>
+						<span className={styles.date} data-marker-pair={isOutcome && hasExpense ? 'true' : undefined}>
 							<span>{cell.day}</span>
 							{isOutcome && (
 								<span
@@ -84,6 +88,7 @@ function OutcomeCalendar({
 									<PiCheckBold />
 								</span>
 							)}
+							{hasExpense && <span className={styles.expenseMarker} data-expense-marker='true' aria-hidden='true' />}
 						</span>
 					</button>;
 				})}

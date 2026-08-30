@@ -10,6 +10,7 @@ describe('system definitions', () => {
 			'learning',
 			'recovery',
 			'focus',
+			'life-management',
 		]);
 		expect(SYSTEM_CATEGORIES.every(({ enabled }) => enabled)).toBe(true);
 	});
@@ -40,7 +41,19 @@ describe('system definitions', () => {
 			['reading-time', 'duration'],
 			['sleep', 'check'],
 			['screen-free', 'avoid'],
+			['extra-expense', 'quantity'],
 		]);
+		expect(SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'extra-expense')).toMatchObject({
+			categoryId: 'life-management',
+			iconKey: 'receipt',
+			accent: 'amber',
+			quantity: {
+				baseUnit: 'cent',
+				displayUnit: '元',
+				basePerDisplayUnit: 100,
+				maxDecimalPlaces: 2,
+			},
+		});
 		expect(SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'light-food')).toMatchObject({
 			categoryId: 'nutrition',
 			iconKey: 'leaf',

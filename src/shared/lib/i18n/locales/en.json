@@ -422,6 +422,8 @@
 			"days": "days",
 			"completed": "Completed",
 			"details": "View details",
+			"eventDriven": "Record when spending occurs",
+			"eventDrivenHint": "No spending means no check-in",
 			"deleteDescription": "This permanently removes the habit, its goals, stages, and all history. It cannot be undone.",
 			"deleteTitle": "Permanently delete “{{title}}”?",
 			"emptyCards": "No loop cards yet",
@@ -472,6 +474,7 @@
 			"chooseType": "Choose a tracking type",
 			"chooseTypeHint": "Pick the closest type for quick daily recording.",
 			"flowProgress": "Create habit progress",
+			"eventDrivenHint": "Record only when an extra expense occurs. No expense is not a missed check-in.",
 			"flowSteps": {
 				"choose": "Choose preset",
 				"plan": "Set plan",
@@ -484,7 +487,8 @@
 				"nutrition": "Nutrition",
 				"learning": "Learning",
 				"recovery": "Recovery",
-				"focus": "Focus"
+				"focus": "Focus",
+				"lifeManagement": "Life management"
 			},
 			"endDate": "End date (optional)",
 			"longTerm": "Long-term goal",
@@ -553,7 +557,8 @@
 				"checklist": "items",
 				"duration": "min",
 				"check": "times",
-				"avoid": "days"
+				"avoid": "days",
+				"money": "yuan"
 			},
 			"planName": "Goal name",
 			"planTarget": "Target value",
@@ -563,7 +568,8 @@
 				"running": "Running",
 				"screenFree": "Less screen",
 				"sleep": "Sleep",
-				"water": "Water"
+				"water": "Water",
+				"extraExpense": "Extra spending"
 			},
 			"placeholders": {
 				"light-food": "e.g. Eat lightly",
@@ -571,7 +577,8 @@
 				"running": "e.g. Morning run",
 				"screen-free": "e.g. No phone before bed",
 				"sleep": "e.g. Sleep before 11",
-				"water": "e.g. Drink water at work"
+				"water": "e.g. Drink water at work",
+				"extra-expense": "e.g. Extra spending reflection"
 			},
 			"longTitle": "Long-term goal name",
 			"kmValue": "{{value}} km",
@@ -594,7 +601,8 @@
 				"checklist": "Checklist",
 				"count": "Count",
 				"distance": "Distance",
-				"duration": "Duration"
+				"duration": "Duration",
+				"money": "Spending reflection"
 			},
 			"foodRulesTitle": "Food rules",
 			"foodRulesHint": "Check each rule daily; custom rules join the same list",
@@ -645,7 +653,8 @@
 				"light-food": "Light food checklist",
 				"reading-time": "Reading record",
 				"sleep": "Sleep record",
-				"screen-free": "Screen-time record"
+				"screen-free": "Screen-time record",
+				"extra-expense": "Extra spending reflection"
 			},
 			"running": {
 				"title": "Run record",
@@ -713,6 +722,31 @@
 					"during-meals": "No screen during meals",
 					"before-sleep": "No screen before sleep"
 				}
+			},
+			"expense": {
+				"title": "Record an extra expense",
+				"editTitle": "Edit extra expense",
+				"prompt": "Record the amount, then reflect on its cost",
+				"hint": "This record stays on this device",
+				"monthTotal": "Extra spending this month",
+				"todayTotal": "Today",
+				"item": "What did you buy?",
+				"reason": "Why did you buy it?",
+				"bankBalance": "Current bank balance",
+				"earnBackDays": "Days to earn it back",
+				"compensation": "If you cannot earn it back, what will you trade off?",
+				"necessity": "This expense was",
+				"necessityOptions": { "necessary": "Necessary", "delayable": "Could wait", "impulse": "Impulse" },
+				"yuan": "yuan",
+				"days": "days",
+				"save": "Save and finish reflection",
+				"summaryTitle": "Extra spending",
+				"entryCount": "{{count}} entries",
+				"empty": "No extra spending today. No check-in is needed.",
+				"addEntry": "Add expense",
+				"time": "Time",
+				"delete": "Delete this entry",
+				"deleteConfirm": "Delete this extra expense?"
 			}
 		},
 		"history": {
@@ -880,6 +914,7 @@
 			"dailyRecord": "Daily record",
 			"details": "View details",
 			"editRecord": "Edit record",
+			"expenseDetails": "View entries",
 			"goalsTab": "Goals",
 			"loadError": "Progress cannot be read right now.",
 			"loading": "Reading real progress…",
@@ -990,6 +1025,7 @@
 			"undoHabit": "Undo {{title}}",
 			"viewTodaySummary": "Today's summary",
 			"detailsAction": "Details",
+			"expenseSummary": "Today ¥{{today}} · {{count}} entries　This month ¥{{month}}",
 			"openDetails": "View {{title}} details",
 			"viewTodaySummaryHint": "Calendar and goal progress are under Progress",
 			"weekLabel": "This week",

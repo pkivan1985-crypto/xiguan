@@ -427,6 +427,8 @@
 			"days": "天",
 			"completed": "已完成",
 			"details": "查看详情",
+			"eventDriven": "有消费时记录",
+			"eventDrivenHint": "无消费无需打卡",
 			"deleteDescription": "这会永久删除习惯、目标、阶段和全部历史记录，删除后无法恢复。",
 			"deleteTitle": "永久删除“{{title}}”？",
 			"emptyCards": "还没有循环卡",
@@ -477,6 +479,7 @@
 			"chooseType": "选择记录方式",
 			"chooseTypeHint": "先选最接近的类型，以后每天直接点按记录。",
 			"flowProgress": "创建习惯进度",
+			"eventDrivenHint": "有额外消费时再记录；没有消费无需打卡，也不算未完成。",
 			"flowSteps": {
 				"choose": "选择预设",
 				"plan": "设置计划",
@@ -489,7 +492,8 @@
 				"nutrition": "饮食健康",
 				"learning": "学习成长",
 				"recovery": "作息恢复",
-				"focus": "专注自律"
+				"focus": "专注自律",
+				"lifeManagement": "生活管理"
 			},
 			"endDate": "截止日期（可选）",
 			"longTerm": "长期目标",
@@ -558,7 +562,8 @@
 				"checklist": "项",
 				"duration": "分钟",
 				"check": "次",
-				"avoid": "天"
+				"avoid": "天",
+				"money": "元"
 			},
 			"planName": "目标名称",
 			"planTarget": "目标数值",
@@ -568,7 +573,8 @@
 				"running": "跑步",
 				"screenFree": "少刷手机",
 				"sleep": "早睡",
-				"water": "喝水"
+				"water": "喝水",
+				"extraExpense": "额外开支"
 			},
 			"placeholders": {
 				"light-food": "例如：清淡饮食",
@@ -576,7 +582,8 @@
 				"running": "例如：晨跑",
 				"screen-free": "例如：睡前不刷手机",
 				"sleep": "例如：十一点前睡",
-				"water": "例如：工作日喝水"
+				"water": "例如：工作日喝水",
+				"extra-expense": "例如：额外开支反思"
 			},
 			"longTitle": "长期目标名称",
 			"kmValue": "{{value}} 公里",
@@ -599,7 +606,8 @@
 				"checklist": "逐项遵守",
 				"count": "计数",
 				"distance": "距离",
-				"duration": "时长"
+				"duration": "时长",
+				"money": "金额反思"
 			},
 			"foodRulesTitle": "饮食规则",
 			"foodRulesHint": "每天逐项记录，新增规则会加入同一清单",
@@ -650,7 +658,8 @@
 				"light-food": "轻食逐项记录",
 				"reading-time": "阅读记录",
 				"sleep": "睡眠记录",
-				"screen-free": "屏幕时间记录"
+				"screen-free": "屏幕时间记录",
+				"extra-expense": "额外开支反思"
 			},
 			"running": {
 				"title": "跑步记录",
@@ -718,6 +727,31 @@
 					"during-meals": "吃饭时无屏",
 					"before-sleep": "睡前无屏"
 				}
+			},
+			"expense": {
+				"title": "记录一笔额外开支",
+				"editTitle": "修改额外开支",
+				"prompt": "先记金额，再想清楚它的代价",
+				"hint": "记录只保存在你的本机",
+				"monthTotal": "本月额外开支",
+				"todayTotal": "今天",
+				"item": "买了什么",
+				"reason": "为什么要买",
+				"bankBalance": "当前银行余额",
+				"earnBackDays": "预计多久赚回来",
+				"compensation": "如果赚不回来，用什么代价补偿？",
+				"necessity": "这笔开支属于？",
+				"necessityOptions": { "necessary": "必要", "delayable": "可延后", "impulse": "冲动" },
+				"yuan": "元",
+				"days": "天",
+				"save": "保存并完成反思",
+				"summaryTitle": "额外开支",
+				"entryCount": "{{count}} 笔",
+				"empty": "今天还没有额外开支。没有消费无需打卡。",
+				"addEntry": "记一笔",
+				"time": "消费时间",
+				"delete": "删除这笔记录",
+				"deleteConfirm": "确定删除这笔额外开支吗？"
 			}
 		},
 		"history": {
@@ -885,6 +919,7 @@
 			"dailyRecord": "当日记录",
 			"details": "查看详情",
 			"editRecord": "修改记录",
+			"expenseDetails": "查看明细",
 			"goalsTab": "目标",
 			"loadError": "进展数据暂时无法读取。",
 			"loading": "正在读取真实进展…",
@@ -995,6 +1030,7 @@
 			"undoHabit": "撤销{{title}}",
 			"viewTodaySummary": "今日汇总",
 			"detailsAction": "详情",
+			"expenseSummary": "今日 ¥{{today}} · {{count}}笔　　本月 ¥{{month}}",
 			"openDetails": "查看{{title}}详情",
 			"viewTodaySummaryHint": "月历和目标进展都在进展页",
 			"weekLabel": "本周日期",

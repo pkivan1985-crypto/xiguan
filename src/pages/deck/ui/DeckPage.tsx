@@ -88,6 +88,8 @@ function DeckPageContent({
 					daily: t('shell.deck.daily'),
 					days: t('shell.deck.days'),
 					details: t('shell.deck.details'),
+					eventDriven: t('shell.deck.eventDriven'),
+					eventDrivenHint: t('shell.deck.eventDrivenHint'),
 					deleteAction: t('habits.actions.delete'),
 					deleteDescription: t('shell.deck.deleteDescription'),
 					deleteTitle: (title) => t('shell.deck.deleteTitle', { title }),

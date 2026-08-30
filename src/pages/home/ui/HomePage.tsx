@@ -36,7 +36,7 @@ function HomeDashboardContent({ model, todayLocalDate, onPreviousMonth, onNextMo
 		<header className={styles.sectionTitle}><h2>{t('shell.home.goalsTitle')}</h2><span>{model.goalSummaries.length}</span></header>
 		{model.goalSummaries.length > 0 ? <GoalSummary summaries={model.goalSummaries} /> : <div className={styles.empty}><b>{t('shell.home.noCardsTitle')}</b><small>{t('shell.home.noCardsDescription')}</small></div>}
 		<header className={styles.sectionTitle}><h2>{t('shell.home.calendarTitle')}</h2><span>{t('shell.home.outcomeDayCount', { count: model.outcomeDayCount })}</span></header>
-		<OutcomeCalendar year={model.year} monthIndex={model.monthIndex} outcomeDates={model.outcomeDates} todayLocalDate={todayLocalDate} onPreviousMonth={onPreviousMonth} onNextMonth={onNextMonth} canGoNext={canGoNext} />
+		<OutcomeCalendar year={model.year} monthIndex={model.monthIndex} outcomeDates={model.outcomeDates} expenseDates={model.expenseDates ?? []} todayLocalDate={todayLocalDate} onPreviousMonth={onPreviousMonth} onNextMonth={onNextMonth} canGoNext={canGoNext} />
 	</div>;
 }
 

@@ -44,12 +44,43 @@ export interface ScreenFreeRecordDetails {
 	screenFreeMoments?: Array<'after-waking' | 'during-meals' | 'before-sleep'>;
 }
 
+export interface ExtraExpenseLineItem {
+	id: string;
+	amountCents: number;
+	item: string;
+	reason: string;
+	bankBalanceCents?: number;
+	earnBackDays?: number;
+	compensation?: string;
+	necessity: 'necessary' | 'delayable' | 'impulse';
+	occurredTime: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface ExtraExpenseRecordDetails {
+	kind: 'extra-expense';
+	entries: ExtraExpenseLineItem[];
+}
+
+export interface LegacyExtraExpenseRecordDetails {
+	kind: 'extra-expense';
+	item: string;
+	reason: string;
+	bankBalanceCents?: number;
+	earnBackDays?: number;
+	compensation?: string;
+	necessity: 'necessary' | 'delayable' | 'impulse';
+}
+
 export type HabitRecordDetails =
 	| WaterRecordDetails
 	| ReadingRecordDetails
 	| LightFoodRecordDetails
 	| SleepRecordDetails
-	| ScreenFreeRecordDetails;
+	| ScreenFreeRecordDetails
+	| ExtraExpenseRecordDetails
+	| LegacyExtraExpenseRecordDetails;
 
 export interface ActionRecord {
 	id: string;

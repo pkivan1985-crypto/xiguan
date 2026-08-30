@@ -101,6 +101,7 @@ function TodayPageContent({
 					selectedLocalDate={todayLocalDate}
 					todayLocalDate={todayLocalDate}
 					outcomeDates={model.outcomeDates}
+					expenseDates={model.expenseDates ?? []}
 					onSelect={onSelectDate}
 				/>
 			</div>

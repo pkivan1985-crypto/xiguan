@@ -38,6 +38,7 @@ export interface HomeDashboardModel {
 	hasCards: boolean;
 	goalSummaries: HomeGoalSummary[];
 	outcomeDates: string[];
+	expenseDates?: string[];
 	outcomeDayCount: number;
 	year: number;
 	monthIndex: number;
@@ -81,7 +82,7 @@ export async function loadHomeDashboard(
 		actionRecords,
 	], async () => ({
 		templates: await cardTemplates.toArray(),
-		cards: await userCards.where('status').equals('active').toArray(),
+		cards: await userCards.toArray(),
 		longGoals: await longTermGoals.toArray(),
 		stages: await stageGoals.toArray(),
 		records: await actionRecords.toArray(),
@@ -89,6 +90,8 @@ export async function loadHomeDashboard(
 
 	const templatesById = new Map(data.templates.map((template) => [template.id, template]));
 	const goalSummaries = data.cards
+		.filter((card) => card.status === 'active')
+		.filter((card) => card.officialCardId !== 'extra-expense')
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.map((card): HomeGoalSummary => {
 			const template = templatesById.get(card.officialCardId);
@@ -138,12 +141,15 @@ export async function loadHomeDashboard(
 					: null,
 			};
 		});
-	const outcomeDates = [...outcomeDatesForMonth(data.records, input.year, input.monthIndex)].sort();
+	const expenseCardIds = new Set(data.cards.filter((card) => card.officialCardId === 'extra-expense').map((card) => card.id));
+	const outcomeDates = [...outcomeDatesForMonth(data.records.filter((record) => !expenseCardIds.has(record.userCardId)), input.year, input.monthIndex)].sort();
+	const expenseDates = [...outcomeDatesForMonth(data.records.filter((record) => expenseCardIds.has(record.userCardId)), input.year, input.monthIndex)].sort();
 
 	return {
 		hasCards: goalSummaries.length > 0,
 		goalSummaries,
 		outcomeDates,
+		expenseDates,
 		outcomeDayCount: outcomeDates.length,
 		year: input.year,
 		monthIndex: input.monthIndex,

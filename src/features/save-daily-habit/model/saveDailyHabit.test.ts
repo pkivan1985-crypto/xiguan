@@ -220,6 +220,79 @@ describe('saveDailyHabit', () => {
 		expect(await database.table('actionRecords').count()).toBe(0);
 	});
 
+	it('updates an existing historical event record through an explicit correction', async () => {
+		await database.table('userCards').add({
+			id: 'expense-card',
+			officialCardId: 'extra-expense',
+			title: '额外开支',
+			status: 'active',
+			sortOrder: 1,
+			createdAt: '2026-07-20T01:00:00.000Z',
+			updatedAt: '2026-07-20T01:00:00.000Z',
+		});
+		await saveDailyHabit(database, {
+			userCardId: 'expense-card',
+			localDate: '2026-07-24',
+			currentLocalDate: LOCAL_DATE,
+			recordingContext: 'backfill',
+			quantityBaseValue: 2_000,
+			details: {
+				kind: 'extra-expense',
+				entries: [{
+					id: 'expense-a', amountCents: 2_000, item: '临时用品', reason: '出门忘带',
+					necessity: 'delayable', occurredTime: '10:30',
+					createdAt: '2026-07-24T02:30:00.000Z', updatedAt: '2026-07-24T02:30:00.000Z',
+				}],
+			},
+			nowIso: '2026-07-25T02:30:00.000Z',
+			submissionId: 'expense-backfill',
+		});
+
+		await saveDailyHabit(database, {
+			userCardId: 'expense-card',
+			localDate: '2026-07-24',
+			currentLocalDate: LOCAL_DATE,
+			recordingContext: 'correction',
+			quantityBaseValue: 2_800,
+			details: {
+				kind: 'extra-expense',
+				entries: [{
+					id: 'expense-a', amountCents: 2_800, item: '临时用品', reason: '补充实际金额',
+					necessity: 'delayable', occurredTime: '10:30',
+					createdAt: '2026-07-24T02:30:00.000Z', updatedAt: '2026-07-25T03:00:00.000Z',
+				}],
+			},
+			nowIso: '2026-07-25T03:00:00.000Z',
+			submissionId: 'expense-correction',
+		});
+
+		expect(await database.table('actionRecords').get('expense-card:2026-07-24')).toMatchObject({
+			quantityBaseValue: 2_800,
+			lastSubmissionId: 'expense-correction',
+			details: { kind: 'extra-expense', entries: [{ amountCents: 2_800, reason: '补充实际金额' }] },
+		});
+	});
+
+	it('deletes the final line of an existing historical event record', async () => {
+		await database.table('actionRecords').add({
+			id: 'card-a:2026-07-24', userCardId: 'card-a', localDate: '2026-07-24', quantityBaseValue: 2_000,
+			firstSavedAt: '2026-07-24T02:00:00.000Z', lastSavedAt: '2026-07-24T02:00:00.000Z',
+			lastSubmissionId: 'expense-original',
+		});
+
+		await saveDailyHabit(database, {
+			userCardId: 'card-a',
+			localDate: '2026-07-24',
+			currentLocalDate: LOCAL_DATE,
+			recordingContext: 'correction',
+			quantityBaseValue: 0,
+			nowIso: '2026-07-25T04:00:00.000Z',
+			submissionId: 'expense-delete',
+		});
+
+		expect(await database.table('actionRecords').get('card-a:2026-07-24')).toBeUndefined();
+	});
+
 	it('rejects saving a past local date', async () => {
 		await expect(saveDailyHabit(database, {
 			userCardId: 'card-a',

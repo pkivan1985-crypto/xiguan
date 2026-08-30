@@ -57,10 +57,15 @@
 }
 
 .marker {
-	display: grid;
+	display: flex;
+	gap: 3px;
 	place-items: center;
 	width: 14px;
 	height: 14px;
+}
+
+.marker .expenseMarker {
+	color: #f2b94b;
 }
 
 .marker > span {

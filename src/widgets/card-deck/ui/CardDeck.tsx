@@ -48,6 +48,8 @@ interface CardDeckCopy {
 	daily: string;
 	days: string;
 	details: string;
+	eventDriven: string;
+	eventDrivenHint: string;
 	deleteAction: string;
 	deleteDescription: string;
 	deleteTitle: (title: string) => string;
@@ -100,6 +102,7 @@ function formatCardQuantity(card: DeckCardView, baseValue: number): string {
 }
 
 function planSummary(card: DeckCardView, copy: CardDeckCopy): string {
+	if (card.template.id === 'extra-expense') return copy.eventDriven;
 	const plan = card.dailyPlan;
 	if (!plan || plan.weekdays.length === 7) {
 		return plan?.mode === 'custom' ? `${copy.daily} · ${copy.customDaily ?? copy.daily}` : copy.daily;
@@ -118,6 +121,7 @@ function planSummary(card: DeckCardView, copy: CardDeckCopy): string {
 function todayReference(card: DeckCardView, copy: CardDeckCopy): string {
 	if (card.todayStatus.kind === 'completed') return copy.completed;
 	if (card.todayStatus.kind === 'rest') return copy.rest;
+	if (card.todayStatus.kind === 'event') return copy.eventDriven;
 	const trackingType = card.template.trackingType ?? 'quantity';
 	if (trackingType === 'check' || trackingType === 'avoid') return copy.pending;
 	const target = card.todayStatus.targetBase
@@ -280,7 +284,7 @@ function ExpandedHabitCard({
 						/>
 					)}
 				</div>
-			) : <p className={styles.noGoal}>{copy.noGoal}</p>}
+			) : <p className={styles.noGoal}>{card.template.id === 'extra-expense' ? copy.eventDrivenHint : copy.noGoal}</p>}
 
 			<footer className={styles.expandedFooter}>
 				<span className={styles.plan}>
@@ -372,7 +376,7 @@ function CompactHabitCard({ item, copy, onToggle }: HabitCardProps) {
 					<PiCaretRight aria-hidden='true' />
 				</span>
 				{percentage === null ? (
-					<span className={styles.compactStatus}>{copy.noGoal}</span>
+					<span className={styles.compactStatus}>{card.template.id === 'extra-expense' ? copy.eventDrivenHint : copy.noGoal}</span>
 				) : (
 					<span className={styles.compactProgress}>
 						<strong>{percentage}%</strong>

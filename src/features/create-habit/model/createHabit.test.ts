@@ -33,6 +33,22 @@ describe('createHabit', () => {
 		expect(await database.table('longTermGoals').count()).toBe(0);
 	});
 
+	it('creates only one active event-driven extra-expense card without a plan', async () => {
+		const input = {
+			templateId: 'extra-expense', cardTitle: '额外开支', startDate: '2026-08-26',
+			nowIso: '2026-08-26T01:00:00.000Z',
+			ids: { userCardId: 'expense-a', longTermGoalId: 'unused-long', stageGoalId: 'unused-stage' },
+		};
+		const result = await createHabit(database, input);
+
+		expect(result.userCard).toMatchObject({ officialCardId: 'extra-expense', dailyPlan: undefined });
+		expect(result.longTermGoal).toBeUndefined();
+		await expect(createHabit(database, {
+			...input,
+			ids: { ...input.ids, userCardId: 'expense-b' },
+		})).rejects.toThrow('ACTIVE_EXTRA_EXPENSE_CARD_EXISTS');
+	});
+
 	it('stores light-food rules as optional card configuration', async () => {
 		const result = await createHabit(database, {
 			templateId: 'light-food',

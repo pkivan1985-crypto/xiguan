@@ -8,8 +8,10 @@ import { parseLocalDate } from '@shared/lib/date';
 
 export interface HistoryRecordModel {
 	id: string;
+	userCardId?: string;
 	localDate: string;
 	cardTitle: string;
+	officialCardId?: string;
 	iconKey?: CardTemplate['iconKey'];
 	accent?: CardTemplate['accent'];
 	quantityBaseValue: number;
@@ -74,8 +76,10 @@ export async function loadHistory(
 				const relationAvailable = Boolean(card && template);
 				return {
 					id: record.id,
+					userCardId: record.userCardId,
 					localDate: record.localDate,
 					cardTitle: card?.title ?? '',
+					officialCardId: card?.officialCardId,
 					iconKey: template?.iconKey,
 					accent: template?.accent,
 					quantityBaseValue: record.quantityBaseValue,

@@ -101,6 +101,31 @@ function assertRecordDetails(value: unknown): void {
 			|| new Set(value.screenFreeMoments).size !== value.screenFreeMoments.length)) fail('INVALID_BACKUP');
 		return;
 	}
+	if (value.kind === 'extra-expense') {
+		if ('entries' in value) {
+			if (!Array.isArray(value.entries) || value.entries.length === 0) fail('INVALID_BACKUP');
+			for (const entry of value.entries) {
+				if (!isRecord(entry) || !isText(entry.id) || !isSafePositive(entry.amountCents)
+					|| !isText(entry.item) || entry.item.length > 80
+					|| !isText(entry.reason) || entry.reason.length > 280
+					|| !isOptionalSafeNonNegative(entry.bankBalanceCents)
+					|| !isOptionalSafeNonNegative(entry.earnBackDays)
+					|| !isOptionalText(entry.compensation, 280)
+					|| !['necessary', 'delayable', 'impulse'].includes(String(entry.necessity))
+					|| typeof entry.occurredTime !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.occurredTime)
+					|| !isIso(entry.createdAt) || !isIso(entry.updatedAt)) fail('INVALID_BACKUP');
+			}
+			assertUnique(value.entries.map((entry) => String((entry as Record<string, unknown>).id)));
+			return;
+		}
+		if (!isText(value.item) || value.item.length > 80
+			|| !isText(value.reason) || value.reason.length > 280
+			|| !isOptionalSafeNonNegative(value.bankBalanceCents)
+			|| !isOptionalSafeNonNegative(value.earnBackDays)
+			|| !isOptionalText(value.compensation, 280)
+			|| !['necessary', 'delayable', 'impulse'].includes(String(value.necessity))) fail('INVALID_BACKUP');
+		return;
+	}
 	fail('INVALID_BACKUP');
 }
 
@@ -173,7 +198,16 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 		if (record.averageHeartRateBpm !== undefined
 			&& (!Number.isSafeInteger(record.averageHeartRateBpm) || record.averageHeartRateBpm < 30 || record.averageHeartRateBpm > 240)) fail('INVALID_BACKUP');
 		if (record.note !== undefined && (typeof record.note !== 'string' || record.note.length > 280)) fail('INVALID_BACKUP');
-		if (record.details !== undefined) assertRecordDetails(record.details);
+		if (record.details !== undefined) {
+			assertRecordDetails(record.details);
+			if (isRecord(record.details) && record.details.kind === 'extra-expense' && Array.isArray(record.details.entries)) {
+				const total = record.details.entries.reduce(
+					(sum, entry) => sum + Number((entry as Record<string, unknown>).amountCents),
+					0,
+				);
+				if (total !== record.quantityBaseValue) fail('INVALID_BACKUP');
+			}
+		}
 	}
 	for (const batch of candidate.outcomeBatches) {
 		if (!isRecord(batch) || !isText(batch.id) || !isText(batch.submissionId) || !isLocalDate(batch.localDate)

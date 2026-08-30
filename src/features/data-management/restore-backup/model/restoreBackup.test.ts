@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { ActionRecord } from '@entities/action-record';
 import type { CardTemplate } from '@entities/card-template';
 import type { LongTermGoal, StageGoal } from '@entities/goal';
 import type { UserCard } from '@entities/user-card';
@@ -11,6 +12,7 @@ import { inspectBackupText } from '@features/data-management/inspect-backup';
 import { restoreBackup } from './restoreBackup';
 
 const running: CardTemplate = { id: 'running', categoryId: 'sport', title: '跑步', sortOrder: 0, enabled: true, version: 1, defaultStageMode: 'quantity', quantity: { baseUnit: 'm', displayUnit: 'km', basePerDisplayUnit: 1000, maxDecimalPlaces: 2, confirmationThresholdDisplay: 100 } };
+const extraExpense: CardTemplate = { id: 'extra-expense', categoryId: 'life-management', title: '额外开支', sortOrder: 0, enabled: true, version: 1, defaultStageMode: 'quantity', trackingType: 'quantity', quantity: { baseUnit: 'cent', displayUnit: '元', basePerDisplayUnit: 100, maxDecimalPlaces: 2, confirmationThresholdDisplay: 100_000 } };
 
 async function snapshot(database: RepeatOutcomeDatabase) {
 	return {
@@ -73,6 +75,37 @@ describe('atomic backup restore', () => {
 
 		await expect(restoreBackup(target, backup)).resolves.toBeUndefined();
 		expect(await snapshot(target)).toMatchObject({ cards: [{ id: 'source-card' }] });
+	});
+
+	it('restores aggregated extra-expense entries without losing reflection details', async () => {
+		const source = await database('expense-source');
+		await source.tableFor<CardTemplate>('cardTemplates').put(extraExpense);
+		await source.tableFor<UserCard>('userCards').put({
+			id: 'expense-card', officialCardId: 'extra-expense', title: '额外开支', status: 'active', sortOrder: 0,
+			createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z',
+		});
+		const expenseRecord: ActionRecord = {
+			id: 'expense-card:2026-08-30', userCardId: 'expense-card', localDate: '2026-08-30',
+			quantityBaseValue: 5_200, firstSavedAt: '2026-08-30T01:00:00.000Z',
+			lastSavedAt: '2026-08-30T02:00:00.000Z', lastSubmissionId: 'expense-save',
+			details: {
+				kind: 'extra-expense',
+				entries: [
+					{ id: 'a', amountCents: 4_000, item: '临时雨伞', reason: '突然下雨', necessity: 'necessary', occurredTime: '09:00', createdAt: '2026-08-30T01:00:00.000Z', updatedAt: '2026-08-30T01:00:00.000Z' },
+					{ id: 'b', amountCents: 1_200, item: '临时停车', reason: '办事需要', necessity: 'delayable', occurredTime: '10:00', createdAt: '2026-08-30T02:00:00.000Z', updatedAt: '2026-08-30T02:00:00.000Z' },
+				],
+			},
+		};
+		await source.tableFor<ActionRecord>('actionRecords').put(expenseRecord);
+		const file = await buildBackup(source, { nowIso: '2026-08-30T03:00:00.000Z', appVersion: '3.0.0-rc.14' });
+		const inspection = await inspectBackupText(file.contents, [{ id: 'extra-expense', version: 1 }]);
+		if (inspection.kind !== 'ready') throw new Error('EXPECTED_READY_BACKUP');
+
+		const target = await database('expense-target');
+		await target.tableFor<CardTemplate>('cardTemplates').put(extraExpense);
+		await restoreBackup(target, inspection.backup);
+
+		expect(await target.tableFor<ActionRecord>('actionRecords').get(expenseRecord.id)).toEqual(expenseRecord);
 	});
 
 	it('rolls back when a write fails after old data was cleared', async () => {

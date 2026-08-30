@@ -141,6 +141,46 @@ describe('backup V1 validation', () => {
 			.rejects.toMatchObject({ code: 'INVALID_BACKUP' });
 	});
 
+	it('accepts aggregated extra-expense details and rejects damaged expense totals', async () => {
+		const configured = await envelope();
+		configured.data.actionRecords[0].quantityBaseValue = 5_000;
+		configured.data.actionRecords[0].details = {
+			kind: 'extra-expense',
+			entries: [
+				{
+					id: 'expense-a', amountCents: 3_200, item: '临时雨伞', reason: '突然下雨',
+					bankBalanceCents: 100_000, earnBackDays: 1, compensation: '本周少喝一杯饮料',
+					necessity: 'necessary', occurredTime: '08:30',
+					createdAt: '2026-07-12T00:30:00.000Z', updatedAt: '2026-07-12T00:30:00.000Z',
+				},
+				{
+					id: 'expense-b', amountCents: 1_800, item: '临时停车', reason: '办事需要',
+					necessity: 'delayable', occurredTime: '14:20',
+					createdAt: '2026-07-12T06:20:00.000Z', updatedAt: '2026-07-12T06:20:00.000Z',
+				},
+			],
+		};
+		configured.checksum.value = await backupFingerprint(configured.data, digest);
+
+		await expect(validatePlainBackup(configured, definitions, digest)).resolves.toBeDefined();
+
+		const damaged = structuredClone(configured);
+		damaged.data.actionRecords[0].quantityBaseValue = 4_999;
+		damaged.checksum.value = await backupFingerprint(damaged.data, digest);
+		await expect(validatePlainBackup(damaged, definitions, digest))
+			.rejects.toMatchObject({ code: 'INVALID_BACKUP' });
+	});
+
+	it('accepts legacy extra-expense details during backup restore', async () => {
+		const configured = await envelope();
+		configured.data.actionRecords[0].details = {
+			kind: 'extra-expense', item: '旧版记录', reason: '兼容恢复', necessity: 'impulse',
+		};
+		configured.checksum.value = await backupFingerprint(configured.data, digest);
+
+		await expect(validatePlainBackup(configured, definitions, digest)).resolves.toBeDefined();
+	});
+
 	it('uses stable error objects instead of translated entity messages', () => {
 		const error = new BackupValidationError('INVALID_BACKUP');
 		expect(error.code).toBe('INVALID_BACKUP');

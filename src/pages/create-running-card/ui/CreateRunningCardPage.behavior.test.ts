@@ -27,4 +27,19 @@ describe('create habit daily planning controls', () => {
 		expect(source).toContain('stages: stagedPlanEnabled ? stages.map');
 		expect(source).toContain("averageTargetDisplay: planMode === 'average' ? averageDailyTarget : undefined");
 	});
+
+	it('offers extra spending as a life-management preset', () => {
+		expect(source).toContain("id: 'extra-expense'");
+		expect(source).toContain("categoryId: 'life-management'");
+		expect(source).toContain("labelKey: 'shell.createCard.presets.extraExpense'");
+	});
+
+	it('skips planning for event-driven extra spending and confirms it as needed', () => {
+		expect(source).toContain("const isEventDriven = templateId === 'extra-expense'");
+		expect(source).toContain('setFlowStep(isEventDriven ? 2 : 1)');
+		expect(source).toContain("isEventDriven ? ['choose', 'confirm'] : ['choose', 'plan', 'confirm']");
+		expect(source).toContain('longTerm: isEventDriven ? undefined');
+		expect(source).toContain('dailyPlan: isEventDriven ? undefined');
+		expect(source).toContain("t('shell.createCard.eventDrivenHint')");
+	});
 });
