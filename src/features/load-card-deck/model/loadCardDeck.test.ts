@@ -28,6 +28,7 @@ describe('loadCardDeck', () => {
 			{ id: 'learning', enabled: true, cards: 0 },
 			{ id: 'recovery', enabled: true, cards: 0 },
 			{ id: 'focus', enabled: true, cards: 0 },
+			{ id: 'creation', enabled: true, cards: 0 },
 			{ id: 'life-management', enabled: true, cards: 0 },
 		]);
 	});
@@ -108,6 +109,7 @@ describe('loadCardDeck', () => {
 			{ id: 'learning', cards: ['读书'] },
 			{ id: 'recovery', cards: [] },
 			{ id: 'focus', cards: [] },
+			{ id: 'creation', cards: [] },
 			{ id: 'life-management', cards: [] },
 		]);
 		expect(view.archivedCount).toBe(1);

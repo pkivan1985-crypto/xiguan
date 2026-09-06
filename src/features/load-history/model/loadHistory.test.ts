@@ -2,10 +2,12 @@ import 'fake-indexeddb/auto';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { loadHistory } from './loadHistory';
 import type { ActionRecord } from '@entities/action-record';
+import { SYSTEM_CARD_TEMPLATES } from '@entities/card-template';
 import { createRunningCard } from '@features/create-running-card';
 import { RepeatOutcomeDatabase } from '@shared/lib/db';
+
+import { loadHistory } from './loadHistory';
 
 let database: RepeatOutcomeDatabase;
 
@@ -83,6 +85,27 @@ describe('loadHistory', () => {
 		expect(model.groups.flatMap(({ records }) => records).map(({ id, canCorrect }) => ({ id, canCorrect }))).toEqual([
 			{ id: 'today', canCorrect: true }, { id: 'past', canCorrect: false },
 		]);
+	});
+
+	it('counts only published media entries in history totals', async () => {
+		await seedCard();
+		const mediaTemplate = SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'media-output');
+		expect(mediaTemplate).toBeDefined();
+		await database.table('userCards').update('card-a', { officialCardId: 'media-output' });
+		await database.table('cardTemplates').put(mediaTemplate!);
+		await database.tableFor<ActionRecord>('actionRecords').add({
+			...record('media-day', '2026-07-12', 2, '2026-07-12T08:00:00.000Z'),
+			details: {
+				kind: 'media-output',
+				entries: [
+					{ id: 'published', type: 'article', title: '已发布', status: 'published', createdAt: '2026-07-12T08:00:00.000Z', updatedAt: '2026-07-12T08:00:00.000Z' },
+					{ id: 'draft', type: 'short-video', title: '草稿', status: 'draft', createdAt: '2026-07-12T08:00:00.000Z', updatedAt: '2026-07-12T08:00:00.000Z' },
+				],
+			},
+		});
+
+		const item = (await loadHistory(database, '2026-07-12')).groups[0]?.records[0];
+		expect(item).toMatchObject({ quantityBaseValue: 1, displayValue: '1', displayUnit: '条' });
 	});
 
 	it('keeps archived-card history visible', async () => {

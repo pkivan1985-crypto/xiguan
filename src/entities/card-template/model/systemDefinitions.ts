@@ -8,7 +8,8 @@ export const SYSTEM_CATEGORIES: readonly CategoryDefinition[] = Object.freeze([
 	{ id: 'learning', title: '学习成长', sortOrder: 2, enabled: true },
 	{ id: 'recovery', title: '作息恢复', sortOrder: 3, enabled: true },
 	{ id: 'focus', title: '专注自律', sortOrder: 4, enabled: true },
-	{ id: 'life-management', title: '生活管理', sortOrder: 5, enabled: true },
+	{ id: 'creation', title: '创作输出', sortOrder: 5, enabled: true },
+	{ id: 'life-management', title: '生活管理', sortOrder: 6, enabled: true },
 ]);
 
 export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
@@ -136,6 +137,27 @@ export const SYSTEM_CARD_TEMPLATES: readonly CardTemplate[] = Object.freeze([
 			basePerDisplayUnit: 1,
 			maxDecimalPlaces: 0,
 			confirmationThresholdDisplay: 1,
+		},
+	},
+	{
+		id: 'media-output',
+		categoryId: 'creation',
+		title: '自媒体输出',
+		sortOrder: 0,
+		enabled: true,
+		version: 1,
+		defaultStageMode: 'quantity',
+		trackingType: 'count',
+		iconKey: 'broadcast',
+		accent: 'violet',
+		defaultDailyTargetBase: 1,
+		stepBase: 1,
+		quantity: {
+			baseUnit: 'work',
+			displayUnit: '条',
+			basePerDisplayUnit: 1,
+			maxDecimalPlaces: 0,
+			confirmationThresholdDisplay: 100,
 		},
 	},
 	{

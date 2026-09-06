@@ -57,7 +57,14 @@ function isOptionalSafeNonNegative(value: unknown): boolean {
 }
 
 function assertHabitConfig(value: unknown): void {
-	if (!isRecord(value) || value.kind !== 'light-food' || !Array.isArray(value.rules)
+	if (!isRecord(value)) fail('INVALID_BACKUP');
+	if (value.kind === 'media-output') {
+		if (!Array.isArray(value.outputTypes) || value.outputTypes.length === 0
+			|| value.outputTypes.some((type) => !['article', 'short-video', 'audio', 'livestream'].includes(String(type)))) fail('INVALID_BACKUP');
+		assertUnique(value.outputTypes.map(String));
+		return;
+	}
+	if (value.kind !== 'light-food' || !Array.isArray(value.rules)
 		|| value.rules.length === 0 || value.rules.length > 50) fail('INVALID_BACKUP');
 	for (const rule of value.rules) {
 		if (!isRecord(rule) || !isText(rule.id) || !isText(rule.label)
@@ -124,6 +131,22 @@ function assertRecordDetails(value: unknown): void {
 			|| !isOptionalSafeNonNegative(value.earnBackDays)
 			|| !isOptionalText(value.compensation, 280)
 			|| !['necessary', 'delayable', 'impulse'].includes(String(value.necessity))) fail('INVALID_BACKUP');
+		return;
+	}
+	if (value.kind === 'media-output') {
+		if (!Array.isArray(value.entries) || value.entries.length === 0) fail('INVALID_BACKUP');
+		for (const entry of value.entries) {
+			if (!isRecord(entry) || !isText(entry.id)
+				|| !['article', 'short-video', 'audio', 'livestream'].includes(String(entry.type))
+				|| !isText(entry.title) || entry.title.length > 100
+				|| !isOptionalText(entry.platform, 40)
+				|| !['published', 'draft'].includes(String(entry.status))
+				|| !isOptionalText(entry.link, 500)
+				|| ![entry.views, entry.likes, entry.comments].every(isOptionalSafeNonNegative)
+				|| !isOptionalText(entry.reflection, 300)
+				|| !isIso(entry.createdAt) || !isIso(entry.updatedAt)) fail('INVALID_BACKUP');
+		}
+		assertUnique(value.entries.map((entry) => String((entry as Record<string, unknown>).id)));
 		return;
 	}
 	fail('INVALID_BACKUP');

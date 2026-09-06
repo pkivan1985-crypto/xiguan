@@ -111,11 +111,17 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 				: [];
 			const stageGoal = selectCurrentStageGoal(relatedStageGoals);
 			const stageIndex = stageGoal ? relatedStageGoals.findIndex(({ id }) => id === stageGoal.id) : -1;
+			const cardRecords = effectiveRecords
+				.filter((record) => record.userCardId === card.id)
+				.map((record) => card.officialCardId === 'media-output' && record.details?.kind === 'media-output'
+					? { ...record, quantityBaseValue: record.details.entries.filter(({ status }) => status === 'published').length }
+					: record)
+				.filter(({ quantityBaseValue }) => quantityBaseValue > 0);
 			const longTermRecords = longTermGoal
-				? effectiveRecords.filter((record) => record.userCardId === card.id && record.longTermGoalId === longTermGoal.id)
+				? cardRecords.filter((record) => record.longTermGoalId === longTermGoal.id)
 				: [];
 			const stageRecords = stageGoal
-				? effectiveRecords.filter((record) => record.userCardId === card.id && record.stageGoalId === stageGoal.id)
+				? cardRecords.filter((record) => record.stageGoalId === stageGoal.id)
 				: [];
 			const longTermProgress = longTermGoal
 				? calculateGoalProgress(longTermRecords, { mode: 'quantity', targetQuantityBase: longTermGoal.targetQuantityBase }) ?? undefined
@@ -134,7 +140,11 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 			));
 			const eventDriven = card.officialCardId === 'extra-expense';
 			const scheduledToday = !card.dailyPlan || card.dailyPlan.weekdays.includes(todayWeekday);
-			const completedToday = todayRecord !== undefined && todayRecord.quantityBaseValue >= dailyTargetBase;
+			const completedToday = todayRecord !== undefined && (
+				card.officialCardId === 'media-output' && todayRecord.details?.kind === 'media-output'
+					? todayRecord.details.entries.filter(({ status }) => status === 'published').length >= dailyTargetBase
+					: todayRecord.quantityBaseValue >= dailyTargetBase
+			);
 			return [{
 				id: card.id,
 				title: card.title,

@@ -17,7 +17,15 @@ import {
 	FiTrash2,
 	FiX,
 } from 'react-icons/fi';
-import { PiArrowRight, PiLeaf, PiReceipt } from 'react-icons/pi';
+import {
+	PiArticle,
+	PiArrowRight,
+	PiBroadcast,
+	PiLeaf,
+	PiMicrophone,
+	PiReceipt,
+	PiVideoCamera,
+} from 'react-icons/pi';
 import type { IconType } from 'react-icons';
 import { useNavigate } from 'react-router';
 
@@ -42,6 +50,7 @@ const PRESETS = [
 	{ id: 'reading-time', categoryId: 'learning', icon: FiBookOpen, labelKey: 'shell.createCard.presets.reading', unitKey: 'shell.createCard.units.duration', displayUnitKey: 'shell.createCard.displayUnits.duration', accent: 'amber', decimals: 0, dailyDefault: 30 },
 	{ id: 'sleep', categoryId: 'recovery', icon: FiMoon, labelKey: 'shell.createCard.presets.sleep', unitKey: 'shell.createCard.units.check', displayUnitKey: 'shell.createCard.displayUnits.check', accent: 'violet', decimals: 0, dailyDefault: 1 },
 	{ id: 'screen-free', categoryId: 'focus', icon: FiShield, labelKey: 'shell.createCard.presets.screenFree', unitKey: 'shell.createCard.units.avoid', displayUnitKey: 'shell.createCard.displayUnits.avoid', accent: 'blue', decimals: 0, dailyDefault: 1 },
+	{ id: 'media-output', categoryId: 'creation', icon: PiBroadcast, labelKey: 'shell.createCard.presets.mediaOutput', unitKey: 'shell.createCard.units.output', displayUnitKey: 'shell.createCard.displayUnits.output', accent: 'violet', decimals: 0, dailyDefault: 1 },
 	{ id: 'extra-expense', categoryId: 'life-management', icon: PiReceipt, labelKey: 'shell.createCard.presets.extraExpense', unitKey: 'shell.createCard.units.money', displayUnitKey: 'shell.createCard.displayUnits.money', accent: 'amber', decimals: 2, dailyDefault: 1 },
 ] as const satisfies readonly {
 	id: string;
@@ -62,6 +71,7 @@ const CATEGORIES = [
 	{ id: 'learning', labelKey: 'shell.createCard.categories.learning' },
 	{ id: 'recovery', labelKey: 'shell.createCard.categories.recovery' },
 	{ id: 'focus', labelKey: 'shell.createCard.categories.focus' },
+	{ id: 'creation', labelKey: 'shell.createCard.categories.creation' },
 	{ id: 'life-management', labelKey: 'shell.createCard.categories.lifeManagement' },
 ] as const;
 
@@ -140,6 +150,7 @@ function CreateRunningCardPage() {
 		builtIn: true,
 	})));
 	const [newFoodRule, setNewFoodRule] = useState('');
+	const [outputTypes, setOutputTypes] = useState<Array<'article' | 'short-video' | 'audio' | 'livestream'>>(['article', 'short-video']);
 	const selected = PRESETS.find((preset) => preset.id === templateId)!;
 	const isEventDriven = templateId === 'extra-expense';
 	const flowSteps: readonly ('choose' | 'plan' | 'confirm')[] = isEventDriven ? ['choose', 'confirm'] : ['choose', 'plan', 'confirm'];
@@ -437,6 +448,12 @@ function CreateRunningCardPage() {
 		setNewFoodRule('');
 	}
 
+	function toggleOutputType(type: 'article' | 'short-video' | 'audio' | 'livestream'): void {
+		setOutputTypes((current) => current.includes(type)
+			? current.length === 1 ? current : current.filter((item) => item !== type)
+			: [...current, type]);
+	}
+
 	function planReady(): boolean {
 		const hasName = Boolean(cardTitle.trim());
 		if (isEventDriven) return hasName;
@@ -503,7 +520,9 @@ function CreateRunningCardPage() {
 				},
 				habitConfig: templateId === 'light-food'
 					? { kind: 'light-food', rules: foodRules }
-					: undefined,
+					: templateId === 'media-output'
+						? { kind: 'media-output', outputTypes }
+						: undefined,
 				nowIso: new Date().toISOString(),
 				ids: {
 					userCardId: crypto.randomUUID(),
@@ -586,6 +605,24 @@ function CreateRunningCardPage() {
 							/>
 						</span>
 					</label>
+
+					{templateId === 'media-output' && (
+						<section className={styles.planBlock}>
+							<header className={styles.blockHeader}>
+								<span><PiBroadcast aria-hidden='true' /></span>
+								<div><strong>{t('shell.createCard.outputTypesTitle')}</strong><small>{t('shell.createCard.outputTypesHint')}</small></div>
+							</header>
+							<div className={styles.outputTypes}>
+								{([['article', PiArticle], ['short-video', PiVideoCamera], ['audio', PiMicrophone], ['livestream', PiBroadcast]] as const).map(([type, Icon]) => (
+									<button type='button' key={type} aria-pressed={outputTypes.includes(type)} onClick={() => toggleOutputType(type)}>
+										<Icon aria-hidden='true' />
+										<span>{t(`shell.record.media.types.${type}`)}</span>
+										{outputTypes.includes(type) && <FiCheck aria-hidden='true' />}
+									</button>
+								))}
+							</div>
+						</section>
+					)}
 
 					<section className={styles.planBlock}>
 						<header className={styles.blockHeader}>
@@ -716,6 +753,7 @@ function CreateRunningCardPage() {
 							</div>
 						</section>
 					)}
+
 				</section>}
 
 				{flowStep === 2 && (
@@ -729,6 +767,7 @@ function CreateRunningCardPage() {
 							<div><dt>{t('shell.createCard.reviewDays')}</dt><dd>{weekdays.map((day) => t(`shell.createCard.weekdays.${day}`)).join('、')}</dd></div>
 							<div><dt>{t('shell.createCard.reviewDaily')}</dt><dd>{averageDailyTarget} {selectedUnit}</dd></div>
 							{templateId === 'light-food' && <div><dt>{t('shell.createCard.foodRulesTitle')}</dt><dd>{t('shell.createCard.reviewRuleCount', { count: foodRules.length })}</dd></div>}
+							{templateId === 'media-output' && <div><dt>{t('shell.createCard.outputTypesTitle')}</dt><dd>{outputTypes.map((type) => t(`shell.record.media.types.${type}`)).join('、')}</dd></div>}
 							<div><dt>{t('shell.createCard.stagedPlan')}</dt><dd>{t(stagedPlanEnabled ? 'shell.createCard.reviewEnabled' : 'shell.createCard.reviewDisabled')}</dd></div>
 						</dl>}
 						<div className={styles.todayPreview}>

@@ -74,6 +74,26 @@ describe('createHabit', () => {
 		});
 	});
 
+	it('stores media output formats with a count-based publishing plan', async () => {
+		const result = await createHabit(database, {
+			templateId: 'media-output',
+			cardTitle: '自媒体输出',
+			startDate: '2026-09-06',
+			longTerm: { targetDisplay: '100', endDate: '2027-03-05' },
+			dailyPlan: { mode: 'average', weekdays: [1, 3, 5], averageTargetDisplay: '1' },
+			habitConfig: { kind: 'media-output', outputTypes: ['article', 'short-video'] },
+			nowIso: '2026-09-06T01:00:00.000Z',
+			ids: { userCardId: 'card-media', longTermGoalId: 'long-media', stageGoalId: 'stage-media' },
+		});
+
+		expect(result.userCard).toMatchObject({
+			officialCardId: 'media-output',
+			dailyPlan: { weekdays: [1, 3, 5], averageTargetBase: 1 },
+			habitConfig: { kind: 'media-output', outputTypes: ['article', 'short-video'] },
+		});
+		expect(result.longTermGoal?.targetQuantityBase).toBe(100);
+	});
+
 	it('atomically creates optional long-term and stage plans using the preset unit', async () => {
 		const result = await createHabit(database, {
 			templateId: 'reading-time',

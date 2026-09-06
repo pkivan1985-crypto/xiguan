@@ -126,6 +126,12 @@ function weekday(localDate: LocalDate): IsoWeekday {
 	return (value === 0 ? 7 : value) as IsoWeekday;
 }
 
+function publishedOutputCount(record: ActionRecord): number {
+	return record.details?.kind === 'media-output'
+		? record.details.entries.filter(({ status }) => status === 'published').length
+		: record.quantityBaseValue;
+}
+
 export async function loadDailyHabits(
 	database: RepeatOutcomeDatabase,
 	localDate: LocalDate,
@@ -167,6 +173,9 @@ export async function loadDailyHabits(
 			const template = templatesById.get(card.officialCardId);
 			if (!template?.enabled) return [];
 			const cardRecords = recordsByCard.get(card.id) ?? [];
+			const progressRecords = card.officialCardId === 'media-output'
+				? cardRecords.map((record) => ({ ...record, quantityBaseValue: publishedOutputCount(record) }))
+				: cardRecords;
 			const monthPrefix = `${localDate.slice(0, 7)}-`;
 			const todayRecord = todayRecords.get(card.id);
 			const scheduledByPlan = !card.dailyPlan
@@ -174,7 +183,9 @@ export async function loadDailyHabits(
 			const scheduledToday = card.officialCardId === 'extra-expense'
 				? false
 				: scheduledByPlan || todayRecord !== undefined;
-			const quantityBaseValue = todayRecord?.quantityBaseValue ?? 0;
+			const quantityBaseValue = todayRecord
+				? card.officialCardId === 'media-output' ? publishedOutputCount(todayRecord) : todayRecord.quantityBaseValue
+				: 0;
 			const trackingType = template.trackingType ?? 'quantity';
 			const longTermGoal = currentLongTermGoal(data.longTermGoals, card.id, localDate);
 			const stageGoal = longTermGoal
@@ -185,7 +196,7 @@ export async function loadDailyHabits(
 				: undefined;
 			const primaryGoal = stageGoal ?? longTermGoal;
 			const goalRecords = primaryGoal
-				? effectiveRecords.filter((record) => (
+				? progressRecords.filter((record) => record.quantityBaseValue > 0 && (
 					stageGoal ? record.stageGoalId === stageGoal.id : record.longTermGoalId === longTermGoal?.id
 				))
 				: [];
@@ -204,7 +215,7 @@ export async function loadDailyHabits(
 			const baseDailyTargetBase = card.dailyPlan?.mode === 'custom'
 				? card.dailyPlan.customTargetsBaseByWeekday?.[todayWeekday]
 				: stageGoal?.dailyTargetBase ?? card.dailyPlan?.averageTargetBase;
-			const previousRecord = cardRecords
+			const previousRecord = progressRecords
 				.filter((record) => record.localDate < localDate)
 				.sort((left, right) => right.localDate.localeCompare(left.localDate))[0];
 			const carryInBaseValue = todayRecord?.carryInBaseValue
@@ -236,11 +247,11 @@ export async function loadDailyHabits(
 				dailyTargetBase: todayRecord?.plannedQuantityBaseValue
 					?? configuredDailyTarget + carryInBaseValue,
 				carryInBaseValue,
-				totalQuantityBaseValue: cardRecords.reduce((total, record) => total + record.quantityBaseValue, 0),
-				monthQuantityBaseValue: cardRecords
+				totalQuantityBaseValue: progressRecords.reduce((total, record) => total + record.quantityBaseValue, 0),
+				monthQuantityBaseValue: progressRecords
 					.filter((record) => record.localDate.startsWith(monthPrefix))
 					.reduce((total, record) => total + record.quantityBaseValue, 0),
-				activeDays: new Set(cardRecords.map((record) => record.localDate)).size,
+				activeDays: new Set(progressRecords.filter(({ quantityBaseValue: value }) => value > 0).map((record) => record.localDate)).size,
 				supportsTrainingDetails: card.officialCardId === 'running',
 				habitConfig: card.habitConfig,
 				details: todayRecord?.details,
@@ -274,6 +285,8 @@ export async function loadDailyHabits(
 		localDate,
 		outcomeDates: [...new Set(effectiveRecords
 			.filter((record) => data.cards.find((card) => card.id === record.userCardId)?.officialCardId !== 'extra-expense')
+			.filter((record) => data.cards.find((card) => card.id === record.userCardId)?.officialCardId !== 'media-output'
+				|| publishedOutputCount(record) > 0)
 			.map((record) => record.localDate))].sort(),
 		expenseDates: [...new Set(effectiveRecords
 			.filter((record) => record.localDate.startsWith(`${localDate.slice(0, 7)}-`)

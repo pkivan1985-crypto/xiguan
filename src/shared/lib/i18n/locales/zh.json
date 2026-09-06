@@ -493,6 +493,7 @@
 				"learning": "学习成长",
 				"recovery": "作息恢复",
 				"focus": "专注自律",
+				"creation": "创作输出",
 				"lifeManagement": "生活管理"
 			},
 			"endDate": "截止日期（可选）",
@@ -563,7 +564,8 @@
 				"duration": "分钟",
 				"check": "次",
 				"avoid": "天",
-				"money": "元"
+				"money": "元",
+				"output": "条"
 			},
 			"planName": "目标名称",
 			"planTarget": "目标数值",
@@ -574,7 +576,8 @@
 				"screenFree": "少刷手机",
 				"sleep": "早睡",
 				"water": "喝水",
-				"extraExpense": "额外开支"
+				"extraExpense": "额外开支",
+				"mediaOutput": "自媒体输出"
 			},
 			"placeholders": {
 				"light-food": "例如：清淡饮食",
@@ -583,7 +586,8 @@
 				"screen-free": "例如：睡前不刷手机",
 				"sleep": "例如：十一点前睡",
 				"water": "例如：工作日喝水",
-				"extra-expense": "例如：额外开支反思"
+				"extra-expense": "例如：额外开支反思",
+				"media-output": "例如：稳定内容输出"
 			},
 			"longTitle": "长期目标名称",
 			"kmValue": "{{value}} 公里",
@@ -607,7 +611,8 @@
 				"count": "计数",
 				"distance": "距离",
 				"duration": "时长",
-				"money": "金额反思"
+				"money": "金额反思",
+				"output": "作品计数"
 			},
 			"foodRulesTitle": "饮食规则",
 			"foodRulesHint": "每天逐项记录，新增规则会加入同一清单",
@@ -629,6 +634,8 @@
 			"reviewDisabled": "未开启",
 			"todayPreviewHint": "今天计划 {{value}} {{unit}}",
 			"detailAction": "逐项记录",
+			"outputTypesTitle": "输出类型",
+			"outputTypesHint": "选择你常用的创作形式，今天可一键进入对应记录",
 			"steps": {
 				"card": { "title": "给这张循环卡起名", "description": "使用一个在今日六个位置中容易辨认的名称。" },
 				"longTerm": { "title": "设定一个长期方向", "description": "只记录方向，不使用惩罚或连续打卡压力。" },
@@ -659,7 +666,8 @@
 				"reading-time": "阅读记录",
 				"sleep": "睡眠记录",
 				"screen-free": "屏幕时间记录",
-				"extra-expense": "额外开支反思"
+				"extra-expense": "额外开支反思",
+				"media-output": "作品输出记录"
 			},
 			"running": {
 				"title": "跑步记录",
@@ -752,6 +760,32 @@
 				"time": "消费时间",
 				"delete": "删除这笔记录",
 				"deleteConfirm": "确定删除这笔额外开支吗？"
+			},
+			"media": {
+				"title": "记录输出",
+				"editTitle": "修改输出",
+				"summaryTitle": "自媒体输出",
+				"outputType": "1. 输出类型",
+				"types": { "article": "图文", "short-video": "短视频", "audio": "音频", "livestream": "直播" },
+				"workTitle": "2. 作品标题",
+				"workTitlePlaceholder": "这次输出了什么？",
+				"platform": "3. 发布平台",
+				"statuses": { "published": "已发布", "draft": "草稿" },
+				"link": "作品链接（可选）",
+				"metrics": "数据表现（可选）",
+				"views": "浏览",
+				"likes": "点赞",
+				"comments": "评论",
+				"reflection": "简单复盘（可选）",
+				"reflectionPlaceholder": "这次做得好的地方，下次想改进什么",
+				"savePublished": "保存并完成",
+				"saveDraft": "仅保存草稿",
+				"addAnother": "再记一条",
+				"addEntry": "记录一次输出",
+				"empty": "今天还没有作品，先记录第一条输出。",
+				"todayProgress": "今日已发布 {{current}} / {{target}} 条",
+				"delete": "删除这条输出",
+				"deleteConfirm": "确定删除这条输出吗？"
 			}
 		},
 		"history": {
@@ -828,6 +862,14 @@
 			"status": { "abandoned": "已放弃", "active": "进行中", "completed": "已完成", "expired": "已到期", "planned": "未开始" },
 			"title": "目标详情",
 			"totalOutcome": "长期累计"
+			,"media": {
+				"title": "输出进展",
+				"subtitle": "持续发布，积累作品",
+				"monthPublished": "本月已发布 {{current}} 条",
+				"totalPublished": "累计 {{current}} / {{target}} 条",
+				"monthTypes": "本月类型",
+				"recent": "最近输出"
+			}
 		},
 		"nav": {
 			"deck": "我的卡套",
@@ -1030,6 +1072,12 @@
 			"undoHabit": "撤销{{title}}",
 			"viewTodaySummary": "今日汇总",
 			"detailsAction": "详情",
+			"mediaOutput": {
+				"actions": "自媒体输出操作",
+				"addOutput": "新增输出",
+				"chooseType": "选择本次输出类型",
+				"viewRecords": "查看记录"
+			},
 			"expenseSummary": "今日 ¥{{today}} · {{count}}笔　　本月 ¥{{month}}",
 			"openDetails": "查看{{title}}详情",
 			"viewTodaySummaryHint": "月历和目标进展都在进展页",

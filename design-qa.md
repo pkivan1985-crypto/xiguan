@@ -1,289 +1,42 @@
-# R4 三屏忠实重做——设计 QA
+# Design QA — 自媒体输出今日卡片选定稿
 
-> 日期：2026-07-26
-> 验收视口：CSS 390 × 844，DPR 1
-> 参考图：853 × 1844，等比归一化为 390 × 843；多出的 1px 归入底部安全区
-> 数据原则：实现图使用 IndexedDB 中经真实 UI 创建和保存的数据，不在产品代码中写入截图假数据
+- Date: 2026-09-06
+- Source visual truth: `design-qa-artifacts/media-output-20260906/reference-selected-card.png`
+- Source pixels: 852 × 1846 at 2× density; normalized CSS size 426 × 923.
+- Implementation URL: `http://127.0.0.1:42901/`
+- Implementation browser capture: Codex in-app Browser tab 4, 1424 × 985 pixels with the app rendered at its 430px mobile max-width. The CUA capture was inspected inline; this browser backend did not expose a filesystem path.
+- Comparison page: `design-qa-artifacts/media-output-20260906/comparison-selected-card.html`
+- State: 2026-09-06, completed self-media habit with one published output. Current local data also contains an unrelated extra-expense row; it was excluded from the focused component judgment.
 
-## 对照输入
+## Visual review
 
-| 页面 | 归一化参考图 | 最终实现图 | 最终并排对照 |
-|---|---|---|---|
-| 今天 | `.artifacts/r4-three-screen-faithful-redesign/reference-today-390x843.png` | `.artifacts/r4-three-screen-faithful-redesign/implementation-today-final-390x844.png` | `.artifacts/r4-three-screen-faithful-redesign/comparison-today-final-side-by-side.png` |
-| 进展 | `.artifacts/r4-three-screen-faithful-redesign/reference-progress-390x843.png` | `.artifacts/r4-three-screen-faithful-redesign/implementation-progress-data-compact-final-390x844.png` | `.artifacts/r4-three-screen-faithful-redesign/comparison-progress-final-side-by-side.png` |
-| 习惯 | `.artifacts/r4-three-screen-faithful-redesign/reference-habits-390x843.png` | `.artifacts/r4-three-screen-faithful-redesign/implementation-habits-final2-390x844.png` | `.artifacts/r4-three-screen-faithful-redesign/comparison-habits-final-side-by-side.png` |
+- Full view: passed for the requested scope. The Today shell and existing local content remain unchanged; only the self-media card action area changed.
+- Focused component: passed. The row keeps the violet glyph, title, `今日 1 / 1 条`, and one green completion circle. The old upper `详情` label and output-type shortcut row are absent. A single divided action row contains `查看记录` and `新增输出` with matching list/plus icons.
+- Fonts and typography: existing product fonts, weights, line heights, truncation, and mobile hierarchy are preserved.
+- Spacing and layout rhythm: both actions use equal grid columns, a 28px center divider, a 42px touch target, and the existing card radius/border rhythm.
+- Colors and visual tokens: existing surface, border, violet output accent, blue action, and green completion tokens are reused.
+- Image and icon fidelity: no raster assets or custom SVGs were introduced; the existing Phosphor icon library supplies the list, plus, and completion icons.
+- Copy and content: visible action labels match the selected visual exactly: `查看记录` and `新增输出`.
 
-完整页面已在同一 390px CSS 视口逐页并排检查。三个页面的关键内容都位于首屏，没有需要额外裁切才能判断的 P0/P1/P2 区域，因此不另造局部特写。
+## Interaction review
 
-## 最终视觉复核
+- `查看记录` opened `/record/:id?date=2026-09-06` without starting a new entry.
+- `新增输出` opened `/record/:id?date=2026-09-06&entry=new`.
+- The completed check remains a single locked green circle.
+- Targeted component tests passed: 16 tests.
+- Full build test suite passed: 89 files, 422 tests.
+- Browser accessibility tree exposed both actions with distinct button names.
+- Browser console contained no runtime warning or error; only Vite connection/HMR debug messages and the React DevTools development notice.
 
-### 今天
+## Comparison history
 
-- 页头、七日条、40 × 63px 选中日、单行完成概览、统一习惯主面板、双入口和三项底部导航均与参考结构一致。
-- 五种真实追踪类型保留不同控件：完成、数值减加、次数加号、时长播放和避免确认。
-- 去除了底部导航的重色块选中背景，保持蓝色图标和文字状态。
-- 实现图日期、数值和习惯顺序来自当前真实测试数据，与参考图示例数据不同；这不是结构或视觉缺陷。
+- Initial implementation had a separate upper `详情` action and a row of output-type shortcut icons. This was the P1 mismatch identified by the user.
+- Fix: removed those controls only for self-media, added the selected two-action row, kept one completion circle, and separated list navigation from new-entry navigation.
+- Post-fix evidence: in-app Browser visual capture plus the focused accessibility tree showed one completion circle and exactly `查看记录` / `新增输出`; both routes were opened successfully.
 
-### 进展
+## Remaining notes
 
-- “月历 / 目标”分段、月历与日期成果合并面板、38 × 39px 选中日、日期触控区域、总规划和三项导航均对齐批准方向。
-- 五条真实当日记录在固定记录区内滚动，不挤压月历骨架。
-- 总规划密度已收紧；长期目标和阶段目标仍保留两条真实独立进度，不用虚假合并值。
-- URL 日期是页面状态唯一来源；浏览器前进、后退会同步选中日期和成果内容。
-
-### 习惯
-
-- 页头使用“习惯”，四个约 29px 可见筛选胶囊仍保留 44px 触控目标。
-- 首张真实目标卡默认展开并独占整行，其余卡片一行两张；一次只展开一张。
-- 展开卡保留真实长期目标、阶段目标、计划、详情和收起操作；未放置不可用的假编辑/假归档按钮。
-- 两行折叠卡和真实归档摘要均能在 390 × 844 首屏中看到。
-
-## 功能与回归证据
-
-- 今天页完成了五个习惯的真实记录；跑步 3.00 km、喝水 5 杯、阅读 5 分钟、早睡完成、不刷短视频完成。
-- 多习惯快速保存已串行化；临时单卡保存不会覆盖既有六槽草稿；播放完成回调失败不会把已提交记录误报为保存失败。
-- 刷新后记录和值保留。
-- 进展页日期选择、月份切换、目标分段、日期详情、浏览器前进/后退均通过。
-- 习惯页分类筛选、展开、收起、新建入口和目标详情入口均通过。
-- `/progress/` 与 `/deck/` 尾斜杠直达只渲染一个正确页头。
-- 最新生产构建在全新来源完成 Service Worker 安装；断网后 `/deck` 与 `/progress` 均可重新打开，恢复联网正常。
-- 浏览器运行日志为空；未发现 console/runtime error。
-- `manifest.webmanifest` 与 `index.html` 的主题色、背景色均为 `#071417`。
-- 自动验证：79 个测试文件、317 个测试通过；CSS Lint、TypeScript、Vite 和 PWA 构建通过。Vite 大 chunk 提示为既有非阻塞警告。
-- 独立开发审查发现的无效日期 URL 未规范化和 `/settings/` 自链接两个 P2 已修复并复测关闭。
-
-## 剩余设备说明
-
-- 本轮在浏览器的 390 × 844 移动视口完成本地设计和 PWA 离线验收。
-- 当前没有用这份尚未发布的本地 R4 构建重新跑 Android 与 iPhone 真机；真机验收应在用户后续明确授权发布候选版本后进行，不在本地通过结论中伪造。
-
-## 最终结论
-
-- P0：0
-- P1：0
-- P2：0
-- 本地设计与功能 QA：通过
-- 推送、部署、版本号或 RC：未执行
-
-R4.0 final result: passed
-
----
-
-# R4.1 添加习惯与类型专属填写页——设计 QA
-
-> 日期：2026-07-31
-> 验收视口：CSS 360 × 800、390 × 844、430 × 932
-> 数据原则：通过正式 UI 创建习惯并保存记录；未向产品代码注入截图专用数据。
-
-## 对照输入
-
-| 页面 | 参考图 | 最终实现图 |
-|---|---|---|
-| 选择习惯预设 | `00-项目统筹/01-产品需求与策划/03-原型图/添加习惯流程/01-选择习惯预设.png` | `design-qa-artifacts/add-habit-step1-390-v2.png` |
-| 轻食计划 | `00-项目统筹/01-产品需求与策划/03-原型图/添加习惯流程/02-设置轻食计划.png` | `design-qa-artifacts/add-habit-light-food-step2-390.png` |
-| 今天入口 | `call_AkRcionF9IV9DwQeX4R3pAhx.png` | `design-qa-artifacts/today-light-food-390.png` |
-| 轻食逐项记录 | `call_fKGMGYgi7xeg8PHSoiTf4pS9.png` | `design-qa-artifacts/light-food-record-390.png` |
-| 跑步记录 | 既有跑步记录原型与今天页设计系统 | `design-qa-artifacts/running-record-360.png`、`running-record-430.png` |
-
-参考图和实现图已在同一比较输入中复核。实现沿用批准的深色、蓝绿强调、线性图标和紧凑 DoHabit 风格；预设区最终恢复两列卡片，以避免三列状态过小和首屏空洞。
-
-## 真实交互检查
-
-- 三步创建流程可以完成“选择预设 → 设置计划 → 确认创建”。
-- 类目筛选会同步选择该类目的首个预设，不会出现筛选后仍创建隐藏预设。
-- 轻食默认四条规则；通过同一清单末尾的单片叶输入行连续新增“不吃夜宵”成功，确认页显示 5 项规则。
-- 轻食逐项选择 3 项并保存后，今天页回显 `3 / 5 项`；部分完成仍显示“打卡”，不会误标成完整“完成”。
-- 跑步页包含公里数、用时、`mm:ss` 配速、心率和备注；配速已改为可输入冒号的文本输入框。
-- 喝水页包含杯数、容量、上午/下午/晚上和饮品类型。
-- 阅读页包含书名、时长、起止页、章节和心得。
-- 睡眠页包含按时状态、入睡/起床时间、自动时长、质量和醒来感觉。
-- 少刷手机页包含总屏幕时间、分类时间和三个无屏时段。
-- 快捷打卡会保留已存在的类型专属详情，不因补足当天目标而抹掉记录。
-- 浏览器控制台没有 warning/error。
-
-## 响应式与视觉结论
-
-- 360、390、430 px 均无横向溢出。
-- 底部保存/继续操作保持可见，未遮挡表单末项。
-- 输入框边界、焦点和单位位置清晰；卡片圆角、间距、图标和文字层级与现有产品一致。
-- P0：0
-- P1：0
-- P2：0
-
-## 自动验证
-
-- TypeScript：通过。
-- ESLint：0 error；10 条既有 warning，新增页面未扩大警告。
-- CSS Lint：通过。
-- Vitest：83 个测试文件、366 项测试通过。
-- Vite/PWA 生产构建：通过；仅保留既有大 chunk 非阻塞提示。
-- 版本号、提交、推送、Release 和部署：均未执行。
+- No P0/P1/P2 mismatch remains in the requested self-media card scope.
+- The full `npm run verify` reaches the final development-dependency audit and reports the pre-existing three high-severity transitive advisories in `browserslist` and `fast-uri`; production dependency audit remains 0 vulnerabilities. Dependencies were intentionally not changed in this UI-only task.
 
 final result: passed
-
----
-
-# R4.2 今天页左滑删除——设计 QA
-
-> 日期：2026-07-31
-> 目标：在不改变已批准“今天”页卡片体系的前提下，卡片向左滑动露出右侧红色删除按钮；点击后必须二次确认。
-> 源视觉真值：`design-qa-artifacts/r4-2-reference-approved-today.png`
-> 实现截图：`design-qa-artifacts/r4-2-today-left-swipe-revealed-final.png`、`design-qa-artifacts/r4-2-left-swipe-delete-confirmation-final.png`
-
-## 视口与归一化
-
-- 本轮在 430 × 900 CSS px 手机视口复核左滑状态和删除确认状态。
-- 已批准参考截图为 689 × 670 px，属于局部裁切状态；同屏比较以卡片颜色、圆角、文字层级、图标和按钮体系为重点，不对不同数据量造成的页面高度差异作误判。
-- 左滑状态没有独立视觉稿，按用户明确交互说明及现有 DoHabit 深色设计系统复核。
-
-## 全视图与重点区域
-
-- 未滑动状态保留原卡片宽度、分隔线、图标、标题、辅助信息和右侧记录操作，没有改变原信息层级。
-- 左滑后仅当前卡片内容向左移动 84px，右侧露出红色“删除习惯”；其它卡片不移动。
-- 删除确认使用底部安全弹层，取消按钮默认聚焦，危险按钮明确说明会删除习惯、目标、阶段和全部历史记录。
-- 重点区域已单独检查左滑层、危险按钮、弹层、底部导航遮挡和长列表滚动，因此无需再生成其它局部特写。
-
-## 五项保真检查
-
-- 字体与层级：沿用现有字号、字重和行高；新增提示为弱化辅助文字，删除按钮为 12px 强调操作文字。
-- 间距与布局：卡片静止状态无位移；84px 删除区能容纳图标与两行文字，弹层不遮挡安全区。
-- 色彩与令牌：危险操作使用现有 danger 色，未新增渐变或脱离主题的颜色。
-- 图像与图标：全部使用现有 `react-icons/pi` 线性图标，无占位图、表情或手绘 SVG。
-- 文案：顶部明确写出“左滑卡片可删除”，弹层明确“永久删除”及不可恢复影响。
-
-## 交互与运行验证
-
-- 左滑超过阈值：删除按钮正常露出。
-- 竖向移动、短距离拖动：不会误触打开。
-- 已打开状态向右滑：正常收起。
-- 点击删除：只打开二次确认；本轮实测点击“取消”，没有删除任何现有数据。
-- 浏览器控制台 error：0。
-- 自动验证：83 个测试文件、367 项测试通过；TypeScript、ESLint（0 error，10 条既有 warning）、CSS Lint、Vite/PWA 生产构建通过。
-
-## 比较历史与发现
-
-- 首轮视觉比较未发现 P0/P1/P2。新增交互没有改变静止态结构，左滑和确认态均与当前设计系统一致。
-- P0：0
-- P1：0
-- P2：0
-- P3：可在后续真机验收中继续观察不同 Android 厂商浏览器的滑动阻尼感，不阻塞本地完成。
-
-## 发布边界
-
-- 未修改版本号，未提交、未推送、未发布 RC、未部署。
-
-final result: passed
-
----
-
-# R5.1 今天页与跑步记录精修——设计 QA
-
-> 日期：2026-08-12
-> 验收视口：CSS 390 × 844，DPR 1
-> 目标：在保留现有本地数据、记录能力和业务行为的前提下，按批准的 Figma 方向减少文字、收紧留白、统一图标和触控尺寸，并保留跑步的完整记录字段。
-
-## 对照输入
-
-| 页面 | Figma 来源 | 最终实现图 | 最终并排对照 |
-|---|---|---|---|
-| 今天 | 文件 `yJruZylPTz7gfKnrK5Mm32`，节点 `21:2`；`.artifacts/ui-audit-2026-08-12/03-today-r5-1.png` | `.artifacts/ui-audit-2026-08-12/12-final-today-r5-1.png` | `.artifacts/ui-audit-2026-08-12/14-final-compare-today-r5-1.png` |
-| 跑步记录 | 文件 `yJruZylPTz7gfKnrK5Mm32`，节点 `21:150`；`.artifacts/ui-audit-2026-08-12/04-running-detail-r5-1.png` | `.artifacts/ui-audit-2026-08-12/13-final-running-r5-1.png` | `.artifacts/ui-audit-2026-08-12/15-final-compare-running-r5-1.png` |
-
-两个完整页面均在相同 390 × 844 CSS 视口逐页并排复核。Figma 使用五项习惯、已完成跑步及已填写指标作为展示数据；实现图保留当前 IndexedDB 的真实状态，因此只有一项跑步习惯，且可选指标为空。这属于数据状态差异，不是布局缺失；实际页面仍保留公里数、用时、配速、心率和备注的完整填写能力。
-
-## 最终视觉复核
-
-### 今天
-
-- 完成概览压缩为 `0 / 1`，本地保存说明保留给屏幕阅读器，不再占用可见空间。
-- 数值型习惯保留减、加和详情入口；两个数值按钮都是 44 × 44px，标题区域也可进入详情。
-- 快捷入口收敛为“今日汇总”和“新建习惯”，降低视觉权重。
-- 底部导航只显示三个线性图标，文字保留给屏幕阅读器；活动项实际触控范围约 48 × 55px。
-- 删除了持续占视线的“左滑卡片可删除”可见提示；既有左滑删除行为保持不变。
-
-### 跑步记录
-
-- 页头改为紧凑的“跑步记录”与本地化日期，关闭按钮为 44 × 44px。
-- 今日距离使用清晰的数值主卡和 44 × 44px 减加按钮，完整记录字段仍在同一页面下方。
-- 上次记录改成整行“一键沿用”；点击后会沿用距离、用时、配速和心率，减少重复输入。
-- 用时、分段配速、心率和备注继续可编辑；保存按钮高度为 52px。
-- 已完成打卡后进入详情时会显示“已打卡”及“修改详情不会取消完成状态”，保持既有完成锁定规则。
-
-## 五项保真检查
-
-- 字体与层级：沿用现有 Noto / PingFang 系统字体栈，标题、关键数值和辅助信息层级与 Figma 接近，未引入超大标题。
-- 间距与布局：390px 视口无横向溢出；主要触控目标不小于 44px，底部导航总高度收紧为 68px。
-- 色彩与令牌：继续使用现有深色背景、蓝色主操作、绿色完成状态和边框令牌，没有另造视觉体系。
-- 图标：使用现有 `react-icons/pi` 线性图标，不使用文字符号、表情、手绘 SVG 或占位图形。
-- 文案：使用“详情”“今日汇总”“一键沿用”“保存记录”等短文案；隐藏但保留必要的无障碍标签。
-
-## 比较历史与修正
-
-- 首轮 P2：今天页左滑提示占用垂直空间，底部活动导航背景过宽。已删除可见提示并将活动项收敛为单个 48px 图标触控区。
-- 首轮 P2：跑步详情在空数据状态下说明文字和保存区被拉伸，页面层级不够紧凑。已修正内容对齐、间距和固定操作高度。
-- 最终对照图为 `12`、`13`，并排复核图为 `14`、`15`；复核后 P0/P1/P2 均为 0。
-
-## 功能、响应式与运行验证
-
-- 今天页数值习惯的详情入口、减号、加号和底部导航均可操作。
-- 跑步详情关闭、减号、加号、上次记录沿用及各输入区域均保留；本轮未点击保存，避免修改用户现有数据。
-- 浏览器测量：今天页 `innerWidth = 390`、`scrollWidth = 390`、`scrollHeight = 844`；跑步详情同样无横向溢出。
-- 浏览器控制台 error：0。
-- 自动验证：工具链测试 6 项通过；发布脚本测试 16 项通过；86 个测试文件、387 项测试通过；TypeScript、ESLint（0 error，10 条既有 warning）、Stylelint、Vite/PWA 生产构建通过。
-- `npm audit` 生产依赖与完整依赖均为 0 vulnerabilities；Vite 大 chunk 提示为既有非阻塞警告。
-
-## 发布边界
-
-- 本轮未修改版本号，未提交、未推送、未创建 PR、未发布 RC、未部署。
-- 工作区原有 `index.html` 改动以及既有未跟踪资料目录未纳入本次修改结论，也未被删除或重置。
-
-R5.1 final result: passed
-
----
-
-# R5.2 跑步卡单圆打卡——设计 QA
-
-> 日期：2026-08-12
-> 验收视口：CSS 390 × 844，DPR 1
-> 目标：跑步卡取消加减号，仅保留“详情”和一个外圆普通勾；未完成为灰色可点击，完成后同一按钮变绿并锁定。
-
-## 视觉真值与实现证据
-
-- 原型图：`C:/Users/27241/.codex/generated_images/019f4e08-66cf-7001-af3a-2cc8a1532bbc/exec-0f883426-0a0e-40c3-b1c1-f7c5b244c8a8.png`，1091 × 1442 px。
-- 用户最终修订：原型中的内层圆圈取消，最终必须是“一个外圆按钮＋一个普通勾”。书面真值见 `docs/superpowers/specs/2026-08-12-running-check-action-design.md`。
-- 未打卡实现图：`.artifacts/ui-audit-2026-08-12/21-running-check-pending-final.png`，390 × 843 px，对应 390 × 844 CSS 视口、DPR 1。
-- 已打卡实现图：`.artifacts/ui-audit-2026-08-12/22-running-check-transition-final.png`，390 × 843 px，对应同一视口。
-- 全视图并排对照：`.artifacts/ui-audit-2026-08-12/23-running-check-pending-comparison.png`。原型按高度归一化为 844px 后与实现同屏检查。
-- 重点区域对照：`.artifacts/ui-audit-2026-08-12/20-running-check-focused-comparison.png`。该图用于检查卡片信息层级、“详情”和打卡控件位置；最终单圆要求以书面修订和 `21`、`22` 为准。
-
-## 五项保真检查
-
-- 字体与层级：沿用当前产品字体栈、字号、字重和行高；跑步名称、今日进度、累计进度及“详情”的层级未改变。
-- 间距与布局：卡片控制区由三个控件收敛为两个；按钮为 44 × 44px，390px 视口 `scrollWidth = 390`，无横向溢出。
-- 色彩与令牌：未完成使用透明背景、灰蓝边框与灰蓝勾；完成使用现有 `--sport-color` 绿色和深色勾。
-- 图标与资产：使用 `react-icons/pi` 的 `PiCheck` 普通勾；按钮外框是唯一圆形，内部没有第二个圆，也没有自制 SVG、文字图形或占位资产。
-- 文案与内容：保留“详情”；移除加号、减号及其含义不清的快捷步进，不增加新的可见说明文字。
-
-## 交互与状态验证
-
-- 独立 `localhost:42899` 测试来源创建了一条跑步习惯，不影响用户 `127.0.0.1:42899` 的 IndexedDB 数据。
-- 未打卡：按钮 44 × 44px、`border-radius: 50%`、一个 20 × 20px 可见 SVG，按钮可点击，`data-recorded` 为空。
-- 点击灰色勾后：完成概览从 `0 / 1` 变为 `1 / 1`；同一按钮变绿、禁用且 `data-recorded="true"`。
-- 用户现有来源的完成状态也显示为绿色单圆普通勾，未修改用户记录。
-- “详情”入口成功进入 `/record/{habitId}?date=2026-08-12`，返回后仍是今天页。
-- 两个来源的浏览器控制台 error：0。
-
-## 比较历史与修正
-
-- 首轮 P2：通用按钮圆角覆盖了 `50%`，完成按钮显示为圆角方块。已提高 `.quantityActions .checkAction` 的局部选择器优先级；后续测量为 `border-radius: 50%`。
-- 首轮 P2：小屏媒体查询隐藏了按钮内 SVG，完成状态只剩绿色空圆。已把 `.checkAction` 排除在隐藏规则之外；最终 SVG 为 20 × 20px、`display: block`。
-- 修正后证据为 `21`、`22`、`23`；复核后 P0/P1/P2 均为 0。
-
-## 自动化验证与发布边界
-
-- TDD 红灯确认旧实现仍输出 `stepper`、减少和增加控件；最小实现后相关 2 个测试文件、20 项测试通过。
-- 完整验证：工具链测试 6 项、发布脚本测试 16 项、86 个测试文件和 388 项测试通过；TypeScript、ESLint（0 error，10 条既有 warning）、Stylelint、Vite/PWA 构建通过。
-- 生产依赖和完整依赖审计均为 0 vulnerabilities；Vite 大 chunk 为既有非阻塞警告。
-- 未修改版本号，未推送、未发布 RC、未部署。
-
-R5.2 final result: passed

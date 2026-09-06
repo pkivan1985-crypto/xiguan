@@ -10,6 +10,7 @@ describe('system definitions', () => {
 			'learning',
 			'recovery',
 			'focus',
+			'creation',
 			'life-management',
 		]);
 		expect(SYSTEM_CATEGORIES.every(({ enabled }) => enabled)).toBe(true);
@@ -41,6 +42,7 @@ describe('system definitions', () => {
 			['reading-time', 'duration'],
 			['sleep', 'check'],
 			['screen-free', 'avoid'],
+			['media-output', 'count'],
 			['extra-expense', 'quantity'],
 		]);
 		expect(SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'extra-expense')).toMatchObject({

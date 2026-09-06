@@ -488,6 +488,7 @@
 				"learning": "Learning",
 				"recovery": "Recovery",
 				"focus": "Focus",
+				"creation": "Creation",
 				"lifeManagement": "Life management"
 			},
 			"endDate": "End date (optional)",
@@ -558,7 +559,8 @@
 				"duration": "min",
 				"check": "times",
 				"avoid": "days",
-				"money": "yuan"
+				"money": "yuan",
+				"output": "works"
 			},
 			"planName": "Goal name",
 			"planTarget": "Target value",
@@ -569,7 +571,8 @@
 				"screenFree": "Less screen",
 				"sleep": "Sleep",
 				"water": "Water",
-				"extraExpense": "Extra spending"
+				"extraExpense": "Extra spending",
+				"mediaOutput": "Media output"
 			},
 			"placeholders": {
 				"light-food": "e.g. Eat lightly",
@@ -578,7 +581,8 @@
 				"screen-free": "e.g. No phone before bed",
 				"sleep": "e.g. Sleep before 11",
 				"water": "e.g. Drink water at work",
-				"extra-expense": "e.g. Extra spending reflection"
+				"extra-expense": "e.g. Extra spending reflection",
+				"media-output": "e.g. Consistent publishing"
 			},
 			"longTitle": "Long-term goal name",
 			"kmValue": "{{value}} km",
@@ -602,7 +606,8 @@
 				"count": "Count",
 				"distance": "Distance",
 				"duration": "Duration",
-				"money": "Spending reflection"
+				"money": "Spending reflection",
+				"output": "Published work"
 			},
 			"foodRulesTitle": "Food rules",
 			"foodRulesHint": "Check each rule daily; custom rules join the same list",
@@ -624,6 +629,8 @@
 			"reviewDisabled": "Off",
 			"todayPreviewHint": "Today: {{value}} {{unit}}",
 			"detailAction": "Check rules",
+			"outputTypesTitle": "Output types",
+			"outputTypesHint": "Choose the formats you publish most often",
 			"steps": {
 				"card": { "title": "Name this loop card", "description": "Use a name you will recognize in today's six slots." },
 				"longTerm": { "title": "Set a long-term direction", "description": "This records direction without punishment or streak pressure." },
@@ -654,7 +661,8 @@
 				"reading-time": "Reading record",
 				"sleep": "Sleep record",
 				"screen-free": "Screen-time record",
-				"extra-expense": "Extra spending reflection"
+				"extra-expense": "Extra spending reflection",
+				"media-output": "Media output record"
 			},
 			"running": {
 				"title": "Run record",
@@ -747,6 +755,32 @@
 				"time": "Time",
 				"delete": "Delete this entry",
 				"deleteConfirm": "Delete this extra expense?"
+			},
+			"media": {
+				"title": "Record output",
+				"editTitle": "Edit output",
+				"summaryTitle": "Media output",
+				"outputType": "1. Output type",
+				"types": { "article": "Article", "short-video": "Short video", "audio": "Audio", "livestream": "Live" },
+				"workTitle": "2. Title",
+				"workTitlePlaceholder": "What did you create?",
+				"platform": "3. Platform",
+				"statuses": { "published": "Published", "draft": "Draft" },
+				"link": "Work link (optional)",
+				"metrics": "Performance (optional)",
+				"views": "Views",
+				"likes": "Likes",
+				"comments": "Comments",
+				"reflection": "Quick reflection (optional)",
+				"reflectionPlaceholder": "What worked and what to improve next time",
+				"savePublished": "Save and complete",
+				"saveDraft": "Save draft only",
+				"addAnother": "Add another",
+				"addEntry": "Record an output",
+				"empty": "No work yet today. Record your first output.",
+				"todayProgress": "Published {{current}} / {{target}} today",
+				"delete": "Delete output",
+				"deleteConfirm": "Delete this output?"
 			}
 		},
 		"history": {
@@ -823,6 +857,14 @@
 			"status": { "abandoned": "Abandoned", "active": "Active", "completed": "Completed", "expired": "Expired", "planned": "Planned" },
 			"title": "Goal details",
 			"totalOutcome": "Long-term total"
+			,"media": {
+				"title": "Output progress",
+				"subtitle": "Publish consistently and build a body of work",
+				"monthPublished": "{{current}} published this month",
+				"totalPublished": "{{current}} / {{target}} total",
+				"monthTypes": "Types this month",
+				"recent": "Recent output"
+			}
 		},
 		"nav": {
 			"deck": "My cards",
@@ -1025,6 +1067,12 @@
 			"undoHabit": "Undo {{title}}",
 			"viewTodaySummary": "Today's summary",
 			"detailsAction": "Details",
+			"mediaOutput": {
+				"actions": "Media output actions",
+				"addOutput": "Add output",
+				"chooseType": "Choose output type",
+				"viewRecords": "View records"
+			},
 			"expenseSummary": "Today ¥{{today}} · {{count}} entries　This month ¥{{month}}",
 			"openDetails": "View {{title}} details",
 			"viewTodaySummaryHint": "Calendar and goal progress are under Progress",

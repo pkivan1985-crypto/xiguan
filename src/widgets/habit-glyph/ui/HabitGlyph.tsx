@@ -7,6 +7,7 @@ import {
 	PiShieldCheck,
 	PiLeaf,
 	PiReceipt,
+	PiBroadcast,
 } from 'react-icons/pi';
 
 import type { CardTemplate } from '@entities/card-template';
@@ -24,6 +25,7 @@ const glyphs: Record<HabitIconKey, IconType> = {
 	shield: PiShieldCheck,
 	leaf: PiLeaf,
 	receipt: PiReceipt,
+	broadcast: PiBroadcast,
 };
 
 export interface HabitGlyphProps {

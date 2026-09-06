@@ -1,14 +1,17 @@
+/* eslint-disable i18next/no-literal-string -- Stable metadata separators and view option values are not user-facing prose. */
 import styles from './HabitStatisticsPage.module.css';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { FiArrowLeft, FiCalendar, FiCheckCircle, FiClock, FiFlag, FiPlus, FiTarget } from 'react-icons/fi';
+import { PiArticle, PiBroadcast, PiMicrophone, PiPlus, PiVideoCamera } from 'react-icons/pi';
 import { formatQuantityFromBase } from '@entities/card-template';
 import { addStageGoalInApp } from '@features/add-stage-goal';
 import { loadGoalDetailsInApp } from '@features/load-goal-details';
 import type { GoalDetailsModel, GoalDetailsStageGoal } from '@features/load-goal-details';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
+import { HabitGlyph } from '@widgets/habit-glyph';
 
 const STATUS_KEYS = {
 	planned: 'shell.goalDetails.status.planned', active: 'shell.goalDetails.status.active', completed: 'shell.goalDetails.status.completed',
@@ -81,6 +84,23 @@ function GoalDetailsPage() {
 
 	if (!userCardId || error) return <section className={styles.state}><h2>{t('shell.goalDetails.notFound')}</h2><Link to={APP_ROUTES.DECK}>{t('shell.goalDetails.backToDeck')}</Link></section>;
 	if (!model) return <section className={styles.state}><p>{t('shell.goalDetails.loading')}</p></section>;
+	if (model.card.officialCardId === 'media-output') {
+		const currentMonth = formatLocalDate(new Date()).slice(0, 7);
+		const published = model.mediaEntries.filter(({ status }) => status === 'published');
+		const monthPublished = published.filter(({ localDate }) => localDate.startsWith(currentMonth));
+		const typeIcons = { article: PiArticle, 'short-video': PiVideoCamera, audio: PiMicrophone, livestream: PiBroadcast } as const;
+		const typeCounts = (Object.keys(typeIcons) as Array<keyof typeof typeIcons>).map((type) => ({ type, count: monthPublished.filter((entry) => entry.type === type).length, Icon: typeIcons[type] }));
+		const target = model.longTermGoal?.targetQuantityBase ?? 0;
+		const ratio = target ? Math.min(1, published.length / target) : 0;
+		return <div className={`${styles.page} ${styles.mediaProgressPage}`}>
+			<header className={styles.mediaProgressHeader}><Link to={APP_ROUTES.DECK} aria-label={t('shell.goalDetails.backToDeck')}><FiArrowLeft /></Link><h2>{t('shell.goalDetails.media.title')}</h2><span /></header>
+			<section className={styles.mediaProgressIdentity}><HabitGlyph iconKey={model.card.iconKey} accent={model.card.accent} label={model.card.title} decorative size='lg' /><div><strong>{model.card.title}</strong><small>{t('shell.goalDetails.media.subtitle')}</small></div></section>
+			<section className={styles.mediaProgressSummary}><h3>{t('shell.goalDetails.media.monthPublished', { current: monthPublished.length })}</h3><span><i style={{ width: `${ratio * 100}%` }} /></span><p>{t('shell.goalDetails.media.totalPublished', { current: published.length, target })}</p></section>
+			<section className={styles.mediaTypeSummary}><h3>{t('shell.goalDetails.media.monthTypes')}</h3><div>{typeCounts.map(({ type, count, Icon }) => <span key={type}><Icon /><small>{t(`shell.record.media.types.${type}`)}</small><strong>{count}</strong></span>)}</div></section>
+			<section className={styles.mediaRecent}><h3>{t('shell.goalDetails.media.recent')}</h3>{model.mediaEntries.slice(0, 5).map((entry) => { const Icon = typeIcons[entry.type]; return <Link key={`${entry.localDate}-${entry.id}`} to={`${APP_ROUTES.habitRecord(model.card.id, entry.localDate)}&entry=${encodeURIComponent(entry.id)}`}><Icon /><span><strong>{entry.title}</strong><small>{entry.localDate} · {entry.platform || t(`shell.record.media.types.${entry.type}`)} · {t(`shell.record.media.statuses.${entry.status}`)}</small></span><b>{entry.views ?? '—'}</b></Link>; })}{model.mediaEntries.length === 0 && <p>{t('shell.goalDetails.noRecords')}</p>}</section>
+			<Link className={styles.mediaRecordAction} to={`${APP_ROUTES.habitRecord(model.card.id, formatLocalDate(new Date()))}&entry=new`}><PiPlus />{t('shell.record.media.addEntry')}</Link>
+		</div>;
+	}
 
 	return <div className={styles.page}>
 		<header className={styles.pageHeader}><Link to={APP_ROUTES.HOME} aria-label={t('shell.goalDetails.backHome')}><FiArrowLeft aria-hidden='true' /></Link><span><small>{t('shell.goalDetails.title')}</small><h2>{model.card.title}</h2></span><b>{model.card.displayUnit}</b></header>

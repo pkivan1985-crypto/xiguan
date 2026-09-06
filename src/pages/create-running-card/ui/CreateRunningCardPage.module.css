@@ -734,6 +734,45 @@
 	gap: 5px;
 }
 
+.outputTypes {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.outputTypes button {
+	position: relative;
+	display: grid;
+	gap: 6px;
+	place-items: center;
+	min-width: 0;
+	min-height: 76px;
+	padding: 10px 4px;
+	font-size: 0.56rem;
+	color: var(--muted-color);
+	background: var(--surface-raised);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+}
+
+.outputTypes button > svg:first-child {
+	font-size: 1.35rem;
+}
+
+.outputTypes button > svg:last-child {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	font-size: 0.6rem;
+}
+
+.outputTypes button[aria-pressed='true'] {
+	font-weight: 720;
+	color: #7c73ff;
+	background: color-mix(in srgb, #625cff 15%, var(--surface-raised));
+	border-color: #756eff;
+}
+
 .weekdays button {
 	display: grid;
 	place-items: center;
