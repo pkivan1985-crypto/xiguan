@@ -10,7 +10,11 @@ export function hasPageOwnedHeader(pathname: string): boolean {
 
 export function appShellTitleKey(pathname: string): AppShellTitleKey {
 	const normalizedPathname = normalizePathname(pathname);
-	if (normalizedPathname === APP_ROUTES.PROGRESS || normalizedPathname === APP_ROUTES.HISTORY) return 'shell.nav.progress';
+	if (
+		normalizedPathname === APP_ROUTES.PROGRESS
+		|| normalizedPathname === APP_ROUTES.HISTORY
+		|| normalizedPathname.startsWith('/goals/')
+	) return 'shell.nav.progress';
 	if (normalizedPathname === APP_ROUTES.DECK) return 'shell.nav.habits';
 	if (isSettingsPath(normalizedPathname)) return 'shell.nav.settings';
 	return 'shell.nav.today';

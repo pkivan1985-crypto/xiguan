@@ -38,7 +38,8 @@ interface TodayPageContentProps {
 	onCompleteHabit: (habit: DailyHabitView) => void;
 	onDeleteHabit: (habit: DailyHabitView) => Promise<void>;
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
-	onOpenDetails?: (habit: DailyHabitView) => void;
+	onOpenDetails?: (habit: DailyHabitView, mediaType?: 'article' | 'short-video' | 'audio' | 'livestream') => void;
+	onAddMediaEntry?: (habit: DailyHabitView) => void;
 	onSelectDate: (localDate: string) => void;
 	onToggleCompleted: () => void;
 }
@@ -67,6 +68,7 @@ function TodayPageContent({
 	onDeleteHabit,
 	onSaveActual,
 	onOpenDetails,
+	onAddMediaEntry,
 	onSelectDate,
 	onToggleCompleted,
 }: TodayPageContentProps) {
@@ -138,6 +140,7 @@ function TodayPageContent({
 					onComplete={onCompleteHabit}
 					onSaveActual={onSaveActual}
 					onOpenDetails={onOpenDetails}
+					onAddMediaEntry={onAddMediaEntry}
 					onRequestDelete={(habit) => {
 						setDeleteError(false);
 						setDeleteTarget(habit);
@@ -331,8 +334,12 @@ function TodayPage() {
 					entryMethod: 'actual',
 				});
 			}}
-			onOpenDetails={(habit) => {
-				navigate(APP_ROUTES.habitRecord(habit.id, todayLocalDate));
+			onOpenDetails={(habit, mediaType) => {
+				const route = APP_ROUTES.habitRecord(habit.id, todayLocalDate);
+				navigate(mediaType ? `${route}&entry=new&type=${mediaType}` : route);
+			}}
+			onAddMediaEntry={(habit) => {
+				navigate(`${APP_ROUTES.habitRecord(habit.id, todayLocalDate)}&entry=new`);
 			}}
 			onSelectDate={(localDate) => {
 				if (localDate !== todayLocalDate) {

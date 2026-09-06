@@ -271,6 +271,30 @@ describe('loadDailyHabits', () => {
 		});
 	});
 
+	it('keeps media drafts without counting them as published progress', async () => {
+		await database.table('userCards').add({
+			id: 'media', officialCardId: 'media-output', title: '自媒体输出',
+			dailyPlan: { mode: 'average', weekdays: [1, 2, 3, 4, 5, 6, 7], averageTargetBase: 1 },
+			habitConfig: { kind: 'media-output', outputTypes: ['article', 'short-video'] },
+			status: 'active', sortOrder: 0,
+			createdAt: '2026-07-25T00:00:00.000Z', updatedAt: '2026-07-25T00:00:00.000Z',
+		});
+		await database.table('longTermGoals').add({ id: 'media-long', userCardId: 'media', title: '自媒体输出', targetQuantityBase: 100, status: 'active', startDate: '2026-07-01', createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' });
+		await database.table('actionRecords').add({
+			id: 'media:2026-07-25', userCardId: 'media', localDate: '2026-07-25', quantityBaseValue: 2,
+			longTermGoalId: 'media-long', firstSavedAt: '2026-07-25T08:00:00.000Z', lastSavedAt: '2026-07-25T08:00:00.000Z', lastSubmissionId: 'media-save',
+			details: { kind: 'media-output', entries: [
+				{ id: 'draft', type: 'article', title: '草稿', status: 'draft', createdAt: '2026-07-25T08:00:00.000Z', updatedAt: '2026-07-25T08:00:00.000Z' },
+				{ id: 'published', type: 'short-video', title: '已发布', status: 'published', createdAt: '2026-07-25T09:00:00.000Z', updatedAt: '2026-07-25T09:00:00.000Z' },
+			] },
+		});
+
+		const result = await loadDailyHabits(database, '2026-07-25');
+		expect(result.habits[0]).toMatchObject({ quantityBaseValue: 1, totalQuantityBaseValue: 1, goalProgressRatio: 0.01, recordedToday: true });
+		expect(result.completedCount).toBe(1);
+		expect(result.outcomeDates).toEqual(['2026-07-25']);
+	});
+
 	it('derives today and selected-month expense totals from effective records', async () => {
 		await database.table('userCards').add({
 			id: 'expense',

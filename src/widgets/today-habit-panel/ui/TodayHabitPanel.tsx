@@ -7,6 +7,7 @@ import {
 	PiCheckCircle,
 	PiClock,
 	PiHeartbeat,
+	PiListBullets,
 	PiMoon,
 	PiNotePencil,
 	PiPencilSimple,
@@ -42,7 +43,8 @@ export interface TodayHabitPanelProps {
 	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
 	onComplete: (habit: DailyHabitView) => void;
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
-	onOpenDetails?: (habit: DailyHabitView) => void;
+	onOpenDetails?: (habit: DailyHabitView, mediaType?: 'article' | 'short-video' | 'audio' | 'livestream') => void;
+	onAddMediaEntry?: (habit: DailyHabitView) => void;
 	onRequestDelete?: (habit: DailyHabitView) => void;
 	onToggleCompleted: () => void;
 }
@@ -347,6 +349,7 @@ function HabitControl({
 	onComplete,
 	onEditActual,
 	onOpenDetails,
+	onAddMediaEntry,
 }: {
 	habit: DailyHabitView;
 	pending: boolean;
@@ -354,6 +357,7 @@ function HabitControl({
 	onComplete: () => void;
 	onEditActual: () => void;
 	onOpenDetails?: () => void;
+	onAddMediaEntry?: () => void;
 }) {
 	const { t } = useTranslation();
 	const completed = isCompleted(habit);
@@ -378,6 +382,22 @@ function HabitControl({
 					data-expense-recorded={expenseRecorded || undefined}
 					aria-label={t('shell.today.openDetails', { title: habit.title })}
 					onClick={expenseRecorded ? undefined : onOpenDetails}
+				>
+					<PiCheck aria-hidden='true' />
+				</button>
+			</div>
+		);
+	}
+	if (onOpenDetails && habit.officialCardId === 'media-output') {
+		return (
+			<div className={styles.quantityActions} data-layout='check-only'>
+				<button
+					type='button'
+					className={styles.checkAction}
+					disabled={pending || completed}
+					data-recorded={completed || undefined}
+					aria-label={t('shell.today.openDetails', { title: habit.title })}
+					onClick={completed ? undefined : (onAddMediaEntry ?? onOpenDetails)}
 				>
 					<PiCheck aria-hidden='true' />
 				</button>
@@ -536,6 +556,7 @@ function HabitRow({
 	onComplete,
 	onEditActual,
 	onOpenDetails,
+	onAddMediaEntry,
 	onCancelActual,
 	onSaveActual,
 }: {
@@ -547,7 +568,8 @@ function HabitRow({
 	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
 	onComplete: (habit: DailyHabitView) => void;
 	onEditActual: () => void;
-	onOpenDetails?: () => void;
+	onOpenDetails?: (mediaType?: 'article' | 'short-video' | 'audio' | 'livestream') => void;
+	onAddMediaEntry?: () => void;
 	onCancelActual: () => void;
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
 }) {
@@ -569,13 +591,13 @@ function HabitRow({
 				label={habit.title}
 				decorative
 			/>
-			{onOpenDetails ? (
+			{onOpenDetails && habit.officialCardId !== 'media-output' ? (
 				<button
 					type='button'
 					className={styles.habitCopy}
 					disabled={pending}
 					aria-label={t('shell.today.openDetails', { title: habit.title })}
-					onClick={onOpenDetails}
+					onClick={() => onOpenDetails()}
 				>
 					<strong>{habit.title}</strong>
 					<HabitSupportingCopy habit={habit} context={context} />
@@ -592,8 +614,22 @@ function HabitRow({
 				onChange={(quantityBaseValue) => onChange(habit, quantityBaseValue)}
 				onComplete={() => onComplete(habit)}
 				onEditActual={onEditActual}
-				onOpenDetails={onOpenDetails}
+				onOpenDetails={onOpenDetails ? () => onOpenDetails() : undefined}
+				onAddMediaEntry={onAddMediaEntry}
 			/>
+			{habit.officialCardId === 'media-output' && onOpenDetails && onAddMediaEntry && (
+				<div className={styles.mediaActionBar} aria-label={t('shell.today.mediaOutput.actions')}>
+					<button type='button' disabled={pending} onClick={() => onOpenDetails()}>
+						<PiListBullets aria-hidden='true' />
+						<span>{t('shell.today.mediaOutput.viewRecords')}</span>
+					</button>
+					<i aria-hidden='true' />
+					<button type='button' disabled={pending} onClick={onAddMediaEntry}>
+						<PiPlus aria-hidden='true' />
+						<span>{t('shell.today.mediaOutput.addOutput')}</span>
+					</button>
+				</div>
+			)}
 			{saveError && (
 				<p
 					className={styles.inlineError}
@@ -649,7 +685,7 @@ function SwipeableHabitRow({
 		if (!swipeEnabled || rowProps.pending) return;
 		const target = event.target;
 		// eslint-disable-next-line i18next/no-literal-string -- This is an interaction selector, not user-facing copy.
-		if (target instanceof Element && target.closest('a, input, textarea, select, [contenteditable="true"]')) return;
+		if (target instanceof Element && target.closest('a, button, input, textarea, select, [contenteditable="true"]')) return;
 		suppressNextClickRef.current = false;
 		gestureRef.current = {
 			pointerId: event.pointerId,
@@ -770,6 +806,7 @@ function TodayHabitPanel({
 	onComplete,
 	onSaveActual,
 	onOpenDetails,
+	onAddMediaEntry,
 	onRequestDelete,
 	onToggleCompleted,
 }: TodayHabitPanelProps) {
@@ -813,7 +850,8 @@ function TodayHabitPanel({
 								setRevealedHabitId(null);
 								setActualEditorId(habit.id);
 							}}
-							onOpenDetails={onOpenDetails ? () => onOpenDetails(habit) : undefined}
+							onOpenDetails={onOpenDetails ? (mediaType) => onOpenDetails(habit, mediaType) : undefined}
+							onAddMediaEntry={onAddMediaEntry ? () => onAddMediaEntry(habit) : undefined}
 							onCancelActual={() => setActualEditorId(null)}
 							onSaveActual={(selectedHabit, entry) => {
 								onSaveActual(selectedHabit, entry);

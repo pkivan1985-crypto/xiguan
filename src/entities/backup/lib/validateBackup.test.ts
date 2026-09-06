@@ -171,6 +171,18 @@ describe('backup V1 validation', () => {
 			.rejects.toMatchObject({ code: 'INVALID_BACKUP' });
 	});
 
+	it('accepts media output configuration and mixed published and draft entries', async () => {
+		const configured = await envelope();
+		configured.data.userCards[0].habitConfig = { kind: 'media-output', outputTypes: ['article', 'short-video'] };
+		configured.data.actionRecords[0].quantityBaseValue = 2;
+		configured.data.actionRecords[0].details = { kind: 'media-output', entries: [
+			{ id: 'work-a', type: 'article', title: '复盘', platform: '公众号', status: 'published', views: 120, createdAt: '2026-07-12T01:00:00.000Z', updatedAt: '2026-07-12T01:00:00.000Z' },
+			{ id: 'work-b', type: 'short-video', title: '草稿', status: 'draft', createdAt: '2026-07-12T02:00:00.000Z', updatedAt: '2026-07-12T02:00:00.000Z' },
+		] };
+		configured.checksum.value = await backupFingerprint(configured.data, digest);
+		await expect(validatePlainBackup(configured, definitions, digest)).resolves.toBeDefined();
+	});
+
 	it('accepts legacy extra-expense details during backup restore', async () => {
 		const configured = await envelope();
 		configured.data.actionRecords[0].details = {

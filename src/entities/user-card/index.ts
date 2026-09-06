@@ -5,6 +5,8 @@ export type {
 	IsoWeekday,
 	LightFoodHabitConfig,
 	LightFoodRule,
+	MediaOutputHabitConfig,
+	MediaOutputType,
 	UserCard,
 	UserCardStatus,
 } from './model/types';

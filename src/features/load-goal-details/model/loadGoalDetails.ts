@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- Table names, statuses, and domain errors are stable identifiers. */
-import { effectiveActionRecords, groupActionRecordsByLocalDate, type ActionRecord } from '@entities/action-record';
+import { effectiveActionRecords, groupActionRecordsByLocalDate, type ActionRecord, type MediaOutputEntry } from '@entities/action-record';
 import { formatQuantityFromBase, type CardTemplate, type StageCompletionMode } from '@entities/card-template';
 import {
 	calculateGoalProgress,
@@ -13,10 +13,17 @@ import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 export interface GoalDetailsCard {
 	id: string;
 	title: string;
+	officialCardId: string;
+	iconKey: NonNullable<CardTemplate['iconKey']>;
+	accent: NonNullable<CardTemplate['accent']>;
 	status: UserCardStatus;
 	displayUnit: string;
 	basePerDisplayUnit: number;
 	maxDecimalPlaces: number;
+}
+
+export interface GoalDetailsMediaEntry extends MediaOutputEntry {
+	localDate: string;
 }
 
 export interface GoalDetailsLongTermGoal {
@@ -58,6 +65,7 @@ export interface GoalDetailsModel {
 	stageGoals: GoalDetailsStageGoal[];
 	activeDays: number;
 	recentRecords: GoalDetailsRecord[];
+	mediaEntries: GoalDetailsMediaEntry[];
 }
 
 const STATUS_PRIORITY: Record<GoalStatus, number> = { active: 0, completed: 1, expired: 2, planned: 3, abandoned: 4 };
@@ -89,7 +97,20 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 		: [];
 	const stage = selectCurrentStageGoal(relatedStageGoals);
 	const effectiveRecords = effectiveActionRecords(data.records);
-	const longProgress = longGoal ? calculateGoalProgress(effectiveRecords.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id), { mode: 'quantity', targetQuantityBase: longGoal.targetQuantityBase }) : null;
+	const mediaEntries = data.card.officialCardId === 'media-output'
+		? effectiveRecords.flatMap((record) => record.details?.kind === 'media-output'
+			? record.details.entries.map((entry) => ({ ...entry, localDate: record.localDate }))
+			: []).sort((left, right) => right.localDate.localeCompare(left.localDate) || right.updatedAt.localeCompare(left.updatedAt))
+		: [];
+	const progressRecords = data.card.officialCardId === 'media-output'
+		? effectiveRecords.map((record) => ({
+			...record,
+			quantityBaseValue: record.details?.kind === 'media-output'
+				? record.details.entries.filter(({ status }) => status === 'published').length
+				: record.quantityBaseValue,
+		})).filter(({ quantityBaseValue }) => quantityBaseValue > 0)
+		: effectiveRecords;
+	const longProgress = longGoal ? calculateGoalProgress(progressRecords.filter(({ longTermGoalId }) => longTermGoalId === longGoal.id), { mode: 'quantity', targetQuantityBase: longGoal.targetQuantityBase }) : null;
 	const mappedStageGoals = relatedStageGoals.map((goal): GoalDetailsStageGoal => ({
 		id: goal.id,
 		title: goal.title,
@@ -100,13 +121,13 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 		startDate: goal.startDate,
 		endDate: goal.endDate,
 		progress: calculateGoalProgress(
-			effectiveRecords.filter(({ stageGoalId }) => stageGoalId === goal.id),
+				progressRecords.filter(({ stageGoalId }) => stageGoalId === goal.id),
 			{ mode: goal.mode, targetQuantityBase: goal.targetQuantityBase, targetActiveDays: goal.targetActiveDays },
 		)!,
 		completionSnapshot: goal.completionSnapshot,
 	}));
 	const stageDetails = stage ? mappedStageGoals.find(({ id }) => id === stage.id) : undefined;
-	const recentRecords = groupActionRecordsByLocalDate(effectiveRecords).flatMap(({ records: group }) => group).slice(0, 5).map((record) => ({
+	const recentRecords = groupActionRecordsByLocalDate(progressRecords).flatMap(({ records: group }) => group).slice(0, 5).map((record) => ({
 		id: record.id,
 		localDate: record.localDate,
 		displayValue: formatQuantityFromBase(record.quantityBaseValue, template.quantity),
@@ -117,6 +138,9 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 	return {
 		card: {
 			id: data.card.id, title: data.card.title, status: data.card.status,
+			officialCardId: data.card.officialCardId,
+			iconKey: template.iconKey ?? 'activity',
+			accent: template.accent ?? 'blue',
 			displayUnit: template.quantity.displayUnit,
 			basePerDisplayUnit: template.quantity.basePerDisplayUnit,
 			maxDecimalPlaces: template.quantity.maxDecimalPlaces,
@@ -128,8 +152,9 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 		} : null,
 		stageGoal: stageDetails ?? null,
 		stageGoals: mappedStageGoals,
-		activeDays: new Set(effectiveRecords.map(({ localDate }) => localDate)).size,
+		activeDays: new Set(progressRecords.map(({ localDate }) => localDate)).size,
 		recentRecords,
+		mediaEntries,
 	};
 }
 

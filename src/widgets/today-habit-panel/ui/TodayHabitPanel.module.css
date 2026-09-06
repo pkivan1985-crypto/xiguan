@@ -125,6 +125,51 @@
 	border: 0;
 }
 
+.habitRow:has(.mediaActionBar) {
+	padding-block: 12px;
+}
+
+.mediaActionBar {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+	grid-column: 1 / -1;
+	align-items: center;
+	padding-top: 10px;
+	margin-top: 2px;
+	border-top: 1px solid var(--border-color);
+}
+
+.mediaActionBar button {
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	min-height: 42px;
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--accent-color);
+	background: transparent;
+}
+
+.mediaActionBar button svg {
+	flex: none;
+	width: 22px;
+	height: 22px;
+}
+
+.mediaActionBar button span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mediaActionBar > i {
+	width: 1px;
+	height: 28px;
+	background: var(--border-color);
+}
+
 .habitCopy:disabled {
 	cursor: default;
 	opacity: 1;
@@ -388,6 +433,16 @@
 	grid-template-columns: minmax(42px, auto) 44px;
 	gap: 10px;
 	width: auto;
+}
+
+.quantityActions[data-layout='check-only'] {
+	grid-template-columns: 48px;
+	width: 48px;
+}
+
+.quantityActions[data-layout='check-only'] .checkAction {
+	width: 48px;
+	height: 48px;
 }
 
 .quantityActions[data-layout='detail-check'] > button {

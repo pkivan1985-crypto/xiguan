@@ -9,8 +9,8 @@ const UPSTREAM_SOURCE_URL = 'https://github.com/iNikAnn/DoHabit';
 const CANDIDATE_SITE_URL = 'https://repeat-outcome.pages.dev';
 const APPROVED_DEPENDENCY_HASH = 'bd27c8c970088bba1da0065f67fde084cbd0874bfd7cd166a0bc532e74cabd8a';
 const APPROVED_DEV_DEPENDENCY_HASH = 'daf33c8579a95c6f1895f9681f4e20a144227d0fbd3b97ab3c8a4528d3e8042b';
-const APPROVED_OVERRIDE_HASH = '52a76518441fae1f2b5b8cb8defa56bb5d46ab2adecde2d1c5106908facca855';
-const APPROVED_TRANSITIVE_LOCK_HASH = '2f7c6d819d79b882442abe45e051bbff30799fe209a085235a2bd5f664566b3b';
+const APPROVED_OVERRIDE_HASH = '16c43279b6df0daf0c0b0ae2f4e46f3309fb093e730d6d804a0ca0cefd550bce';
+const APPROVED_TRANSITIVE_LOCK_HASH = '9d394476856f52fc60a2f1046bebbd4a781d9ac420d4bbf4a8ba08e1ffc372a3';
 const REQUIRED_DIST_FILES = ['dist/_headers', 'dist/_redirects', 'dist/favicon.svg', 'dist/index.html', 'dist/manifest.webmanifest', 'dist/robots.txt', 'dist/sw.js'];
 const ALLOWED_DIST_FILE = /^(?:dist\/(?:_headers|_redirects|apple-touch-icon-180x180\.png|favicon\.(?:ico|svg)|index\.html|manifest\.webmanifest|maskable-icon-512x512\.png|pwa-(?:64x64|192x192|512x512)\.png|robots\.txt|sw\.js|workbox-[A-Za-z0-9_-]+\.js)|dist\/assets\/(?:index|workbox-window\.prod\.es5)-[A-Za-z0-9_-]+\.(?:css|js))$/;
 

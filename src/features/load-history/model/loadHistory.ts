@@ -74,6 +74,9 @@ export async function loadHistory(
 				const card = cardsById.get(record.userCardId);
 				const template = card ? templatesById.get(card.officialCardId) : undefined;
 				const relationAvailable = Boolean(card && template);
+				const quantityBaseValue = card?.officialCardId === 'media-output' && record.details?.kind === 'media-output'
+					? record.details.entries.filter((entry) => entry.status === 'published').length
+					: record.quantityBaseValue;
 				return {
 					id: record.id,
 					userCardId: record.userCardId,
@@ -82,12 +85,12 @@ export async function loadHistory(
 					officialCardId: card?.officialCardId,
 					iconKey: template?.iconKey,
 					accent: template?.accent,
-					quantityBaseValue: record.quantityBaseValue,
+					quantityBaseValue,
 					displayValue: template
 						? template.trackingType && template.trackingType !== 'quantity' && template.quantity.maxDecimalPlaces === 0
-							? String(record.quantityBaseValue / template.quantity.basePerDisplayUnit)
-							: formatQuantityFromBase(record.quantityBaseValue, template.quantity)
-						: String(record.quantityBaseValue),
+							? String(quantityBaseValue / template.quantity.basePerDisplayUnit)
+							: formatQuantityFromBase(quantityBaseValue, template.quantity)
+						: String(quantityBaseValue),
 					displayUnit: template?.quantity.displayUnit ?? '',
 					basePerDisplayUnit: template?.quantity.basePerDisplayUnit ?? 1,
 					maxDecimalPlaces: template?.quantity.maxDecimalPlaces ?? 0,

@@ -158,6 +158,195 @@
 	color: var(--accent-color);
 }
 
+.mediaProgressPage {
+	display: grid;
+	gap: 16px;
+	padding-bottom: 28px;
+}
+
+.mediaProgressHeader {
+	display: grid;
+	grid-template-columns: 44px 1fr 44px;
+	align-items: center;
+	min-height: 58px;
+}
+
+.mediaProgressHeader a {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	font-size: 22px;
+	color: var(--text-color);
+}
+
+.mediaProgressHeader h2 {
+	margin: 0;
+	text-align: center;
+}
+
+.mediaProgressIdentity {
+	display: flex;
+	gap: 14px;
+	align-items: center;
+	padding: 4px 2px 8px;
+}
+
+.mediaProgressIdentity > div {
+	display: grid;
+	gap: 4px;
+}
+
+.mediaProgressIdentity strong {
+	font-size: 21px;
+}
+
+.mediaProgressIdentity small {
+	color: var(--muted-color);
+}
+
+.mediaProgressSummary,
+.mediaTypeSummary {
+	padding: 18px;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 18px;
+}
+
+.mediaProgressSummary h3,
+.mediaTypeSummary h3,
+.mediaRecent h3 {
+	margin: 0 0 14px;
+	font-size: 16px;
+}
+
+.mediaProgressSummary > span {
+	display: block;
+	height: 8px;
+	overflow: hidden;
+	background: var(--surface-raised);
+	border-radius: 999px;
+}
+
+.mediaProgressSummary > span i {
+	display: block;
+	height: 100%;
+	background: linear-gradient(90deg, #4d9cff, #6d5ff5);
+	border-radius: inherit;
+}
+
+.mediaProgressSummary p {
+	margin: 12px 0 0;
+	color: var(--muted-color);
+}
+
+.mediaTypeSummary > div {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mediaTypeSummary span {
+	display: grid;
+	gap: 5px;
+	place-items: center;
+	min-width: 0;
+	padding: 5px;
+	color: var(--muted-color);
+}
+
+.mediaTypeSummary span + span {
+	border-left: 1px solid var(--border-color);
+}
+
+.mediaTypeSummary svg {
+	font-size: 24px;
+	color: #756eff;
+}
+
+.mediaTypeSummary small {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mediaTypeSummary strong {
+	font-size: 19px;
+	color: var(--text-color);
+}
+
+.mediaRecent {
+	display: grid;
+	overflow: hidden;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 18px;
+}
+
+.mediaRecent h3 {
+	padding: 16px 16px 2px;
+}
+
+.mediaRecent > a {
+	display: grid;
+	grid-template-columns: 42px minmax(0, 1fr) auto;
+	gap: 11px;
+	align-items: center;
+	min-height: 72px;
+	padding: 10px 15px;
+	color: var(--text-color);
+}
+
+.mediaRecent > a + a {
+	border-top: 1px solid var(--border-color);
+}
+
+.mediaRecent > a > svg {
+	box-sizing: content-box;
+	padding: 9px;
+	font-size: 22px;
+	color: #756eff;
+	background: color-mix(in srgb, #625cff 13%, transparent);
+	border-radius: 11px;
+}
+
+.mediaRecent > a span {
+	display: grid;
+	gap: 3px;
+	min-width: 0;
+}
+
+.mediaRecent > a strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mediaRecent > a small {
+	color: var(--muted-color);
+}
+
+.mediaRecent > a b {
+	font-size: 14px;
+}
+
+.mediaRecent > p {
+	padding: 0 16px 18px;
+	color: var(--muted-color);
+}
+
+.mediaRecordAction {
+	display: flex;
+	gap: 7px;
+	align-items: center;
+	justify-content: center;
+	min-height: 50px;
+	font-weight: 750;
+	color: var(--accent-color);
+	border: 1px solid var(--accent-color);
+	border-radius: 15px;
+}
+
 .stageRoute {
 	display: grid;
 	gap: 9px;

@@ -20,7 +20,14 @@ export interface LightFoodHabitConfig {
 	rules: LightFoodRule[];
 }
 
-export type HabitConfiguration = LightFoodHabitConfig;
+export type MediaOutputType = 'article' | 'short-video' | 'audio' | 'livestream';
+
+export interface MediaOutputHabitConfig {
+	kind: 'media-output';
+	outputTypes: MediaOutputType[];
+}
+
+export type HabitConfiguration = LightFoodHabitConfig | MediaOutputHabitConfig;
 
 export interface UserCard {
 	id: string;

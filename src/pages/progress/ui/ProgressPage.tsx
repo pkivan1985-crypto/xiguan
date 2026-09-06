@@ -392,7 +392,8 @@ interface BackfillSheetProps {
 	onChange: (habit: DailyHabitView, quantityBaseValue: number) => void;
 	onComplete: (habit: DailyHabitView) => void;
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
-	onOpenDetails: (habit: DailyHabitView) => void;
+	onOpenDetails: (habit: DailyHabitView, mediaType?: 'article' | 'short-video' | 'audio' | 'livestream') => void;
+	onAddMediaEntry: (habit: DailyHabitView) => void;
 	onClose: () => void;
 }
 
@@ -405,6 +406,7 @@ function BackfillSheet({
 	onComplete,
 	onSaveActual,
 	onOpenDetails,
+	onAddMediaEntry,
 	onClose,
 }: BackfillSheetProps) {
 	const { t, i18n } = useTranslation();
@@ -458,6 +460,7 @@ function BackfillSheet({
 					onComplete={onComplete}
 					onSaveActual={onSaveActual}
 					onOpenDetails={onOpenDetails}
+					onAddMediaEntry={onAddMediaEntry}
 					onToggleCompleted={() => undefined}
 				/>
 				<p className={styles.backfillHint}>{t('shell.progress.backfillHint')}</p>
@@ -733,6 +736,10 @@ function ProgressPage() {
 				onOpenDetails={(habit) => {
 					setBackfillOpen(false);
 					navigate(APP_ROUTES.habitRecord(habit.id, selectedDate));
+				}}
+				onAddMediaEntry={(habit) => {
+					setBackfillOpen(false);
+					navigate(`${APP_ROUTES.habitRecord(habit.id, selectedDate)}&entry=new`);
 				}}
 				onClose={() => setBackfillOpen(false)}
 				/>

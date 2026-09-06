@@ -14,6 +14,7 @@ describe('app shell route titles', () => {
 	it('maps the three primary destinations to today, progress, and habits', () => {
 		expect(appShellTitleKey('/')).toBe('shell.nav.today');
 		expect(appShellTitleKey('/progress')).toBe('shell.nav.progress');
+		expect(appShellTitleKey('/goals/card-a')).toBe('shell.nav.progress');
 		expect(appShellTitleKey('/deck')).toBe('shell.nav.habits');
 	});
 

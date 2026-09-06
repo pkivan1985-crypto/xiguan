@@ -19,6 +19,9 @@ const translations: Record<string, string> = {
 	'shell.today.enterActual': '记录进度',
 	'shell.today.openDetails': '查看{{title}}详情',
 	'shell.today.detailsAction': '详情',
+	'shell.today.mediaOutput.actions': '自媒体输出操作',
+	'shell.today.mediaOutput.addOutput': '新增输出',
+	'shell.today.mediaOutput.viewRecords': '查看记录',
 	'shell.today.expenseSummary': '今日 ¥{{today}} · 本月 ¥{{month}}',
 	'shell.createCard.detailAction': '逐项记录',
 	'shell.today.completedFold': '已完成 {{count}} 项',
@@ -179,6 +182,7 @@ function renderPanel({
 			onComplete={vi.fn()}
 			onSaveActual={vi.fn()}
 			onOpenDetails={openDetails ? vi.fn() : undefined}
+			onAddMediaEntry={openDetails ? vi.fn() : undefined}
 			onRequestDelete={vi.fn()}
 			onToggleCompleted={vi.fn()}
 		/>,
@@ -350,6 +354,33 @@ describe('TodayHabitPanel', () => {
 		expect(html).toContain('今日 ¥68 · 本月 ¥426');
 		expect(html).toContain('aria-label="查看额外开支详情"');
 		expect(html).not.toContain('aria-label="完成额外开支"');
+	});
+
+	it('uses only one completion circle and the selected record actions for media output', () => {
+		const html = renderPanel({
+			renderedHabits: [{
+				...habits[1]!,
+				id: 'media-output',
+				officialCardId: 'media-output',
+				title: '自媒体输出',
+				iconKey: 'broadcast',
+				accent: 'violet',
+				habitConfig: { kind: 'media-output', outputTypes: ['article', 'short-video'] },
+				quantityBaseValue: 1,
+				displayValue: '1',
+				dailyTargetBase: 1,
+				recordedToday: true,
+			}],
+			openDetails: true,
+		});
+
+		expect(html).toContain('aria-label="自媒体输出操作"');
+		expect(html).toContain('>查看记录</span>');
+		expect(html).toContain('>新增输出</span>');
+		expect(html).toContain('data-layout="check-only"');
+		expect(html.match(/class="[^"]*checkAction[^"]*"/g)).toHaveLength(1);
+		expect(html).not.toContain('>详情</span>');
+		expect(html).not.toContain('选择本次输出类型');
 	});
 
 	it('keeps a rest-day habit visible without exposing recording controls', () => {

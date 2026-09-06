@@ -10,6 +10,8 @@ export type {
 	ExtraExpenseRecordDetails,
 	HabitRecordDetails,
 	LegacyExtraExpenseRecordDetails,
+	MediaOutputEntry,
+	MediaOutputRecordDetails,
 	LightFoodRecordDetails,
 	ReadingRecordDetails,
 	ScreenFreeRecordDetails,

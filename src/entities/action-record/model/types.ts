@@ -63,6 +63,26 @@ export interface ExtraExpenseRecordDetails {
 	entries: ExtraExpenseLineItem[];
 }
 
+export interface MediaOutputEntry {
+	id: string;
+	type: 'article' | 'short-video' | 'audio' | 'livestream';
+	title: string;
+	platform?: string;
+	status: 'published' | 'draft';
+	link?: string;
+	views?: number;
+	likes?: number;
+	comments?: number;
+	reflection?: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface MediaOutputRecordDetails {
+	kind: 'media-output';
+	entries: MediaOutputEntry[];
+}
+
 export interface LegacyExtraExpenseRecordDetails {
 	kind: 'extra-expense';
 	item: string;
@@ -79,6 +99,7 @@ export type HabitRecordDetails =
 	| LightFoodRecordDetails
 	| SleepRecordDetails
 	| ScreenFreeRecordDetails
+	| MediaOutputRecordDetails
 	| ExtraExpenseRecordDetails
 	| LegacyExtraExpenseRecordDetails;
 
