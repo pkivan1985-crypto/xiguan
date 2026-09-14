@@ -90,6 +90,8 @@ function DeckPageContent({
 					details: t('shell.deck.details'),
 					eventDriven: t('shell.deck.eventDriven'),
 					eventDrivenHint: t('shell.deck.eventDrivenHint'),
+					bookkeepingEventDriven: t('shell.deck.bookkeepingEventDriven'),
+					bookkeepingEventDrivenHint: t('shell.deck.bookkeepingEventDrivenHint'),
 					deleteAction: t('habits.actions.delete'),
 					deleteDescription: t('shell.deck.deleteDescription'),
 					deleteTitle: (title) => t('shell.deck.deleteTitle', { title }),

@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- Table names, statuses, and domain errors are stable identifiers. */
-import { effectiveActionRecords, groupActionRecordsByLocalDate, type ActionRecord, type MediaOutputEntry } from '@entities/action-record';
+import { effectiveActionRecords, groupActionRecordsByLocalDate, type ActionRecord, type BookkeepingEntry, type MediaOutputEntry } from '@entities/action-record';
 import { formatQuantityFromBase, type CardTemplate, type StageCompletionMode } from '@entities/card-template';
 import {
 	calculateGoalProgress,
@@ -7,7 +7,7 @@ import {
 	selectCurrentStageGoal,
 } from '@entities/goal';
 import type { GoalCompletionSnapshot, GoalProgress, GoalStatus, LongTermGoal, StageGoal } from '@entities/goal';
-import type { UserCard, UserCardStatus } from '@entities/user-card';
+import type { HabitConfiguration, UserCard, UserCardStatus } from '@entities/user-card';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 
 export interface GoalDetailsCard {
@@ -20,11 +20,14 @@ export interface GoalDetailsCard {
 	displayUnit: string;
 	basePerDisplayUnit: number;
 	maxDecimalPlaces: number;
+	habitConfig?: HabitConfiguration;
 }
 
 export interface GoalDetailsMediaEntry extends MediaOutputEntry {
 	localDate: string;
 }
+
+export type GoalDetailsBookkeepingEntry = BookkeepingEntry;
 
 export interface GoalDetailsLongTermGoal {
 	id: string;
@@ -66,6 +69,7 @@ export interface GoalDetailsModel {
 	activeDays: number;
 	recentRecords: GoalDetailsRecord[];
 	mediaEntries: GoalDetailsMediaEntry[];
+	bookkeepingEntries: GoalDetailsBookkeepingEntry[];
 }
 
 const STATUS_PRIORITY: Record<GoalStatus, number> = { active: 0, completed: 1, expired: 2, planned: 3, abandoned: 4 };
@@ -101,6 +105,10 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 		? effectiveRecords.flatMap((record) => record.details?.kind === 'media-output'
 			? record.details.entries.map((entry) => ({ ...entry, localDate: record.localDate }))
 			: []).sort((left, right) => right.localDate.localeCompare(left.localDate) || right.updatedAt.localeCompare(left.updatedAt))
+		: [];
+	const bookkeepingEntries = data.card.officialCardId === 'bookkeeping'
+		? effectiveRecords.flatMap((record) => record.details?.kind === 'bookkeeping' ? record.details.entries : [])
+			.sort((left, right) => right.localDate.localeCompare(left.localDate) || right.occurredTime.localeCompare(left.occurredTime))
 		: [];
 	const progressRecords = data.card.officialCardId === 'media-output'
 		? effectiveRecords.map((record) => ({
@@ -144,6 +152,7 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 			displayUnit: template.quantity.displayUnit,
 			basePerDisplayUnit: template.quantity.basePerDisplayUnit,
 			maxDecimalPlaces: template.quantity.maxDecimalPlaces,
+			habitConfig: data.card.habitConfig,
 		},
 		longTermGoal: longGoal && longProgress ? {
 			id: longGoal.id, title: longGoal.title, status: longGoal.status,
@@ -155,6 +164,7 @@ export async function loadGoalDetails(database: RepeatOutcomeDatabase, userCardI
 		activeDays: new Set(progressRecords.map(({ localDate }) => localDate)).size,
 		recentRecords,
 		mediaEntries,
+		bookkeepingEntries,
 	};
 }
 

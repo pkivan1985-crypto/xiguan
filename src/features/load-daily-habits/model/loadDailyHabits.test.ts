@@ -340,6 +340,17 @@ describe('loadDailyHabits', () => {
 		expect(result).toMatchObject({ scheduledCount: 0, completedCount: 0, expenseDates: [] });
 	});
 
+	it('shows bookkeeping only in the denominator after money is recorded and derives expense totals', async () => {
+		await database.table('userCards').add({ id: 'ledger', officialCardId: 'bookkeeping', title: '记账', habitConfig: { kind: 'bookkeeping', startDate: '2026-09-01', reminderEnabled: true, reminderTime: '21:00', accounts: [{ id: 'cash', label: '现金' }], categories: [{ id: 'food', label: '餐饮' }], budgetReminderEnabled: true }, status: 'active', sortOrder: 0, createdAt: '2026-09-01T00:00:00.000Z', updatedAt: '2026-09-01T00:00:00.000Z' });
+		await database.table('actionRecords').bulkAdd([
+			{ id: 'ledger:2026-09-13', userCardId: 'ledger', localDate: '2026-09-13', quantityBaseValue: 1, details: { kind: 'bookkeeping', entries: [{ id: 'a', type: 'expense', amountCents: 5000, categoryId: 'food', categoryLabel: '餐饮', accountId: 'cash', accountLabel: '现金', localDate: '2026-09-13', occurredTime: '12:00', createdAt: '2026-09-13T04:00:00.000Z', updatedAt: '2026-09-13T04:00:00.000Z' }] }, firstSavedAt: '2026-09-13T04:00:00.000Z', lastSavedAt: '2026-09-13T04:00:00.000Z', lastSubmissionId: 'a' },
+			{ id: 'ledger:2026-09-14', userCardId: 'ledger', localDate: '2026-09-14', quantityBaseValue: 2, details: { kind: 'bookkeeping', entries: [{ id: 'b', type: 'expense', amountCents: 3850, categoryId: 'food', categoryLabel: '餐饮', accountId: 'cash', accountLabel: '现金', localDate: '2026-09-14', occurredTime: '12:30', createdAt: '2026-09-14T04:30:00.000Z', updatedAt: '2026-09-14T04:30:00.000Z' }, { id: 'c', type: 'income', amountCents: 10000, categoryId: 'salary', categoryLabel: '工资', accountId: 'cash', accountLabel: '现金', localDate: '2026-09-14', occurredTime: '18:00', createdAt: '2026-09-14T10:00:00.000Z', updatedAt: '2026-09-14T10:00:00.000Z' }] }, firstSavedAt: '2026-09-14T04:30:00.000Z', lastSavedAt: '2026-09-14T10:00:00.000Z', lastSubmissionId: 'b' },
+		]);
+		const result = await loadDailyHabits(database, '2026-09-14');
+		expect(result).toMatchObject({ scheduledCount: 1, completedCount: 1 });
+		expect(result.habits[0]).toMatchObject({ quantityBaseValue: 2, bookkeepingExpenseCents: 3850, bookkeepingIncomeCents: 10000, bookkeepingMonthExpenseCents: 8850 });
+	});
+
 	it('keeps archived expense history yellow without showing the archived card today', async () => {
 		await database.table('userCards').add({
 			id: 'expense', officialCardId: 'extra-expense', title: '额外开支', status: 'archived', sortOrder: 0,

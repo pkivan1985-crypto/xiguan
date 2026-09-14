@@ -53,6 +53,9 @@ export interface DailyHabitView {
 	recordedToday: boolean;
 	recordSavedAt?: string;
 	expenseEntryCount?: number;
+	bookkeepingExpenseCents?: number;
+	bookkeepingIncomeCents?: number;
+	bookkeepingMonthExpenseCents?: number;
 	previousRecord?: DailyHabitPreviousRecord;
 }
 
@@ -115,6 +118,7 @@ function currentStageGoal(
 }
 
 function cardExistedOnDate(card: UserCard, localDate: LocalDate): boolean {
+	if (card.habitConfig?.kind === 'bookkeeping') return card.habitConfig.startDate <= localDate;
 	const createdAt = new Date(card.createdAt);
 	return Number.isNaN(createdAt.getTime())
 		|| formatLocalDate(createdAt) <= localDate;
@@ -178,10 +182,16 @@ export async function loadDailyHabits(
 				: cardRecords;
 			const monthPrefix = `${localDate.slice(0, 7)}-`;
 			const todayRecord = todayRecords.get(card.id);
+			const todayBookkeepingEntries = todayRecord?.details?.kind === 'bookkeeping' ? todayRecord.details.entries : [];
+			const monthBookkeepingEntries = cardRecords
+				.filter((record) => record.localDate.startsWith(`${localDate.slice(0, 7)}-`))
+				.flatMap((record) => record.details?.kind === 'bookkeeping' ? record.details.entries : []);
 			const scheduledByPlan = !card.dailyPlan
 				|| card.dailyPlan.weekdays.includes(todayWeekday);
 			const scheduledToday = card.officialCardId === 'extra-expense'
 				? false
+				: card.officialCardId === 'bookkeeping'
+					? todayRecord !== undefined
 				: scheduledByPlan || todayRecord !== undefined;
 			const quantityBaseValue = todayRecord
 				? card.officialCardId === 'media-output' ? publishedOutputCount(todayRecord) : todayRecord.quantityBaseValue
@@ -270,6 +280,9 @@ export async function loadDailyHabits(
 						? todayRecord.details.entries.length
 						: 1
 					: 0,
+				bookkeepingExpenseCents: todayBookkeepingEntries.filter(({ type }) => type === 'expense').reduce((sum, entry) => sum + entry.amountCents, 0),
+				bookkeepingIncomeCents: todayBookkeepingEntries.filter(({ type }) => type === 'income').reduce((sum, entry) => sum + entry.amountCents, 0),
+				bookkeepingMonthExpenseCents: monthBookkeepingEntries.filter(({ type }) => type === 'expense').reduce((sum, entry) => sum + entry.amountCents, 0),
 				previousRecord: previousRecord ? {
 					quantityBaseValue: previousRecord.quantityBaseValue,
 					displayValue: formatQuantityFromBase(previousRecord.quantityBaseValue, template.quantity),

@@ -64,7 +64,7 @@ describe('saveTodayOutcome', () => {
 
 		await expect(saveTodayOutcome(database, validInput('submission-empty'))).rejects.toThrow('TODAY_DRAFT_EMPTY');
 		expect(await table('categoryDefinitions').count()).toBe(7);
-		expect(await table('cardTemplates').count()).toBe(8);
+		expect(await table('cardTemplates').count()).toBe(9);
 		expect(await table('actionRecords').count()).toBe(0);
 		expect(await table('outcomeBatches').count()).toBe(0);
 		expect(await table('todayDrafts').get(LOCAL_DATE)).toMatchObject({ status: 'editing' });

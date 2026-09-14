@@ -138,7 +138,7 @@ export async function loadCardDeck(database: RepeatOutcomeDatabase, localDate: L
 			const todayRecord = effectiveRecords.find((record) => (
 				record.userCardId === card.id && record.localDate === localDate
 			));
-			const eventDriven = card.officialCardId === 'extra-expense';
+			const eventDriven = card.officialCardId === 'extra-expense' || card.officialCardId === 'bookkeeping';
 			const scheduledToday = !card.dailyPlan || card.dailyPlan.weekdays.includes(todayWeekday);
 			const completedToday = todayRecord !== undefined && (
 				card.officialCardId === 'media-output' && todayRecord.details?.kind === 'media-output'

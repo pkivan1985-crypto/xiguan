@@ -52,6 +52,7 @@ import {
 } from '../model/expenseRecord';
 import styles from './HabitRecordPage.module.css';
 import { MediaOutputRecordPage } from './MediaOutputRecordPage';
+import { BookkeepingRecordPage } from './BookkeepingRecordPage';
 
 const SCREEN_MOMENTS = ['after-waking', 'during-meals', 'before-sleep'] as const;
 const FOOD_RULE_ICONS: Record<string, IconType> = {
@@ -370,6 +371,7 @@ function HabitRecordPage() {
 	if (loading) return <p className={styles.state}>{t('shell.record.loading')}</p>;
 	if (!habit) return <p className={styles.state}>{t('shell.record.notFound')}</p>;
 	if (habit.officialCardId === 'media-output') return <MediaOutputRecordPage key={`${localDate}:${expenseEntryId ?? ''}:${searchParams.get('type') ?? ''}`} habit={habit} localDate={localDate} />;
+	if (habit.officialCardId === 'bookkeeping') return <BookkeepingRecordPage key={`${localDate}:${expenseEntryId ?? ''}:${habit.recordSavedAt ?? ''}`} habit={habit} localDate={localDate} />;
 
 	const rules = habit.habitConfig?.kind === 'light-food' ? habit.habitConfig.rules : [];
 	const sleepDuration = minutesBetween(bedtime, wakeTime);

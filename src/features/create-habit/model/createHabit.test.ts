@@ -49,6 +49,17 @@ describe('createHabit', () => {
 		})).rejects.toThrow('ACTIVE_EXTRA_EXPENSE_CARD_EXISTS');
 	});
 
+	it('creates one planless bookkeeping habit with its local setup', async () => {
+		const input = {
+			templateId: 'bookkeeping', cardTitle: '记账', startDate: '2026-09-14',
+			habitConfig: { kind: 'bookkeeping' as const, startDate: '2026-09-14', reminderEnabled: true, reminderTime: '21:00', accounts: [{ id: 'cash', label: '现金' }], categories: [{ id: 'food', label: '餐饮' }], monthlyBudgetCents: 300000, budgetReminderEnabled: true },
+			nowIso: '2026-09-14T01:00:00.000Z', ids: { userCardId: 'ledger-a', longTermGoalId: 'unused-long', stageGoalId: 'unused-stage' },
+		};
+		const result = await createHabit(database, input);
+		expect(result.userCard).toMatchObject({ officialCardId: 'bookkeeping', dailyPlan: undefined, habitConfig: { kind: 'bookkeeping', monthlyBudgetCents: 300000 } });
+		await expect(createHabit(database, { ...input, ids: { ...input.ids, userCardId: 'ledger-b' } })).rejects.toThrow('ACTIVE_BOOKKEEPING_CARD_EXISTS');
+	});
+
 	it('stores light-food rules as optional card configuration', async () => {
 		const result = await createHabit(database, {
 			templateId: 'light-food',

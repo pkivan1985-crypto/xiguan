@@ -25,6 +25,7 @@ import {
 	PiMicrophone,
 	PiReceipt,
 	PiVideoCamera,
+	PiWallet,
 } from 'react-icons/pi';
 import type { IconType } from 'react-icons';
 import { useNavigate } from 'react-router';
@@ -51,6 +52,7 @@ const PRESETS = [
 	{ id: 'sleep', categoryId: 'recovery', icon: FiMoon, labelKey: 'shell.createCard.presets.sleep', unitKey: 'shell.createCard.units.check', displayUnitKey: 'shell.createCard.displayUnits.check', accent: 'violet', decimals: 0, dailyDefault: 1 },
 	{ id: 'screen-free', categoryId: 'focus', icon: FiShield, labelKey: 'shell.createCard.presets.screenFree', unitKey: 'shell.createCard.units.avoid', displayUnitKey: 'shell.createCard.displayUnits.avoid', accent: 'blue', decimals: 0, dailyDefault: 1 },
 	{ id: 'media-output', categoryId: 'creation', icon: PiBroadcast, labelKey: 'shell.createCard.presets.mediaOutput', unitKey: 'shell.createCard.units.output', displayUnitKey: 'shell.createCard.displayUnits.output', accent: 'violet', decimals: 0, dailyDefault: 1 },
+	{ id: 'bookkeeping', categoryId: 'life-management', icon: PiWallet, labelKey: 'shell.createCard.presets.bookkeeping', unitKey: 'shell.createCard.units.bookkeeping', displayUnitKey: 'shell.createCard.displayUnits.bookkeeping', accent: 'amber', decimals: 0, dailyDefault: 1 },
 	{ id: 'extra-expense', categoryId: 'life-management', icon: PiReceipt, labelKey: 'shell.createCard.presets.extraExpense', unitKey: 'shell.createCard.units.money', displayUnitKey: 'shell.createCard.displayUnits.money', accent: 'amber', decimals: 2, dailyDefault: 1 },
 ] as const satisfies readonly {
 	id: string;
@@ -83,6 +85,8 @@ const DEFAULT_LIGHT_FOOD_RULES = [
 ] as const;
 
 const WEEKDAYS: readonly IsoWeekday[] = [1, 2, 3, 4, 5, 6, 7];
+const BOOKKEEPING_ACCOUNTS = ['wechat', 'alipay', 'bank-card', 'cash'] as const;
+const BOOKKEEPING_CATEGORIES = ['food', 'transport', 'shopping', 'housing', 'salary', 'other'] as const;
 
 interface StageDraft {
 	key: string;
@@ -151,9 +155,18 @@ function CreateRunningCardPage() {
 	})));
 	const [newFoodRule, setNewFoodRule] = useState('');
 	const [outputTypes, setOutputTypes] = useState<Array<'article' | 'short-video' | 'audio' | 'livestream'>>(['article', 'short-video']);
+	const [bookkeepingStartDate, setBookkeepingStartDate] = useState(today);
+	const [bookkeepingReminderEnabled, setBookkeepingReminderEnabled] = useState(true);
+	const [bookkeepingReminderTime, setBookkeepingReminderTime] = useState('21:00');
+	const [bookkeepingAccounts, setBookkeepingAccounts] = useState<Array<(typeof BOOKKEEPING_ACCOUNTS)[number]>>([...BOOKKEEPING_ACCOUNTS]);
+	const [bookkeepingCategories, setBookkeepingCategories] = useState<Array<(typeof BOOKKEEPING_CATEGORIES)[number]>>([...BOOKKEEPING_CATEGORIES]);
+	const [bookkeepingBudget, setBookkeepingBudget] = useState('3000');
+	const [bookkeepingBudgetReminder, setBookkeepingBudgetReminder] = useState(true);
 	const selected = PRESETS.find((preset) => preset.id === templateId)!;
-	const isEventDriven = templateId === 'extra-expense';
-	const flowSteps: readonly ('choose' | 'plan' | 'confirm')[] = isEventDriven ? ['choose', 'confirm'] : ['choose', 'plan', 'confirm'];
+	const isEventDriven = templateId === 'extra-expense' || templateId === 'bookkeeping';
+	const isPlanlessEventDriven = templateId === 'extra-expense';
+	const isBookkeeping = templateId === 'bookkeeping';
+	const flowSteps: readonly ('choose' | 'plan' | 'confirm')[] = isPlanlessEventDriven ? ['choose', 'confirm'] : ['choose', 'plan', 'confirm'];
 	const selectedUnit = t(selected.displayUnitKey);
 	const selectedWeekdaysCount = useMemo(() => {
 		if (!longEndDate) return 0;
@@ -166,7 +179,7 @@ function CreateRunningCardPage() {
 	const derivedLongTarget = String(selectedWeekdaysCount * (
 		templateId === 'light-food' ? foodRules.length : selected.dailyDefault
 	));
-	const usesDerivedTarget = ['light-food', 'sleep', 'screen-free', 'extra-expense'].includes(templateId);
+	const usesDerivedTarget = ['light-food', 'sleep', 'screen-free', 'extra-expense', 'bookkeeping'].includes(templateId);
 	const planningTarget = usesDerivedTarget ? derivedLongTarget : longTarget;
 
 	function evenStages(count: number, current: readonly StageDraft[], endDate = longEndDate): StageDraft[] | null {
@@ -245,7 +258,7 @@ function CreateRunningCardPage() {
 	function selectPreset(id: string): void {
 		const next = PRESETS.find((preset) => preset.id === id)!;
 		setTemplateId(id);
-		if (id === 'extra-expense') setStagedPlanEnabled(false);
+		if (id === 'extra-expense' || id === 'bookkeeping') setStagedPlanEnabled(false);
 		if (!titleCustomized) setCardTitle(t(next.labelKey));
 		setAutoDistribution(true);
 		setError(undefined);
@@ -456,7 +469,11 @@ function CreateRunningCardPage() {
 
 	function planReady(): boolean {
 		const hasName = Boolean(cardTitle.trim());
-		if (isEventDriven) return hasName;
+		if (isPlanlessEventDriven) return hasName;
+		if (isBookkeeping) return hasName && Boolean(bookkeepingStartDate)
+			&& (!bookkeepingReminderEnabled || Boolean(bookkeepingReminderTime))
+			&& bookkeepingAccounts.length > 0 && bookkeepingCategories.length > 0
+			&& (!bookkeepingBudget.trim() || numeric(bookkeepingBudget) !== null);
 		const hasLongTarget = numeric(planningTarget) !== null;
 		const hasValidStages = !stagedPlanEnabled || (stages.length > 0 && stages.every((stage) => (
 			Boolean(stage.title.trim())
@@ -475,7 +492,7 @@ function CreateRunningCardPage() {
 
 	function continueFlow(): void {
 		if (flowStep === 0) {
-			setFlowStep(isEventDriven ? 2 : 1);
+			setFlowStep(isPlanlessEventDriven ? 2 : 1);
 			setError(undefined);
 			return;
 		}
@@ -503,7 +520,7 @@ function CreateRunningCardPage() {
 			await createHabitInApp({
 				templateId,
 				cardTitle,
-				startDate: today,
+				startDate: isBookkeeping ? bookkeepingStartDate : today,
 				longTerm: isEventDriven ? undefined : { targetDisplay: planningTarget, endDate: longEndDate },
 				stages: stagedPlanEnabled ? stages.map((stage) => ({
 					title: stage.title,
@@ -522,7 +539,17 @@ function CreateRunningCardPage() {
 					? { kind: 'light-food', rules: foodRules }
 					: templateId === 'media-output'
 						? { kind: 'media-output', outputTypes }
-						: undefined,
+						: isBookkeeping
+							? {
+								kind: 'bookkeeping', startDate: bookkeepingStartDate,
+								reminderEnabled: bookkeepingReminderEnabled,
+								reminderTime: bookkeepingReminderEnabled ? bookkeepingReminderTime : undefined,
+								accounts: bookkeepingAccounts.map((id) => ({ id, label: t(`shell.createCard.bookkeeping.accounts.${id}`) })),
+								categories: bookkeepingCategories.map((id) => ({ id, label: t(`shell.createCard.bookkeeping.categories.${id}`) })),
+								monthlyBudgetCents: bookkeepingBudget.trim() ? Math.round(Number(bookkeepingBudget) * 100) : undefined,
+								budgetReminderEnabled: bookkeepingBudgetReminder,
+							}
+							: undefined,
 				nowIso: new Date().toISOString(),
 				ids: {
 					userCardId: crypto.randomUUID(),
@@ -606,7 +633,33 @@ function CreateRunningCardPage() {
 						</span>
 					</label>
 
-					{templateId === 'media-output' && (
+					{isBookkeeping && (
+						<>
+							<section className={`${styles.planBlock} ${styles.bookkeepingSetup}`}>
+								<header className={styles.blockHeader}><span><FiCalendar aria-hidden='true' /></span><div><strong>{t('shell.createCard.bookkeeping.startAndReminder')}</strong><small>{t('shell.createCard.bookkeeping.startAndReminderHint')}</small></div></header>
+								<div className={styles.bookkeepingFields}>
+									<label><span>{t('shell.createCard.bookkeeping.startDate')}</span><input type='date' value={bookkeepingStartDate} onChange={(event) => setBookkeepingStartDate(event.target.value)} /></label>
+									<label><span>{t('shell.createCard.bookkeeping.reminderTime')}</span><input type='time' value={bookkeepingReminderTime} disabled={!bookkeepingReminderEnabled} onChange={(event) => setBookkeepingReminderTime(event.target.value)} /></label>
+									<button type='button' className={styles.bookkeepingSwitch} role='switch' aria-checked={bookkeepingReminderEnabled} onClick={() => setBookkeepingReminderEnabled((value) => !value)}><span />{t('shell.createCard.bookkeeping.reminder')}</button>
+								</div>
+							</section>
+							<section className={styles.planBlock}>
+								<header className={styles.blockHeader}><span><PiWallet aria-hidden='true' /></span><div><strong>{t('shell.createCard.bookkeeping.accountsTitle')}</strong><small>{t('shell.createCard.bookkeeping.accountsHint')}</small></div></header>
+								<div className={styles.bookkeepingOptions}>{BOOKKEEPING_ACCOUNTS.map((id) => <button type='button' key={id} aria-pressed={bookkeepingAccounts.includes(id)} onClick={() => setBookkeepingAccounts((current) => current.includes(id) ? current.length === 1 ? current : current.filter((item) => item !== id) : [...current, id])}>{t(`shell.createCard.bookkeeping.accounts.${id}`)}{bookkeepingAccounts.includes(id) && <FiCheck aria-hidden='true' />}</button>)}</div>
+							</section>
+							<section className={styles.planBlock}>
+								<header className={styles.blockHeader}><span><PiReceipt aria-hidden='true' /></span><div><strong>{t('shell.createCard.bookkeeping.categoriesTitle')}</strong><small>{t('shell.createCard.bookkeeping.categoriesHint')}</small></div></header>
+								<div className={styles.bookkeepingOptions}>{BOOKKEEPING_CATEGORIES.map((id) => <button type='button' key={id} aria-pressed={bookkeepingCategories.includes(id)} onClick={() => setBookkeepingCategories((current) => current.includes(id) ? current.length === 1 ? current : current.filter((item) => item !== id) : [...current, id])}>{t(`shell.createCard.bookkeeping.categories.${id}`)}{bookkeepingCategories.includes(id) && <FiCheck aria-hidden='true' />}</button>)}</div>
+							</section>
+							<section className={styles.planBlock}>
+								<header className={styles.blockHeader}><span><FiTarget aria-hidden='true' /></span><div><strong>{t('shell.createCard.bookkeeping.budgetTitle')}</strong><small>{t('shell.createCard.bookkeeping.budgetHint')}</small></div></header>
+								<div className={styles.bookkeepingBudget}><label><span>¥</span><input type='number' inputMode='decimal' min='0' step='0.01' value={bookkeepingBudget} placeholder='3000' onChange={(event) => setBookkeepingBudget(event.target.value)} /></label><button type='button' aria-pressed={bookkeepingBudgetReminder} onClick={() => setBookkeepingBudgetReminder((value) => !value)}><FiCheck aria-hidden='true' />{t('shell.createCard.bookkeeping.budgetReminder')}</button></div>
+								<p className={styles.bookkeepingNote}>{t('shell.createCard.bookkeeping.localNote')}</p>
+							</section>
+						</>
+					)}
+
+					{!isBookkeeping && templateId === 'media-output' && (
 						<section className={styles.planBlock}>
 							<header className={styles.blockHeader}>
 								<span><PiBroadcast aria-hidden='true' /></span>
@@ -624,7 +677,7 @@ function CreateRunningCardPage() {
 						</section>
 					)}
 
-					<section className={styles.planBlock}>
+					{!isBookkeeping && <section className={styles.planBlock}>
 						<header className={styles.blockHeader}>
 							<span><FiTarget aria-hidden='true' /></span>
 							<div><strong>{t('shell.createCard.longTerm')}</strong><small>{t('shell.createCard.longTermInherited', { title: cardTitle || t(selected.labelKey) })}</small></div>
@@ -651,9 +704,9 @@ function CreateRunningCardPage() {
 								<span aria-hidden='true' />
 							</button>
 						</div>
-					</section>
+					</section>}
 
-					{stagedPlanEnabled && (
+					{!isBookkeeping && stagedPlanEnabled && (
 						<section className={styles.planBlock}>
 							<header className={styles.blockHeader}>
 								<span><FiFlag aria-hidden='true' /></span>
@@ -691,7 +744,7 @@ function CreateRunningCardPage() {
 						</section>
 					)}
 
-					<section className={styles.planBlock}>
+					{!isBookkeeping && <section className={styles.planBlock}>
 						<header className={styles.blockHeader}>
 							<span><FiCalendar aria-hidden='true' /></span>
 							<div><strong>{t('shell.createCard.dailyPlan')}</strong><small>{t('shell.createCard.dailyPlanHint')}</small></div>
@@ -725,9 +778,9 @@ function CreateRunningCardPage() {
 								{t('shell.createCard.customProjection', { value: customProjection.toFixed(selected.decimals).replace(/\.?0+$/, ''), unit: selectedUnit, difference: (customProjection - targetTotal).toFixed(selected.decimals).replace(/\.?0+$/, '') })}
 							</p>
 						)}
-					</section>
+					</section>}
 
-					{templateId === 'light-food' && (
+					{!isBookkeeping && templateId === 'light-food' && (
 						<section className={styles.planBlock}>
 							<header className={styles.blockHeader}>
 								<span><PiLeaf aria-hidden='true' /></span>
@@ -762,7 +815,7 @@ function CreateRunningCardPage() {
 							<span className={`${styles.identityIcon} ${styles[selected.accent]}`}><selected.icon aria-hidden='true' /></span>
 							<div><small>{t('shell.createCard.reviewHabit')}</small><h2>{cardTitle}</h2></div>
 						</header>
-						{isEventDriven ? <p className={styles.eventDrivenHint}>{t('shell.createCard.eventDrivenHint')}</p> : <dl>
+						{isBookkeeping ? <dl><div><dt>{t('shell.createCard.bookkeeping.startDate')}</dt><dd>{bookkeepingStartDate}</dd></div><div><dt>{t('shell.createCard.bookkeeping.reminderTime')}</dt><dd>{bookkeepingReminderEnabled ? bookkeepingReminderTime : t('shell.createCard.bookkeeping.off')}</dd></div><div><dt>{t('shell.createCard.bookkeeping.accountsTitle')}</dt><dd>{bookkeepingAccounts.length}</dd></div><div><dt>{t('shell.createCard.bookkeeping.categoriesTitle')}</dt><dd>{bookkeepingCategories.length}</dd></div><div><dt>{t('shell.createCard.bookkeeping.budgetTitle')}</dt><dd>{bookkeepingBudget ? `¥${bookkeepingBudget}` : '—'}</dd></div></dl> : isEventDriven ? <p className={styles.eventDrivenHint}>{t('shell.createCard.eventDrivenHint')}</p> : <dl>
 							<div><dt>{t('shell.createCard.reviewPeriod')}</dt><dd>{longDurationDays} {t('shell.createCard.daysUnit')} · {longEndDate}</dd></div>
 							<div><dt>{t('shell.createCard.reviewDays')}</dt><dd>{weekdays.map((day) => t(`shell.createCard.weekdays.${day}`)).join('、')}</dd></div>
 							<div><dt>{t('shell.createCard.reviewDaily')}</dt><dd>{averageDailyTarget} {selectedUnit}</dd></div>
@@ -772,7 +825,7 @@ function CreateRunningCardPage() {
 						</dl>}
 						<div className={styles.todayPreview}>
 							<selected.icon aria-hidden='true' />
-							<div><strong>{cardTitle}</strong><small>{isEventDriven ? t('shell.createCard.eventDrivenHint') : t('shell.createCard.todayPreviewHint', { value: averageDailyTarget, unit: selectedUnit })}</small></div>
+							<div><strong>{cardTitle}</strong><small>{isBookkeeping ? t('shell.createCard.bookkeeping.todayPreview') : isEventDriven ? t('shell.createCard.eventDrivenHint') : t('shell.createCard.todayPreviewHint', { value: averageDailyTarget, unit: selectedUnit })}</small></div>
 							<span>{templateId === 'light-food' || isEventDriven ? t('shell.createCard.detailAction') : t('shell.today.completeAction')}</span>
 						</div>
 					</section>
@@ -784,7 +837,7 @@ function CreateRunningCardPage() {
 				<button
 					type='button'
 					className={styles.secondary}
-					onClick={() => flowStep === 0 ? navigate(APP_ROUTES.DECK) : setFlowStep(isEventDriven ? 0 : (flowStep - 1) as 0 | 1)}
+					onClick={() => flowStep === 0 ? navigate(APP_ROUTES.DECK) : setFlowStep(isPlanlessEventDriven ? 0 : (flowStep - 1) as 0 | 1)}
 				>
 					{t(flowStep === 0 ? 'shell.createCard.cancel' : 'shell.createCard.previous')}
 				</button>

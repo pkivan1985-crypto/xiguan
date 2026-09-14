@@ -27,7 +27,23 @@ export interface MediaOutputHabitConfig {
 	outputTypes: MediaOutputType[];
 }
 
-export type HabitConfiguration = LightFoodHabitConfig | MediaOutputHabitConfig;
+export interface BookkeepingOption {
+	id: string;
+	label: string;
+}
+
+export interface BookkeepingHabitConfig {
+	kind: 'bookkeeping';
+	startDate: string;
+	reminderEnabled: boolean;
+	reminderTime?: string;
+	accounts: BookkeepingOption[];
+	categories: BookkeepingOption[];
+	monthlyBudgetCents?: number;
+	budgetReminderEnabled: boolean;
+}
+
+export type HabitConfiguration = LightFoodHabitConfig | MediaOutputHabitConfig | BookkeepingHabitConfig;
 
 export interface UserCard {
 	id: string;

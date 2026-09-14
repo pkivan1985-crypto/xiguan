@@ -64,6 +64,20 @@ function assertHabitConfig(value: unknown): void {
 		assertUnique(value.outputTypes.map(String));
 		return;
 	}
+	if (value.kind === 'bookkeeping') {
+		if (!isLocalDate(value.startDate) || typeof value.reminderEnabled !== 'boolean'
+			|| (value.reminderTime !== undefined && (typeof value.reminderTime !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(value.reminderTime)))
+			|| !Array.isArray(value.accounts) || value.accounts.length === 0
+			|| !Array.isArray(value.categories) || value.categories.length === 0
+			|| !isOptionalSafeNonNegative(value.monthlyBudgetCents)
+			|| typeof value.budgetReminderEnabled !== 'boolean') fail('INVALID_BACKUP');
+		for (const option of [...value.accounts, ...value.categories]) {
+			if (!isRecord(option) || !isText(option.id) || !isText(option.label) || option.label.length > 40) fail('INVALID_BACKUP');
+		}
+		assertUnique(value.accounts.map((option) => String((option as Record<string, unknown>).id)));
+		assertUnique(value.categories.map((option) => String((option as Record<string, unknown>).id)));
+		return;
+	}
 	if (value.kind !== 'light-food' || !Array.isArray(value.rules)
 		|| value.rules.length === 0 || value.rules.length > 50) fail('INVALID_BACKUP');
 	for (const rule of value.rules) {
@@ -144,6 +158,20 @@ function assertRecordDetails(value: unknown): void {
 				|| !isOptionalText(entry.link, 500)
 				|| ![entry.views, entry.likes, entry.comments].every(isOptionalSafeNonNegative)
 				|| !isOptionalText(entry.reflection, 300)
+				|| !isIso(entry.createdAt) || !isIso(entry.updatedAt)) fail('INVALID_BACKUP');
+		}
+		assertUnique(value.entries.map((entry) => String((entry as Record<string, unknown>).id)));
+		return;
+	}
+	if (value.kind === 'bookkeeping') {
+		if (!Array.isArray(value.entries) || value.entries.length === 0) fail('INVALID_BACKUP');
+		for (const entry of value.entries) {
+			if (!isRecord(entry) || !isText(entry.id) || !['expense', 'income'].includes(String(entry.type))
+				|| !isSafePositive(entry.amountCents) || !isText(entry.categoryId) || !isText(entry.categoryLabel)
+				|| !isText(entry.accountId) || !isText(entry.accountLabel)
+				|| !isOptionalText(entry.item, 80) || !isOptionalText(entry.note, 280)
+				|| !isLocalDate(entry.localDate)
+				|| typeof entry.occurredTime !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.occurredTime)
 				|| !isIso(entry.createdAt) || !isIso(entry.updatedAt)) fail('INVALID_BACKUP');
 		}
 		assertUnique(value.entries.map((entry) => String((entry as Record<string, unknown>).id)));
@@ -230,6 +258,8 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 				);
 				if (total !== record.quantityBaseValue) fail('INVALID_BACKUP');
 			}
+			if (isRecord(record.details) && record.details.kind === 'bookkeeping' && Array.isArray(record.details.entries)
+				&& record.details.entries.length !== record.quantityBaseValue) fail('INVALID_BACKUP');
 		}
 	}
 	for (const batch of candidate.outcomeBatches) {

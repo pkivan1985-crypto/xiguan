@@ -23,7 +23,7 @@ describe('create habit daily planning controls', () => {
 		expect(source).toContain("const [stagedPlanEnabled, setStagedPlanEnabled] = useState(false)");
 		expect(source).toContain("role='switch'");
 		expect(source).toContain('aria-checked={stagedPlanEnabled}');
-		expect(source).toContain('{stagedPlanEnabled && (');
+		expect(source).toContain('{!isBookkeeping && stagedPlanEnabled && (');
 		expect(source).toContain('stages: stagedPlanEnabled ? stages.map');
 		expect(source).toContain("averageTargetDisplay: planMode === 'average' ? averageDailyTarget : undefined");
 	});
@@ -35,11 +35,19 @@ describe('create habit daily planning controls', () => {
 	});
 
 	it('skips planning for event-driven extra spending and confirms it as needed', () => {
-		expect(source).toContain("const isEventDriven = templateId === 'extra-expense'");
-		expect(source).toContain('setFlowStep(isEventDriven ? 2 : 1)');
-		expect(source).toContain("isEventDriven ? ['choose', 'confirm'] : ['choose', 'plan', 'confirm']");
+		expect(source).toContain("const isPlanlessEventDriven = templateId === 'extra-expense'");
+		expect(source).toContain('setFlowStep(isPlanlessEventDriven ? 2 : 1)');
+		expect(source).toContain("isPlanlessEventDriven ? ['choose', 'confirm'] : ['choose', 'plan', 'confirm']");
 		expect(source).toContain('longTerm: isEventDriven ? undefined');
 		expect(source).toContain('dailyPlan: isEventDriven ? undefined');
 		expect(source).toContain("t('shell.createCard.eventDrivenHint')");
+	});
+
+	it('gives bookkeeping a dedicated setup step without long-term or weekday planning', () => {
+		expect(source).toContain("id: 'bookkeeping'");
+		expect(source).toContain("const isBookkeeping = templateId === 'bookkeeping'");
+		expect(source).toContain('bookkeepingStartDate');
+		expect(source).toContain('bookkeepingAccounts');
+		expect(source).toContain('monthlyBudgetCents');
 	});
 });

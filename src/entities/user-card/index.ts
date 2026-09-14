@@ -1,5 +1,7 @@
 export type {
 	DailyPlanMode,
+	BookkeepingHabitConfig,
+	BookkeepingOption,
 	HabitConfiguration,
 	HabitDailyPlan,
 	IsoWeekday,

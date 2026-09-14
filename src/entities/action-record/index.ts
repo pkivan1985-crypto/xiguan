@@ -6,6 +6,8 @@ export {
 export type { ActionRecordDateGroup } from './lib/deriveActionRecordFacts';
 export type {
 	ActionRecord,
+	BookkeepingEntry,
+	BookkeepingRecordDetails,
 	ExtraExpenseLineItem,
 	ExtraExpenseRecordDetails,
 	HabitRecordDetails,

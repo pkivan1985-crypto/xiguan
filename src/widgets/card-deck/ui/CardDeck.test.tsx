@@ -172,6 +172,8 @@ const copy: CardDeckCopy = {
 	details: '查看详情',
 	eventDriven: '有消费时记录',
 	eventDrivenHint: '无消费无需打卡',
+	bookkeepingEventDriven: '有收支时记录',
+	bookkeepingEventDrivenHint: '无收支无需打卡',
 	deleteAction: '删除习惯',
 	deleteDescription: '这会删除习惯、目标、阶段和全部历史记录，且无法恢复。',
 	deleteTitle: (title) => `永久删除“${title}”？`,

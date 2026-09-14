@@ -424,6 +424,8 @@
 			"details": "View details",
 			"eventDriven": "Record when spending occurs",
 			"eventDrivenHint": "No spending means no check-in",
+			"bookkeepingEventDriven": "Record when money moves",
+			"bookkeepingEventDrivenHint": "No transaction means no check-in",
 			"deleteDescription": "This permanently removes the habit, its goals, stages, and all history. It cannot be undone.",
 			"deleteTitle": "Permanently delete “{{title}}”?",
 			"emptyCards": "No loop cards yet",
@@ -560,7 +562,8 @@
 				"check": "times",
 				"avoid": "days",
 				"money": "yuan",
-				"output": "works"
+				"output": "works",
+				"bookkeeping": "entries"
 			},
 			"planName": "Goal name",
 			"planTarget": "Target value",
@@ -572,7 +575,8 @@
 				"sleep": "Sleep",
 				"water": "Water",
 				"extraExpense": "Extra spending",
-				"mediaOutput": "Media output"
+				"mediaOutput": "Media output",
+				"bookkeeping": "Bookkeeping"
 			},
 			"placeholders": {
 				"light-food": "e.g. Eat lightly",
@@ -582,7 +586,8 @@
 				"sleep": "e.g. Sleep before 11",
 				"water": "e.g. Drink water at work",
 				"extra-expense": "e.g. Extra spending reflection",
-				"media-output": "e.g. Consistent publishing"
+				"media-output": "e.g. Consistent publishing",
+				"bookkeeping": "e.g. Daily bookkeeping"
 			},
 			"longTitle": "Long-term goal name",
 			"kmValue": "{{value}} km",
@@ -607,7 +612,13 @@
 				"distance": "Distance",
 				"duration": "Duration",
 				"money": "Spending reflection",
-				"output": "Published work"
+				"output": "Published work",
+				"bookkeeping": "Income and expenses"
+			},
+			"bookkeeping": {
+				"startAndReminder": "Start and reminder", "startAndReminderHint": "Choose a start date; reminders do not require a daily check-in", "startDate": "Start date", "reminder": "Daily reminder", "reminderTime": "Reminder time", "accountsTitle": "Accounts", "accountsHint": "Quick choices for each entry", "categoriesTitle": "Categories", "categoriesHint": "Keep common categories close", "budgetTitle": "Monthly budget (optional)", "budgetHint": "Used for insights only", "budgetReminder": "Budget alert", "localNote": "Record only when money moves · Data stays on this device", "todayPreview": "View ledger or add an entry", "off": "Off",
+				"accounts": { "wechat": "WeChat", "alipay": "Alipay", "bank-card": "Bank card", "cash": "Cash" },
+				"categories": { "food": "Food", "transport": "Transport", "shopping": "Shopping", "housing": "Housing", "salary": "Salary", "other": "Other" }
 			},
 			"foodRulesTitle": "Food rules",
 			"foodRulesHint": "Check each rule daily; custom rules join the same list",
@@ -1074,6 +1085,9 @@
 				"viewRecords": "View records"
 			},
 			"expenseSummary": "Today ¥{{today}} · {{count}} entries　This month ¥{{month}}",
+			"bookkeepingTodaySummary": "Spent today ¥{{today}}",
+			"bookkeepingMonthSummary": "{{count}} entries · This month ¥{{month}}",
+			"bookkeeping": { "actions": "Bookkeeping actions", "viewLedger": "View ledger", "addEntry": "Add entry" },
 			"openDetails": "View {{title}} details",
 			"viewTodaySummaryHint": "Calendar and goal progress are under Progress",
 			"weekLabel": "This week",
