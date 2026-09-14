@@ -10,10 +10,10 @@ import {
 describe('expense record entries', () => {
 	it('builds one independently editable expense line in integer cents', () => {
 		expect(buildExpenseLineItem({
-			amount: '68.00',
+			amount: '68.35',
 			item: '蓝牙耳机',
 			reason: '旧耳机损坏，通勤需要',
-			bankBalance: '8420',
+			bankBalance: '8420.67',
 			earnBackDays: '1',
 			compensation: '本周少喝 2 杯奶茶',
 			necessity: 'necessary',
@@ -23,10 +23,10 @@ describe('expense record entries', () => {
 			nowIso: '2026-08-26T06:30:00.000Z',
 		})).toEqual({
 			id: 'expense-a',
-			amountCents: 6800,
+			amountCents: 6835,
 			item: '蓝牙耳机',
 			reason: '旧耳机损坏，通勤需要',
-			bankBalanceCents: 842000,
+			bankBalanceCents: 842067,
 			earnBackDays: 1,
 			compensation: '本周少喝 2 杯奶茶',
 			necessity: 'necessary',
