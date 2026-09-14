@@ -740,6 +740,166 @@
 	gap: 8px;
 }
 
+.bookkeepingSetup {
+	background: color-mix(in srgb, var(--reading-color) 5%, transparent);
+}
+
+.bookkeepingFields {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 9px;
+}
+
+.bookkeepingFields label {
+	display: grid;
+	gap: 5px;
+}
+
+.bookkeepingFields label > span {
+	font-size: 0.55rem;
+	color: var(--muted-color);
+}
+
+.bookkeepingFields input {
+	width: 100%;
+	min-width: 0;
+	height: 44px;
+	padding: 0 11px;
+	color: var(--text-color);
+	background: var(--surface-raised);
+	border: 1px solid var(--border-color);
+	border-radius: 11px;
+}
+
+.bookkeepingSwitch {
+	display: flex;
+	grid-column: 1 / -1;
+	gap: 8px;
+	align-items: center;
+	min-height: 40px;
+	font-size: 0.59rem;
+	font-weight: 700;
+	color: var(--muted-color);
+}
+
+.bookkeepingSwitch > span {
+	position: relative;
+	width: 38px;
+	height: 22px;
+	background: var(--surface-raised);
+	border: 1px solid var(--border-color);
+	border-radius: 999px;
+}
+
+.bookkeepingSwitch > span::after {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 14px;
+	height: 14px;
+	content: '';
+	background: var(--muted-color);
+	border-radius: 50%;
+}
+
+.bookkeepingSwitch[aria-checked='true'] {
+	color: var(--reading-color);
+}
+
+.bookkeepingSwitch[aria-checked='true'] > span {
+	background: var(--reading-color);
+	border-color: var(--reading-color);
+}
+
+.bookkeepingSwitch[aria-checked='true'] > span::after {
+	background: #fff;
+	transform: translateX(16px);
+}
+
+.bookkeepingOptions {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.bookkeepingOptions button {
+	position: relative;
+	min-height: 44px;
+	padding: 0 20px 0 8px;
+	font-size: 0.59rem;
+	color: var(--muted-color);
+	background: var(--surface-raised);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+}
+
+.bookkeepingOptions button[aria-pressed='true'] {
+	font-weight: 720;
+	color: var(--reading-color);
+	background: color-mix(in srgb, var(--reading-color) 11%, var(--surface-raised));
+	border-color: color-mix(in srgb, var(--reading-color) 58%, var(--border-color));
+}
+
+.bookkeepingOptions button svg {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+}
+
+.bookkeepingBudget {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 8px;
+}
+
+.bookkeepingBudget label {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: center;
+	height: 48px;
+	padding: 0 12px;
+	background: var(--surface-raised);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+}
+
+.bookkeepingBudget input {
+	min-width: 0;
+	padding-left: 7px;
+	font-size: 0.82rem;
+	font-weight: 720;
+	color: var(--text-color);
+	outline: 0;
+	background: transparent;
+	border: 0;
+}
+
+.bookkeepingBudget > button {
+	display: inline-flex;
+	gap: 5px;
+	align-items: center;
+	min-height: 48px;
+	padding: 0 11px;
+	font-size: 0.57rem;
+	color: var(--muted-color);
+	background: var(--surface-raised);
+	border-radius: 12px;
+}
+
+.bookkeepingBudget > button[aria-pressed='true'] {
+	color: var(--reading-color);
+}
+
+.bookkeepingNote {
+	padding: 9px 10px;
+	margin: 0;
+	font-size: 0.55rem;
+	line-height: 1.5;
+	color: var(--muted-color);
+	background: color-mix(in srgb, var(--reading-color) 7%, transparent);
+	border-radius: 10px;
+}
+
 .outputTypes button {
 	position: relative;
 	display: grid;

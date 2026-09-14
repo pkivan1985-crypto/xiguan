@@ -11,7 +11,7 @@
 		"url": "https://github.com/pkivan1985-crypto/xiguan/issues"
 	},
 	"homepage": "https://github.com/pkivan1985-crypto/xiguan",
-	"version": "3.0.0-rc.17",
+	"version": "3.0.0-rc.18",
 	"type": "module",
 	"packageManager": "npm@11.18.0",
 	"engines": {
@@ -91,15 +91,17 @@
 		"vite-plugin-html-config": "^2.0.2",
 		"vite-plugin-pwa": "1.3.0",
 		"vite-plugin-svgr": "^5.2.0",
-		"vitest": "4.1.10",
+		"vitest": "4.1.11",
 		"workbox-core": "^7.4.1",
 		"workbox-window": "^7.4.1"
 	},
 	"overrides": {
 		"brace-expansion": "5.0.9",
+		"colord": "2.10.0",
 		"fast-uri": "3.1.6",
+		"js-yaml": "4.3.2",
 		"postcss": "8.5.26",
-		"sharp": "0.35.3",
+		"sharp": "0.35.4",
 		"sharp-ico": "0.1.5"
 	}
 }

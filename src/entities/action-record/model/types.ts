@@ -83,6 +83,27 @@ export interface MediaOutputRecordDetails {
 	entries: MediaOutputEntry[];
 }
 
+export interface BookkeepingEntry {
+	id: string;
+	type: 'expense' | 'income';
+	amountCents: number;
+	categoryId: string;
+	categoryLabel: string;
+	accountId: string;
+	accountLabel: string;
+	item?: string;
+	note?: string;
+	localDate: LocalDate;
+	occurredTime: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface BookkeepingRecordDetails {
+	kind: 'bookkeeping';
+	entries: BookkeepingEntry[];
+}
+
 export interface LegacyExtraExpenseRecordDetails {
 	kind: 'extra-expense';
 	item: string;
@@ -100,6 +121,7 @@ export type HabitRecordDetails =
 	| SleepRecordDetails
 	| ScreenFreeRecordDetails
 	| MediaOutputRecordDetails
+	| BookkeepingRecordDetails
 	| ExtraExpenseRecordDetails
 	| LegacyExtraExpenseRecordDetails;
 

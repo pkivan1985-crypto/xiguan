@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components -- The approved task boundary keeps the tested interaction helpers beside this panel. */
+/* eslint-disable react-refresh/only-export-components, i18next/no-literal-string -- Tested helpers stay beside the panel; currency marks are compact data formatting. */
 import { useRef, useState, type FormEvent, type MouseEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,6 +13,7 @@ import {
 	PiPencilSimple,
 	PiPlayFill,
 	PiPlus,
+	PiReceipt,
 	PiTimer,
 	PiTrash,
 	PiX,
@@ -303,6 +304,17 @@ function HabitSupportingCopy({
 			</small>
 		);
 	}
+	if (habit.officialCardId === 'bookkeeping') {
+		return <small className={styles.bookkeepingSummary}>
+			<span>{t('shell.today.bookkeepingTodaySummary', {
+				today: number((habit.bookkeepingExpenseCents ?? 0) / 100),
+			})}</span>
+			<span>{t('shell.today.bookkeepingMonthSummary', {
+				count: habit.quantityBaseValue,
+				month: number((habit.bookkeepingMonthExpenseCents ?? 0) / 100),
+			})}</span>
+		</small>;
+	}
 
 	if (!habit.scheduledToday) {
 		return <small>{t('shell.today.restDay')}</small>;
@@ -403,6 +415,11 @@ function HabitControl({
 				</button>
 			</div>
 		);
+	}
+	if (onOpenDetails && habit.officialCardId === 'bookkeeping') {
+		return <div className={styles.quantityActions} data-layout='check-only'>
+			<button type='button' className={styles.checkAction} disabled={pending || completed} data-recorded={completed || undefined} aria-label={t('shell.today.openDetails', { title: habit.title })} onClick={completed ? undefined : (onAddMediaEntry ?? onOpenDetails)}><PiCheck aria-hidden='true' /></button>
+		</div>;
 	}
 	if (!habit.scheduledToday) {
 		return (
@@ -579,6 +596,7 @@ function HabitRow({
 		<div
 			className={styles.habitRow}
 			data-habit-id={habit.id}
+			data-official-card-id={habit.officialCardId}
 			data-tracking-type={habit.trackingType}
 			data-accent={habit.accent}
 			data-completed={isCompleted(habit)}
@@ -617,17 +635,22 @@ function HabitRow({
 				onOpenDetails={onOpenDetails ? () => onOpenDetails() : undefined}
 				onAddMediaEntry={onAddMediaEntry}
 			/>
-			{habit.officialCardId === 'media-output' && onOpenDetails && onAddMediaEntry && (
-				<div className={styles.mediaActionBar} aria-label={t('shell.today.mediaOutput.actions')}>
+			{(habit.officialCardId === 'media-output' || habit.officialCardId === 'bookkeeping') && onOpenDetails && onAddMediaEntry && (
+				<div className={styles.mediaActionBar} aria-label={t(habit.officialCardId === 'bookkeeping' ? 'shell.today.bookkeeping.actions' : 'shell.today.mediaOutput.actions')}>
 					<button type='button' disabled={pending} onClick={() => onOpenDetails()}>
 						<PiListBullets aria-hidden='true' />
-						<span>{t('shell.today.mediaOutput.viewRecords')}</span>
+						<span>{t(habit.officialCardId === 'bookkeeping' ? 'shell.today.bookkeeping.viewLedger' : 'shell.today.mediaOutput.viewRecords')}</span>
 					</button>
 					<i aria-hidden='true' />
 					<button type='button' disabled={pending} onClick={onAddMediaEntry}>
 						<PiPlus aria-hidden='true' />
-						<span>{t('shell.today.mediaOutput.addOutput')}</span>
+						<span>{t(habit.officialCardId === 'bookkeeping' ? 'shell.today.bookkeeping.addEntry' : 'shell.today.mediaOutput.addOutput')}</span>
 					</button>
+				</div>
+			)}
+			{habit.officialCardId === 'bookkeeping' && habit.details?.kind === 'bookkeeping' && habit.details.entries.length > 0 && (
+				<div className={styles.bookkeepingRecent}>
+					{[...habit.details.entries].sort((a, b) => b.occurredTime.localeCompare(a.occurredTime)).slice(0, 2).map((entry) => <span key={entry.id}><PiReceipt aria-hidden='true' /><small>{entry.occurredTime} · {entry.item || entry.categoryLabel}</small><b data-income={entry.type === 'income'}>{entry.type === 'income' ? '+' : '-'}¥{number(entry.amountCents / 100)}</b></span>)}
 				</div>
 			)}
 			{saveError && (
@@ -684,7 +707,6 @@ function SwipeableHabitRow({
 	function pointerDown(event: PointerEvent<HTMLDivElement>) {
 		if (!swipeEnabled || rowProps.pending) return;
 		const target = event.target;
-		// eslint-disable-next-line i18next/no-literal-string -- This is an interaction selector, not user-facing copy.
 		if (target instanceof Element && target.closest('a, button, input, textarea, select, [contenteditable="true"]')) return;
 		suppressNextClickRef.current = false;
 		gestureRef.current = {
@@ -746,7 +768,6 @@ function SwipeableHabitRow({
 			return;
 		}
 		const target = event.target;
-		// eslint-disable-next-line i18next/no-literal-string -- This is an interaction selector, not user-facing copy.
 		const deleteAction = target instanceof Element && target.closest('[data-testid="delete-habit-action"]');
 		if (revealed && !deleteAction) {
 			event.preventDefault();

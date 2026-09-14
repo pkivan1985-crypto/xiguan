@@ -72,12 +72,14 @@ export async function createHabit(
 	if (Number.isNaN(Date.parse(input.nowIso))) throw new Error('INVALID_NOW_ISO');
 
 	const userCards = database.tableFor<UserCard>('userCards');
-	if (template.id === 'extra-expense') {
+	if (template.id === 'extra-expense' || template.id === 'bookkeeping') {
 		const existingExpenseCard = await userCards
-			.where('officialCardId').equals('extra-expense')
+			.where('officialCardId').equals(template.id)
 			.filter((card) => card.status === 'active')
 			.first();
-		if (existingExpenseCard) throw new Error('ACTIVE_EXTRA_EXPENSE_CARD_EXISTS');
+		if (existingExpenseCard) throw new Error(template.id === 'bookkeeping'
+			? 'ACTIVE_BOOKKEEPING_CARD_EXISTS'
+			: 'ACTIVE_EXTRA_EXPENSE_CARD_EXISTS');
 	}
 	const longTermGoals = database.tableFor<LongTermGoal>('longTermGoals');
 	const stageGoalsTable = database.tableFor<StageGoal>('stageGoals');

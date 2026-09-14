@@ -170,6 +170,42 @@
 	background: var(--border-color);
 }
 
+.bookkeepingRecent {
+	display: grid;
+	grid-column: 1 / -1;
+	gap: 0;
+	margin-top: -2px;
+	border-top: 1px solid var(--border-color);
+}
+
+.bookkeepingRecent > span {
+	display: grid;
+	grid-template-columns: 20px minmax(0, 1fr) auto;
+	gap: 8px;
+	align-items: center;
+	min-height: 34px;
+	color: var(--muted-color);
+}
+
+.bookkeepingRecent > span + span {
+	border-top: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
+}
+
+.bookkeepingRecent small {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.bookkeepingRecent b {
+	font-size: 12px;
+	color: var(--text-color);
+}
+
+.bookkeepingRecent b[data-income='true'] {
+	color: var(--success-color);
+}
+
 .habitCopy:disabled {
 	cursor: default;
 	opacity: 1;
@@ -190,6 +226,22 @@
 	font-size: 13px;
 	line-height: 19px;
 	color: var(--muted-color);
+	white-space: nowrap;
+}
+
+.habitRow[data-official-card-id='bookkeeping'] .habitCopy small {
+	overflow: visible;
+	white-space: normal;
+}
+
+.bookkeepingSummary {
+	display: grid;
+	gap: 0;
+}
+
+.bookkeepingSummary > span {
+	overflow: hidden;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 

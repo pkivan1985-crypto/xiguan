@@ -1,4 +1,4 @@
-/* stylelint-disable no-descending-specificity -- Route rows intentionally refine the existing semantic element styles. */
+/* stylelint-disable no-descending-specificity, declaration-block-single-line-max-declarations -- Route rows refine shared elements; compact bookkeeping rules stay grouped. */
 .page {
 	display: grid;
 	gap: 10px;
@@ -346,6 +346,59 @@
 	border: 1px solid var(--accent-color);
 	border-radius: 15px;
 }
+
+.bookkeepingPage { display: grid; gap: 14px; padding-bottom: 28px; }
+.monthSelector { display: grid; grid-template-columns: 38px minmax(130px, 1fr) 38px; gap: 6px; align-items: center; width: 100%; padding: 5px; font-size: 14px; font-weight: 720; text-align: center; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 15px; }
+.monthSelector button { display: grid; place-items: center; min-height: 38px; color: var(--text-color); background: var(--surface-raised); border: 0; border-radius: 11px; }
+.monthSelector button:disabled { color: var(--muted-color); opacity: 0.35; }
+.bookkeepingTabs { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 15px; }
+.bookkeepingTabs > * { display: grid; place-items: center; min-height: 42px; color: var(--muted-color); border-radius: 11px; }
+.bookkeepingTabs span { font-weight: 750; color: white; background: var(--accent-color); }
+.bookkeepingBalance { display: grid; gap: 8px; padding: 20px; background: linear-gradient(145deg, color-mix(in srgb, var(--reading-color) 13%, var(--surface-color)), var(--surface-color)); border: 1px solid color-mix(in srgb, var(--reading-color) 34%, var(--border-color)); border-radius: 20px; }
+.bookkeepingBalance > small { color: var(--muted-color); }
+.bookkeepingBalance > strong { font-size: 30px; }
+.bookkeepingBalance > div { display: flex; gap: 18px; color: var(--muted-color); }
+.bookkeepingBalance > div span { display: inline-flex; gap: 5px; align-items: center; }
+.bookkeepingBalance > div span:first-child svg { color: var(--success-color); }
+.bookkeepingBalance > div span:last-child svg { color: var(--reading-color); }
+.budgetCard, .categoryCard { display: grid; gap: 12px; padding: 17px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 18px; }
+.budgetCard header, .categoryCard header { display: flex; align-items: center; justify-content: space-between; }
+.budgetCard header span, .categoryCard header span { display: inline-flex; gap: 7px; align-items: center; font-weight: 720; }
+.budgetCard header svg, .categoryCard header svg { color: var(--reading-color); }
+.budgetCard header b, .categoryCard header b { font-size: 13px; color: var(--muted-color); }
+.budgetCard > span { height: 7px; overflow: hidden; background: var(--surface-raised); border-radius: 999px; }
+.budgetCard > span i { display: block; height: 100%; background: var(--reading-color); border-radius: inherit; }
+.budgetCard > small { color: var(--muted-color); }
+.categoryBody { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 18px; align-items: center; }
+.donut { --ratio: 0%; display: grid; place-items: center; width: 112px; aspect-ratio: 1; background: conic-gradient(var(--reading-color) var(--ratio), var(--accent-color) 0 82%, var(--surface-raised) 0); border-radius: 50%; }
+.donut::after { grid-area: 1 / 1; width: 72px; aspect-ratio: 1; content: ''; background: var(--surface-color); border-radius: 50%; }
+.donut i { z-index: 1; grid-area: 1 / 1; font-size: 14px; font-style: normal; font-weight: 750; }
+.categoryBody > div { display: grid; gap: 8px; }
+.categoryBody p { display: flex; justify-content: space-between; margin: 0; font-size: 13px; }
+.categoryBody p span { color: var(--muted-color); }
+.bookkeepingEmpty { margin: 0; color: var(--muted-color); }
+.bookkeepingWeek { display: grid; gap: 14px; padding: 17px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 18px; }
+.bookkeepingWeek h3 { margin: 0; font-size: 16px; }
+.bookkeepingWeek > div { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end; min-height: 105px; }
+.bookkeepingWeek > div > span { display: grid; gap: 5px; place-items: end center; height: 100%; font-size: 11px; color: var(--muted-color); }
+.bookkeepingWeek small { align-self: end; min-height: 14px; font-size: 10px; }
+.bookkeepingWeek i { align-self: end; width: min(24px, 70%); min-height: 4px; background: linear-gradient(180deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 62%, transparent)); border-radius: 6px 6px 2px 2px; }
+.bookkeepingWeek b { font-weight: 650; }
+.bookkeepingRecent { display: grid; overflow: hidden; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 18px; }
+.bookkeepingRecent h3 { padding: 16px 16px 6px; margin: 0; font-size: 16px; }
+.bookkeepingRecent > a { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 66px; padding: 9px 15px; color: var(--text-color); }
+.bookkeepingRecent > a + a { border-top: 1px solid var(--border-color); }
+.bookkeepingRecent > a > svg { box-sizing: content-box; padding: 8px; color: var(--reading-color); background: color-mix(in srgb, var(--reading-color) 12%, transparent); border-radius: 10px; }
+.bookkeepingRecent > a span { display: grid; gap: 3px; min-width: 0; }
+.bookkeepingRecent > a strong, .bookkeepingRecent > a small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bookkeepingRecent > a small { font-size: 12px; color: var(--muted-color); }
+.bookkeepingRecent > a b { font-size: 13px; }
+.bookkeepingRecent > a b[data-income='true'] { color: var(--success-color); }
+.bookkeepingRecent > footer { display: flex; gap: 8px; align-items: center; padding: 13px 16px; color: var(--muted-color); border-top: 1px solid var(--border-color); }
+.bookkeepingRecent > footer svg { color: var(--accent-color); }
+.bookkeepingRecent > footer b { color: var(--text-color); }
+
+@media (max-width: 360px) { .categoryBody { grid-template-columns: 94px minmax(0, 1fr); } .donut { width: 92px; } .donut::after { width: 58px; } }
 
 .stageRoute {
 	display: grid;

@@ -429,6 +429,8 @@
 			"details": "查看详情",
 			"eventDriven": "有消费时记录",
 			"eventDrivenHint": "无消费无需打卡",
+			"bookkeepingEventDriven": "有收支时记录",
+			"bookkeepingEventDrivenHint": "无收支无需打卡",
 			"deleteDescription": "这会永久删除习惯、目标、阶段和全部历史记录，删除后无法恢复。",
 			"deleteTitle": "永久删除“{{title}}”？",
 			"emptyCards": "还没有循环卡",
@@ -565,7 +567,8 @@
 				"check": "次",
 				"avoid": "天",
 				"money": "元",
-				"output": "条"
+				"output": "条",
+				"bookkeeping": "笔"
 			},
 			"planName": "目标名称",
 			"planTarget": "目标数值",
@@ -577,7 +580,8 @@
 				"sleep": "早睡",
 				"water": "喝水",
 				"extraExpense": "额外开支",
-				"mediaOutput": "自媒体输出"
+				"mediaOutput": "自媒体输出",
+				"bookkeeping": "记账"
 			},
 			"placeholders": {
 				"light-food": "例如：清淡饮食",
@@ -587,7 +591,8 @@
 				"sleep": "例如：十一点前睡",
 				"water": "例如：工作日喝水",
 				"extra-expense": "例如：额外开支反思",
-				"media-output": "例如：稳定内容输出"
+				"media-output": "例如：稳定内容输出",
+				"bookkeeping": "例如：日常记账"
 			},
 			"longTitle": "长期目标名称",
 			"kmValue": "{{value}} 公里",
@@ -612,7 +617,27 @@
 				"distance": "距离",
 				"duration": "时长",
 				"money": "金额反思",
-				"output": "作品计数"
+				"output": "作品计数",
+				"bookkeeping": "收支记录"
+			},
+			"bookkeeping": {
+				"startAndReminder": "开始与提醒",
+				"startAndReminderHint": "选择启用日期；提醒只帮助记起，不要求每天打卡",
+				"startDate": "开始日期",
+				"reminder": "每日提醒",
+				"reminderTime": "提醒时间",
+				"accountsTitle": "常用账户",
+				"accountsHint": "记账时可以直接点选",
+				"categoriesTitle": "常用分类",
+				"categoriesHint": "保留常用项，让每笔记录更快",
+				"budgetTitle": "月度预算（可选）",
+				"budgetHint": "用于统计提醒，不影响记账",
+				"budgetReminder": "预算提醒",
+				"localNote": "有收支才记录，不记不算漏打卡 · 数据仅保存在本机",
+				"todayPreview": "查看账本或快速记一笔",
+				"off": "已关闭",
+				"accounts": { "wechat": "微信", "alipay": "支付宝", "bank-card": "银行卡", "cash": "现金" },
+				"categories": { "food": "餐饮", "transport": "交通", "shopping": "购物", "housing": "居住", "salary": "工资", "other": "其他" }
 			},
 			"foodRulesTitle": "饮食规则",
 			"foodRulesHint": "每天逐项记录，新增规则会加入同一清单",
@@ -1079,6 +1104,9 @@
 				"viewRecords": "查看记录"
 			},
 			"expenseSummary": "今日 ¥{{today}} · {{count}}笔　　本月 ¥{{month}}",
+			"bookkeepingTodaySummary": "今日支出 ¥{{today}}",
+			"bookkeepingMonthSummary": "{{count}}笔 · 本月 ¥{{month}}",
+			"bookkeeping": { "actions": "记账操作", "viewLedger": "查看账本", "addEntry": "记一笔" },
 			"openDetails": "查看{{title}}详情",
 			"viewTodaySummaryHint": "月历和目标进展都在进展页",
 			"weekLabel": "本周日期",

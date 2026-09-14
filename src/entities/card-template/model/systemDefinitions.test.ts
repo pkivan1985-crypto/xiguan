@@ -43,6 +43,7 @@ describe('system definitions', () => {
 			['sleep', 'check'],
 			['screen-free', 'avoid'],
 			['media-output', 'count'],
+			['bookkeeping', 'count'],
 			['extra-expense', 'quantity'],
 		]);
 		expect(SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'extra-expense')).toMatchObject({
@@ -55,6 +56,10 @@ describe('system definitions', () => {
 				basePerDisplayUnit: 100,
 				maxDecimalPlaces: 2,
 			},
+		});
+		expect(SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'bookkeeping')).toMatchObject({
+			categoryId: 'life-management', iconKey: 'wallet', trackingType: 'count',
+			quantity: { baseUnit: 'entry', displayUnit: '笔', basePerDisplayUnit: 1 },
 		});
 		expect(SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'light-food')).toMatchObject({
 			categoryId: 'nutrition',

@@ -8,9 +8,9 @@ const REQUIRED_FILES = ['LICENSE', 'README.md', 'SECURITY.md', 'CHANGELOG.md', '
 const UPSTREAM_SOURCE_URL = 'https://github.com/iNikAnn/DoHabit';
 const CANDIDATE_SITE_URL = 'https://repeat-outcome.pages.dev';
 const APPROVED_DEPENDENCY_HASH = 'bd27c8c970088bba1da0065f67fde084cbd0874bfd7cd166a0bc532e74cabd8a';
-const APPROVED_DEV_DEPENDENCY_HASH = 'daf33c8579a95c6f1895f9681f4e20a144227d0fbd3b97ab3c8a4528d3e8042b';
-const APPROVED_OVERRIDE_HASH = '16c43279b6df0daf0c0b0ae2f4e46f3309fb093e730d6d804a0ca0cefd550bce';
-const APPROVED_TRANSITIVE_LOCK_HASH = '9d394476856f52fc60a2f1046bebbd4a781d9ac420d4bbf4a8ba08e1ffc372a3';
+const APPROVED_DEV_DEPENDENCY_HASH = '194f7291f07d459d49dff1565ef7dd3a27d84aa59998706bc0034d2836ef8f1e';
+const APPROVED_OVERRIDE_HASH = '339fa28fe57fab1eb062988d42fee837776c81d42444c94c16ffe33e569f257f';
+const APPROVED_TRANSITIVE_LOCK_HASH = '3567cd6ef678a65b3bff1f9bd6deb53b14e04a99e7ba885dceaa8a43d1747cca';
 const REQUIRED_DIST_FILES = ['dist/_headers', 'dist/_redirects', 'dist/favicon.svg', 'dist/index.html', 'dist/manifest.webmanifest', 'dist/robots.txt', 'dist/sw.js'];
 const ALLOWED_DIST_FILE = /^(?:dist\/(?:_headers|_redirects|apple-touch-icon-180x180\.png|favicon\.(?:ico|svg)|index\.html|manifest\.webmanifest|maskable-icon-512x512\.png|pwa-(?:64x64|192x192|512x512)\.png|robots\.txt|sw\.js|workbox-[A-Za-z0-9_-]+\.js)|dist\/assets\/(?:index|workbox-window\.prod\.es5)-[A-Za-z0-9_-]+\.(?:css|js))$/;
 

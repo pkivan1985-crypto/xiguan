@@ -40,3 +40,45 @@
 - The full `npm run verify` reaches the final development-dependency audit and reports the pre-existing three high-severity transitive advisories in `browserslist` and `fast-uri`; production dependency audit remains 0 vulnerabilities. Dependencies were intentionally not changed in this UI-only task.
 
 final result: passed
+
+---
+
+# Design QA — 记账习惯完整流程
+
+- Date: 2026-09-14
+- Source visual truth:
+  - `design-qa-artifacts/bookkeeping-20260914/reference-create.png`
+  - `design-qa-artifacts/bookkeeping-20260914/reference-today.png`
+  - `design-qa-artifacts/bookkeeping-20260914/reference-statistics.png`
+- Implementation URL: `http://127.0.0.1:42901/`
+- Verification viewport: 390 × 844 CSS pixels.
+- Tested state: one bookkeeping habit, three same-day test entries, ¥128.50 expense, ¥8,200 income, and ¥3,000 monthly budget.
+- Implementation captures were inspected inline in the Codex in-app Browser; this browser backend did not expose filesystem screenshot paths.
+
+## Visual review
+
+- Create flow: passed. The bookkeeping preset opens a dedicated settings surface with start date, reminder time, common accounts, common categories, optional budget, and the local-only/event-driven note. Generic long-term, stage, and weekday planning controls are absent.
+- Today card: passed. It uses the amber wallet identity, two-line daily/month summary, one green completion circle after the first entry, the paired `查看账本` / `记一笔` actions, and at most two compact recent rows. At 390px no summary text or action is clipped.
+- Entry page: passed. Add/edit uses a full page rather than a bottom sheet; amount, expense/income, date, time, category, account, item, and note are all visible and editable.
+- Statistics: passed. The screen includes month navigation, `账本 / 统计` segmentation, balance, income/expense, monthly budget, category donut, recent-seven-day bars, recent entries, and monthly entry/day counts.
+- Product-shell adaptation: the approved visual hierarchy and content are fitted to the existing three-tab navigation, spacing tokens, fonts, and reusable icon system rather than copying generated pixels mechanically.
+
+## Interaction review
+
+- Creating `记账` produced one active event-driven habit and did not add a weekday plan.
+- Multiple transactions were stored in one daily action record and immediately refreshed in the ledger after save.
+- Editing an entry opens with its amount, date, time, category, account, item, and note prefilled.
+- Month navigation switches between a populated current month and an empty previous month; future navigation is disabled.
+- The Today page marks bookkeeping complete only when at least one entry exists; days with no transactions do not count as missed habits.
+- Browser console contained no warnings or errors during the final Today, ledger, edit, and statistics checks.
+
+## Regression coverage
+
+- Bookkeeping entry construction and signed totals.
+- Multiple entries in one day.
+- Moving an edited entry between dates without duplication.
+- Bookkeeping singleton creation and saved configuration.
+- Daily-card inclusion, counts, and monthly expense aggregation.
+- Backup validation for bookkeeping configuration and records.
+
+final result: passed
