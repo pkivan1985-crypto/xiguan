@@ -4,6 +4,7 @@ import type { UserCard } from '@entities/user-card';
 import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 import { parseLocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
+import { parseMoneyInputToCents } from '@shared/lib/money-input';
 
 export interface BookkeepingFormValues {
 	type: BookkeepingEntry['type'];
@@ -26,11 +27,10 @@ export function buildBookkeepingEntry(
 	values: BookkeepingFormValues,
 	options: { id: string; nowIso: string; createdAt?: string },
 ): BookkeepingEntry | null {
-	const amount = Number(values.amount);
-	const amountCents = Math.round(amount * 100);
+	const amountCents = parseMoneyInputToCents(values.amount);
 	let localDate: string;
 	try { localDate = parseLocalDate(values.localDate); } catch { return null; }
-	if (!Number.isSafeInteger(amountCents) || amountCents <= 0
+	if (amountCents === undefined || amountCents <= 0
 		|| !values.categoryId || !values.categoryLabel.trim()
 		|| !values.accountId || !values.accountLabel.trim()
 		|| !/^([01]\d|2[0-3]):[0-5]\d$/.test(values.occurredTime)) return null;

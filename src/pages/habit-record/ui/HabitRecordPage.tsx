@@ -33,6 +33,7 @@ import { loadDailyHabitsInApp, type DailyHabitView } from '@features/load-daily-
 import { saveDailyHabitInApp } from '@features/save-daily-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate, parseLocalDate } from '@shared/lib/date';
+import { formatMoneyInput, moneyInputFromCents, normalizeMoneyInput, prepareMoneyInputForEditing } from '@shared/lib/money-input';
 import { SegmentedPaceInput } from '@shared/ui/segmented-pace-input/SegmentedPaceInput';
 import { HabitGlyph } from '@widgets/habit-glyph';
 
@@ -109,11 +110,15 @@ interface FieldProps {
 	unit?: string;
 	placeholder?: string;
 	icon?: ReactNode;
-	inputType?: 'number' | 'text';
+	inputType?: 'number' | 'text' | 'money';
 }
 
 function Field({ label, value, onChange, unit, placeholder, icon, inputType = 'number' }: FieldProps) {
-	return <label className={styles.field}><span>{icon}{label}</span><div><input type={inputType} inputMode={inputType === 'number' ? 'decimal' : undefined} min={inputType === 'number' ? '0' : undefined} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />{unit && <small>{unit}</small>}</div></label>;
+	const money = inputType === 'money';
+	return <label className={styles.field}><span>{icon}{label}</span><div><input type={money ? 'text' : inputType} inputMode={inputType === 'number' || money ? 'decimal' : undefined} min={inputType === 'number' ? '0' : undefined} pattern={money ? '[0-9]*([.,][0-9]{0,2})?' : undefined} value={value} placeholder={placeholder} onChange={(event) => {
+		const nextValue = money ? normalizeMoneyInput(event.target.value) : event.target.value;
+		if (nextValue !== undefined) onChange(nextValue);
+	}} onFocus={() => { if (money) onChange(prepareMoneyInputForEditing(value)); }} onBlur={() => { if (money) onChange(formatMoneyInput(value)); }} />{unit && <small>{unit}</small>}</div></label>;
 }
 
 function HabitRecordPage() {
@@ -229,10 +234,10 @@ function HabitRecordPage() {
 							fallbackTimestamp: selected.recordSavedAt ?? new Date().toISOString(),
 						}).find(({ id }) => id === expenseEntryId);
 						if (expense) {
-							setActual(String(expense.amountCents / 100));
+							setActual(moneyInputFromCents(expense.amountCents));
 							setExpenseItem(expense.item);
 							setExpenseReason(expense.reason);
-							setBankBalance(expense.bankBalanceCents === undefined ? '' : String(expense.bankBalanceCents / 100));
+							setBankBalance(expense.bankBalanceCents === undefined ? '' : moneyInputFromCents(expense.bankBalanceCents));
 							setEarnBackDays(expense.earnBackDays === undefined ? '' : String(expense.earnBackDays));
 							setCompensation(expense.compensation ?? '');
 							setNecessity(expense.necessity);
@@ -689,13 +694,16 @@ function HabitRecordPage() {
 			<section className={`${styles.block} ${styles.expenseBlock}`}>
 				<label className={styles.expenseAmount}>
 					<span>¥</span>
-					<input type='number' inputMode='decimal' min='0.01' step='0.01' value={actual} onChange={(event) => setActual(event.target.value)} placeholder='0.00' autoFocus />
+					<input type='text' inputMode='decimal' pattern='[0-9]*([.,][0-9]{0,2})?' value={actual} onChange={(event) => {
+						const nextValue = normalizeMoneyInput(event.target.value);
+						if (nextValue !== undefined) setActual(nextValue);
+					}} onFocus={() => setActual(prepareMoneyInputForEditing(actual))} onBlur={() => setActual(formatMoneyInput(actual))} placeholder='0.00' autoFocus />
 				</label>
 				<label className={styles.expenseTextField}><PiTimer aria-hidden='true' /><span>{t('shell.record.expense.time')}</span><input type='time' value={occurredTime} onChange={(event) => setOccurredTime(event.target.value)} /></label>
 				<label className={styles.expenseTextField}><PiShoppingBag aria-hidden='true' /><span>{t('shell.record.expense.item')}</span><input value={expenseItem} maxLength={80} onChange={(event) => setExpenseItem(event.target.value)} /></label>
 				<label className={styles.expenseTextField}><PiReceipt aria-hidden='true' /><span>{t('shell.record.expense.reason')}</span><textarea value={expenseReason} maxLength={280} onChange={(event) => setExpenseReason(event.target.value)} /></label>
 				<div className={styles.grid}>
-					<Field label={t('shell.record.expense.bankBalance')} value={bankBalance} onChange={setBankBalance} unit={t('shell.record.expense.yuan')} icon={<PiWallet />} />
+					<Field label={t('shell.record.expense.bankBalance')} value={bankBalance} onChange={setBankBalance} unit={t('shell.record.expense.yuan')} icon={<PiWallet />} inputType='money' />
 					<Field label={t('shell.record.expense.earnBackDays')} value={earnBackDays} onChange={setEarnBackDays} unit={t('shell.record.expense.days')} />
 				</div>
 				<label className={styles.expenseTextField}><PiWallet aria-hidden='true' /><span>{t('shell.record.expense.compensation')}</span><textarea value={compensation} maxLength={280} onChange={(event) => setCompensation(event.target.value)} /></label>

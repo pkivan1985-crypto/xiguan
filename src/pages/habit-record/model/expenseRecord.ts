@@ -1,5 +1,6 @@
 /* eslint-disable i18next/no-literal-string -- Stable record kinds and fallback identifiers are not user-facing. */
 import type { ExtraExpenseLineItem, ExtraExpenseRecordDetails, HabitRecordDetails } from '@entities/action-record';
+import { parseMoneyInputToCents } from '@shared/lib/money-input';
 
 export interface ExpenseRecordFormValues {
 	amount: string;
@@ -27,14 +28,6 @@ interface LegacyFallback {
 	fallbackTimestamp?: string;
 }
 
-function yuanToCents(value: string): number | undefined {
-	if (!value.trim()) return undefined;
-	const parsed = Number(value);
-	if (!Number.isFinite(parsed) || parsed < 0) return undefined;
-	const cents = Math.round(parsed * 100);
-	return Number.isSafeInteger(cents) ? cents : undefined;
-}
-
 function timeFromTimestamp(timestamp: string): string {
 	const date = new Date(timestamp);
 	if (Number.isNaN(date.getTime())) return '12:00';
@@ -42,11 +35,11 @@ function timeFromTimestamp(timestamp: string): string {
 }
 
 export function buildExpenseLineItem(values: ExpenseRecordFormValues, options: ExpenseLineOptions): ExtraExpenseLineItem | null {
-	const amountCents = yuanToCents(values.amount);
+	const amountCents = parseMoneyInputToCents(values.amount);
 	const item = values.item.trim();
 	const reason = values.reason.trim();
 	if (!amountCents || !item || !reason || !/^([01]\d|2[0-3]):[0-5]\d$/.test(values.occurredTime)) return null;
-	const bankBalanceCents = yuanToCents(values.bankBalance);
+	const bankBalanceCents = parseMoneyInputToCents(values.bankBalance);
 	const earnBackDays = values.earnBackDays.trim() ? Number(values.earnBackDays) : undefined;
 	if (earnBackDays !== undefined && (!Number.isSafeInteger(earnBackDays) || earnBackDays < 0)) return null;
 	return {

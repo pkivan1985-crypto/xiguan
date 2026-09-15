@@ -14,6 +14,10 @@ describe('bookkeeping records', () => {
 		expect(bookkeepingTotals([entry!, { ...entry!, id: 'b', type: 'income', amountCents: 820000 }])).toEqual({ incomeCents: 820000, expenseCents: 3850, balanceCents: 816150 });
 	});
 
+	it('rejects amounts with more than two decimal places instead of rounding silently', () => {
+		expect(buildBookkeepingEntry({ type: 'expense', amount: '38.505', categoryId: 'food', categoryLabel: '餐饮', accountId: 'cash', accountLabel: '现金', item: '', note: '', localDate: '2026-09-14', occurredTime: '12:30' }, { id: 'a', nowIso: '2026-09-14T04:30:00.000Z' })).toBeNull();
+	});
+
 	it('stores multiple entries in the single daily action record', async () => {
 		await database.table('userCards').add({ id: 'ledger', officialCardId: 'bookkeeping', title: '记账', status: 'active', sortOrder: 0, createdAt: '2026-09-14T00:00:00.000Z', updatedAt: '2026-09-14T00:00:00.000Z' });
 		for (const [id, amount] of [['a', 3850], ['b', 9000]] as const) await saveBookkeepingEntry(database, { userCardId: 'ledger', entry: { id, type: 'expense', amountCents: amount, categoryId: 'food', categoryLabel: '餐饮', accountId: 'cash', accountLabel: '现金', localDate: '2026-09-14', occurredTime: id === 'a' ? '12:30' : '18:20', createdAt: '2026-09-14T00:00:00.000Z', updatedAt: '2026-09-14T00:00:00.000Z' }, nowIso: '2026-09-14T12:00:00.000Z', submissionId: id });
