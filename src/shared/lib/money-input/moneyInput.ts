@@ -24,3 +24,9 @@ export function formatMoneyInput(value: string): string {
 	const cents = parseMoneyInputToCents(value);
 	return cents === undefined ? value : moneyInputFromCents(cents);
 }
+
+export function prepareMoneyInputForEditing(value: string): string {
+	const normalized = normalizeMoneyInput(value);
+	if (normalized === undefined || !normalized.includes('.')) return value;
+	return normalized.replace(/\.?0+$/, '');
+}

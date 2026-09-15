@@ -4,6 +4,7 @@ import {
 	formatMoneyInput,
 	moneyInputFromCents,
 	normalizeMoneyInput,
+	prepareMoneyInputForEditing,
 	parseMoneyInputToCents,
 } from './moneyInput';
 
@@ -26,6 +27,12 @@ describe('money input', () => {
 		expect(formatMoneyInput('12.3')).toBe('12.30');
 		expect(formatMoneyInput('12.34')).toBe('12.34');
 		expect(formatMoneyInput('')).toBe('');
+	});
+
+	it('removes display-only trailing zeroes when the field is focused again', () => {
+		expect(prepareMoneyInputForEditing('8.00')).toBe('8');
+		expect(prepareMoneyInputForEditing('8.50')).toBe('8.5');
+		expect(prepareMoneyInputForEditing('8.05')).toBe('8.05');
 	});
 
 	it('round-trips exact integer cents without floating-point drift', () => {

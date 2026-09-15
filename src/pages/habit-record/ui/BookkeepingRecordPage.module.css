@@ -1,7 +1,9 @@
 /* stylelint-disable declaration-block-single-line-max-declarations, no-descending-specificity -- Compact, page-local bookkeeping layout rules. */
 .page { display: grid; gap: 10px; align-content: start; width: min(100%, 620px); min-height: 100dvh; padding: 0 14px 20px; margin: 0 auto; background: var(--page-bg); }
+.entryPage { grid-template-rows: auto auto; gap: 8px; align-content: start; }
 .header { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; min-height: 58px; padding-top: env(safe-area-inset-top, 0); }
-.header button { display: grid; place-items: center; width: 40px; height: 40px; font-size: 21px; color: var(--muted-color); background: transparent; border-radius: 12px; }
+.header > button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; font-size: 21px; color: var(--muted-color); appearance: none; background: transparent; border: 0; border-radius: 50%; box-shadow: none; }
+.header > button:active { color: var(--text-color); background: var(--surface-raised); }
 .header button:focus-visible { color: var(--accent-color); outline: 2px solid var(--accent-color); outline-offset: 1px; }
 .header div { display: grid; gap: 2px; text-align: center; }
 .header small { font-size: 11px; color: var(--muted-color); }
@@ -28,6 +30,7 @@
 .ledgerActions button:first-child, .save { color: #fff; background: var(--accent-color); }
 .ledgerActions button:last-child { color: var(--accent-color); background: var(--surface-color); border: 1px solid var(--border-color); }
 .form { display: grid; gap: 12px; }
+.entryPage .form { align-content: start; margin: 0; }
 .typeSwitch { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; }
 .typeSwitch button { min-height: 38px; color: var(--muted-color); border-radius: 9px; }
 .typeSwitch button[aria-pressed='true'] { font-weight: 750; color: var(--text-color); background: color-mix(in srgb, var(--accent-color) 18%, var(--surface-raised)); }

@@ -33,7 +33,7 @@ import { loadDailyHabitsInApp, type DailyHabitView } from '@features/load-daily-
 import { saveDailyHabitInApp } from '@features/save-daily-habit';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate, parseLocalDate } from '@shared/lib/date';
-import { formatMoneyInput, moneyInputFromCents, normalizeMoneyInput } from '@shared/lib/money-input';
+import { formatMoneyInput, moneyInputFromCents, normalizeMoneyInput, prepareMoneyInputForEditing } from '@shared/lib/money-input';
 import { SegmentedPaceInput } from '@shared/ui/segmented-pace-input/SegmentedPaceInput';
 import { HabitGlyph } from '@widgets/habit-glyph';
 
@@ -118,7 +118,7 @@ function Field({ label, value, onChange, unit, placeholder, icon, inputType = 'n
 	return <label className={styles.field}><span>{icon}{label}</span><div><input type={money ? 'text' : inputType} inputMode={inputType === 'number' || money ? 'decimal' : undefined} min={inputType === 'number' ? '0' : undefined} pattern={money ? '[0-9]*([.,][0-9]{0,2})?' : undefined} value={value} placeholder={placeholder} onChange={(event) => {
 		const nextValue = money ? normalizeMoneyInput(event.target.value) : event.target.value;
 		if (nextValue !== undefined) onChange(nextValue);
-	}} onBlur={() => { if (money) onChange(formatMoneyInput(value)); }} />{unit && <small>{unit}</small>}</div></label>;
+	}} onFocus={() => { if (money) onChange(prepareMoneyInputForEditing(value)); }} onBlur={() => { if (money) onChange(formatMoneyInput(value)); }} />{unit && <small>{unit}</small>}</div></label>;
 }
 
 function HabitRecordPage() {
@@ -697,7 +697,7 @@ function HabitRecordPage() {
 					<input type='text' inputMode='decimal' pattern='[0-9]*([.,][0-9]{0,2})?' value={actual} onChange={(event) => {
 						const nextValue = normalizeMoneyInput(event.target.value);
 						if (nextValue !== undefined) setActual(nextValue);
-					}} onBlur={() => setActual(formatMoneyInput(actual))} placeholder='0.00' autoFocus />
+					}} onFocus={() => setActual(prepareMoneyInputForEditing(actual))} onBlur={() => setActual(formatMoneyInput(actual))} placeholder='0.00' autoFocus />
 				</label>
 				<label className={styles.expenseTextField}><PiTimer aria-hidden='true' /><span>{t('shell.record.expense.time')}</span><input type='time' value={occurredTime} onChange={(event) => setOccurredTime(event.target.value)} /></label>
 				<label className={styles.expenseTextField}><PiShoppingBag aria-hidden='true' /><span>{t('shell.record.expense.item')}</span><input value={expenseItem} maxLength={80} onChange={(event) => setExpenseItem(event.target.value)} /></label>

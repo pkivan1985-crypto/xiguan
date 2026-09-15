@@ -7,6 +7,8 @@ describe('BookkeepingRecordPage compact presentation', () => {
 
 		expect(css).toMatch(/\.page\s*\{[^}]*gap:\s*10px;/s);
 		expect(css).toMatch(/\.header\s*\{[^}]*min-height:\s*58px;/s);
+		expect(css).toMatch(/\.entryPage\s*\{[^}]*grid-template-rows:\s*auto auto;[^}]*align-content:\s*start;/s);
+		expect(css).toMatch(/\.header > button\s*\{[^}]*appearance:\s*none;[^}]*background:\s*transparent;/s);
 		expect(css).toMatch(/\.summary\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\) auto;/s);
 		expect(css).toMatch(/\.list > button\s*\{[^}]*min-height:\s*60px;[^}]*background:\s*transparent;/s);
 		expect(css).toMatch(/\.ledgerActions button:first-child, \.save\s*\{[^}]*background:\s*var\(--accent-color\);/s);

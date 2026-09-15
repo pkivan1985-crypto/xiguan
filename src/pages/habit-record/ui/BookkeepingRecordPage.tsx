@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import type { DailyHabitView } from '@features/load-daily-habits';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
-import { formatMoneyInput, moneyInputFromCents, normalizeMoneyInput } from '@shared/lib/money-input';
+import { formatMoneyInput, moneyInputFromCents, normalizeMoneyInput, prepareMoneyInputForEditing } from '@shared/lib/money-input';
 import { buildBookkeepingEntry, bookkeepingTotals, normalizeBookkeepingEntries, removeBookkeepingEntryInApp, saveBookkeepingEntryInApp, type BookkeepingFormValues } from '../model/bookkeepingRecord';
 import styles from './BookkeepingRecordPage.module.css';
 
@@ -73,7 +73,7 @@ function BookkeepingRecordPage({ habit, localDate }: Props) {
 		<nav className={styles.ledgerActions}><button type='button' onClick={() => navigate(route(localDate, 'new'))}><PiPlus />记一笔</button><button type='button' onClick={() => navigate(APP_ROUTES.goalDetails(habit.id))}><PiListBullets />查看统计</button></nav>
 	</main>;
 
-	return <main className={styles.page}>
+	return <main className={`${styles.page} ${styles.entryPage}`}>
 		<header className={styles.header}><button type='button' onClick={() => navigate(route())} aria-label='返回账本'><PiArrowLeft /></button><div><small>{existing ? '修改记录' : '新增记录'}</small><h1>记一笔</h1></div><button type='button' onClick={() => navigate(APP_ROUTES.HOME)} aria-label='关闭'><PiX /></button></header>
 		<form className={styles.form} onSubmit={(event) => void save(event)}>
 			<div className={styles.typeSwitch}><button type='button' aria-pressed={values.type === 'expense'} onClick={() => setValues((current) => ({ ...current, type: 'expense' }))}>支出</button><button type='button' aria-pressed={values.type === 'income'} onClick={() => setValues((current) => ({ ...current, type: 'income' }))}>收入</button></div>
@@ -81,7 +81,7 @@ function BookkeepingRecordPage({ habit, localDate }: Props) {
 				const amount = normalizeMoneyInput(event.target.value);
 				if (amount !== undefined) setValues((current) => ({ ...current, amount }));
 				setInvalid(false);
-			}} onBlur={() => setValues((current) => ({ ...current, amount: formatMoneyInput(current.amount) }))} /></label>
+			}} onFocus={() => setValues((current) => ({ ...current, amount: prepareMoneyInputForEditing(current.amount) }))} onBlur={() => setValues((current) => ({ ...current, amount: formatMoneyInput(current.amount) }))} /></label>
 			<section className={styles.dateTime}><label><PiCalendarBlank /><span>日期</span><input type='date' value={values.localDate} max={formatLocalDate(new Date())} onChange={(event) => setValues((current) => ({ ...current, localDate: event.target.value }))} /></label><label><PiClock /><span>时间</span><input type='time' value={values.occurredTime} onChange={(event) => setValues((current) => ({ ...current, occurredTime: event.target.value }))} /></label></section>
 			<fieldset><legend>分类</legend><div className={styles.chips}>{categories.map((option) => <button type='button' key={option.id} aria-pressed={values.categoryId === option.id} onClick={() => setValues((current) => ({ ...current, categoryId: option.id, categoryLabel: option.label }))}>{option.label}</button>)}</div></fieldset>
 			<fieldset><legend>账户</legend><div className={styles.chips}>{accounts.map((option) => <button type='button' key={option.id} aria-pressed={values.accountId === option.id} onClick={() => setValues((current) => ({ ...current, accountId: option.id, accountLabel: option.label }))}><PiWallet />{option.label}</button>)}</div></fieldset>
