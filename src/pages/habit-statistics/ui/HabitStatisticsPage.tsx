@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
-import { FiArrowLeft, FiCalendar, FiCheckCircle, FiChevronLeft, FiChevronRight, FiClock, FiFlag, FiPlus, FiTarget } from 'react-icons/fi';
+import { FiArrowLeft, FiCalendar, FiCheckCircle, FiChevronDown, FiChevronLeft, FiChevronRight, FiClock, FiFlag, FiPlus, FiSearch, FiTarget } from 'react-icons/fi';
 import { PiArticle, PiBroadcast, PiChartDonut, PiMicrophone, PiPlus, PiReceipt, PiTrendDown, PiTrendUp, PiVideoCamera, PiWallet } from 'react-icons/pi';
 import { formatQuantityFromBase } from '@entities/card-template';
 import { addStageGoalInApp } from '@features/add-stage-goal';
@@ -13,6 +13,7 @@ import type { GoalDetailsModel, GoalDetailsStageGoal } from '@features/load-goal
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate } from '@shared/lib/date';
 import { HabitGlyph } from '@widgets/habit-glyph';
+import { searchBookkeepingEntries } from '../model/searchBookkeepingEntries';
 
 const STATUS_KEYS = {
 	planned: 'shell.goalDetails.status.planned', active: 'shell.goalDetails.status.active', completed: 'shell.goalDetails.status.completed',
@@ -48,6 +49,8 @@ function GoalDetailsPage() {
 	const [stageSaving, setStageSaving] = useState(false);
 	const [stageError, setStageError] = useState(false);
 	const [bookkeepingMonth, setBookkeepingMonth] = useState(() => formatLocalDate(new Date()).slice(0, 7));
+	const [showAllBookkeeping, setShowAllBookkeeping] = useState(false);
+	const [bookkeepingQuery, setBookkeepingQuery] = useState('');
 
 	useEffect(() => {
 		let active = true;
@@ -89,6 +92,7 @@ function GoalDetailsPage() {
 	if (model.card.officialCardId === 'bookkeeping') {
 		const currentMonth = formatLocalDate(new Date()).slice(0, 7);
 		const entries = model.bookkeepingEntries.filter(({ localDate }) => localDate.startsWith(bookkeepingMonth));
+		const searchResults = showAllBookkeeping ? searchBookkeepingEntries(model.bookkeepingEntries, bookkeepingQuery) : [];
 		const income = entries.filter(({ type }) => type === 'income').reduce((sum, entry) => sum + entry.amountCents, 0);
 		const expense = entries.filter(({ type }) => type === 'expense').reduce((sum, entry) => sum + entry.amountCents, 0);
 		const budget = model.card.habitConfig?.kind === 'bookkeeping' ? model.card.habitConfig.monthlyBudgetCents : undefined;
@@ -118,6 +122,15 @@ function GoalDetailsPage() {
 			<section className={styles.categoryCard}><header><span><PiChartDonut />支出分类</span><b>{entries.filter(({ type }) => type === 'expense').length} 笔</b></header>{categoryTotals.length ? <div className={styles.categoryBody}><span className={styles.donut} style={{ '--ratio': `${expense ? categoryTotals[0]![1] / expense * 100 : 0}%` } as CSSProperties}><i>¥{(expense / 100).toFixed(0)}</i></span><div>{categoryTotals.slice(0, 4).map(([label, value]) => <p key={label}><span>{label}</span><b>¥{(value / 100).toFixed(2)}</b></p>)}</div></div> : <p className={styles.bookkeepingEmpty}>本月还没有支出记录。</p>}</section>
 			<section className={styles.bookkeepingWeek}><h3>最近7天</h3><div>{chartDays.map((day) => <span key={day.localDate}>{day.amountCents > 0 && <small>¥{(day.amountCents / 100).toFixed(0)}</small>}<i style={{ height: `${Math.max(4, day.amountCents / chartMax * 72)}px` }} /><b>{day.label}</b></span>)}</div></section>
 			<section className={styles.bookkeepingRecent}><h3>最近账目</h3>{entries.slice(0, 5).map((entry) => <Link key={`${entry.localDate}-${entry.id}`} to={`${APP_ROUTES.habitRecord(model.card.id, entry.localDate)}&entry=${encodeURIComponent(entry.id)}`}><PiReceipt /><span><strong>{entry.item || entry.categoryLabel}</strong><small>{entry.localDate} · {entry.occurredTime} · {entry.accountLabel}</small></span><b data-income={entry.type === 'income'}>{entry.type === 'income' ? '+' : '-'}¥{(entry.amountCents / 100).toFixed(2)}</b></Link>)}{entries.length === 0 && <p className={styles.bookkeepingEmpty}>这个月还没有账目。</p>}<footer><FiCalendar /><span>本月记录 <b>{entries.length}</b> 笔 · <b>{recordDays}</b> 个记账日</span></footer></section>
+			<section className={styles.bookkeepingAll} aria-label='全部记账记录'>
+				<button className={styles.bookkeepingAllToggle} type='button' aria-expanded={showAllBookkeeping} onClick={() => setShowAllBookkeeping((open) => !open)}><span><PiReceipt aria-hidden='true' />全部记录 <small>{model.bookkeepingEntries.length} 笔</small></span><span>{showAllBookkeeping ? '收起' : '查看'}<FiChevronDown aria-hidden='true' /></span></button>
+				{showAllBookkeeping && <div className={styles.bookkeepingAllContent}>
+					<label className={styles.bookkeepingSearch}><FiSearch aria-hidden='true' /><input type='search' value={bookkeepingQuery} placeholder='查事项、分类、日期或金额' aria-label='查找记账记录' onChange={(event) => setBookkeepingQuery(event.target.value)} /></label>
+					<p className={styles.bookkeepingResultCount} role='status'>{bookkeepingQuery.trim() ? `找到 ${searchResults.length} 笔` : `共 ${searchResults.length} 笔`}</p>
+					<div className={styles.bookkeepingAllList}>{searchResults.map((entry) => <Link key={`${entry.localDate}-${entry.id}`} to={`${APP_ROUTES.habitRecord(model.card.id, entry.localDate)}&entry=${encodeURIComponent(entry.id)}`}><PiReceipt aria-hidden='true' /><span><strong>{entry.item || entry.categoryLabel}</strong><small>{entry.localDate} · {entry.occurredTime} · {entry.categoryLabel} · {entry.accountLabel}</small></span><b data-income={entry.type === 'income'}>{entry.type === 'income' ? '+' : '-'}¥{(entry.amountCents / 100).toFixed(2)}</b></Link>)}</div>
+					{searchResults.length === 0 && <p className={styles.bookkeepingEmpty}>{bookkeepingQuery.trim() ? '没有找到符合条件的账目，换个关键词试试。' : '还没有记账记录。'}</p>}
+				</div>}
+			</section>
 			<Link className={styles.mediaRecordAction} to={`${APP_ROUTES.habitRecord(model.card.id, formatLocalDate(new Date()))}&entry=new`}><PiPlus />记一笔</Link>
 		</div>;
 	}
