@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { ActionRecord } from '@entities/action-record';
+import type { ActionRecord, BookkeepingEntry } from '@entities/action-record';
 import { SYSTEM_CARD_TEMPLATES } from '@entities/card-template';
 import { createRunningCard } from '@features/create-running-card';
 import { RepeatOutcomeDatabase } from '@shared/lib/db';
@@ -43,6 +43,29 @@ afterEach(async () => {
 });
 
 describe('loadHistory', () => {
+	it('exposes every bookkeeping entry and signed totals for historical-date review', async () => {
+		const template = SYSTEM_CARD_TEMPLATES.find(({ id }) => id === 'bookkeeping');
+		expect(template).toBeDefined();
+		await database.table('cardTemplates').put(template!);
+		await database.table('userCards').add({ id: 'ledger', officialCardId: 'bookkeeping', title: '日常记账', status: 'active', sortOrder: 0, createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' });
+		const entries: BookkeepingEntry[] = [
+			{ id: 'meal', type: 'expense', amountCents: 3850, categoryId: 'food', categoryLabel: '餐饮', accountId: 'cash', accountLabel: '现金', item: '午餐', localDate: '2026-07-12', occurredTime: '12:30', createdAt: '2026-07-12T04:30:00.000Z', updatedAt: '2026-07-12T04:30:00.000Z' },
+			{ id: 'salary', type: 'income', amountCents: 820000, categoryId: 'salary', categoryLabel: '工资', accountId: 'bank', accountLabel: '银行卡', item: '工资', localDate: '2026-07-12', occurredTime: '18:00', createdAt: '2026-07-12T10:00:00.000Z', updatedAt: '2026-07-12T10:00:00.000Z' },
+		];
+		await database.tableFor<ActionRecord>('actionRecords').add({
+			id: 'ledger:2026-07-12', userCardId: 'ledger', localDate: '2026-07-12', quantityBaseValue: entries.length,
+			entryMethod: 'actual', details: { kind: 'bookkeeping', entries },
+			firstSavedAt: '2026-07-12T04:30:00.000Z', lastSavedAt: '2026-07-12T10:00:00.000Z', lastSubmissionId: 'salary',
+		});
+
+		const item = (await loadHistory(database, '2026-07-15')).groups[0]?.records[0];
+
+		expect(item).toMatchObject({
+			officialCardId: 'bookkeeping', bookkeepingExpenseCents: 3850, bookkeepingIncomeCents: 820000,
+			bookkeepingEntries: [{ id: 'salary' }, { id: 'meal' }], canCorrect: false,
+		});
+	});
+
 	it('groups dates descending and records by save time descending', async () => {
 		await seedCard();
 		await database.tableFor<ActionRecord>('actionRecords').bulkAdd([

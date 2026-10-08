@@ -351,6 +351,25 @@ describe('loadDailyHabits', () => {
 		expect(result.habits[0]).toMatchObject({ quantityBaseValue: 2, bookkeepingExpenseCents: 3850, bookkeepingIncomeCents: 10000, bookkeepingMonthExpenseCents: 8850 });
 	});
 
+	it('keeps the ledger available before its habit start date for historical entry and correction', async () => {
+		await database.table('userCards').add({
+			id: 'ledger', officialCardId: 'bookkeeping', title: '记账',
+			habitConfig: { kind: 'bookkeeping', startDate: '2026-09-01', reminderEnabled: false, accounts: [{ id: 'cash', label: '现金' }], categories: [{ id: 'food', label: '餐饮' }], budgetReminderEnabled: false },
+			status: 'active', sortOrder: 0, createdAt: '2026-09-01T00:00:00.000Z', updatedAt: '2026-09-01T00:00:00.000Z',
+		});
+		const emptyDay = await loadDailyHabits(database, '2026-08-31');
+		expect(emptyDay.habits).toEqual([expect.objectContaining({ officialCardId: 'bookkeeping', recordedToday: false })]);
+		await database.table('actionRecords').add({
+			id: 'ledger:2026-08-31', userCardId: 'ledger', localDate: '2026-08-31', quantityBaseValue: 1,
+			details: { kind: 'bookkeeping', entries: [{ id: 'before-start', type: 'expense', amountCents: 1200, categoryId: 'food', categoryLabel: '餐饮', accountId: 'cash', accountLabel: '现金', localDate: '2026-08-31', occurredTime: '08:00', createdAt: '2026-08-31T00:00:00.000Z', updatedAt: '2026-08-31T00:00:00.000Z' }] },
+			firstSavedAt: '2026-08-31T00:00:00.000Z', lastSavedAt: '2026-08-31T00:00:00.000Z', lastSubmissionId: 'before-start',
+		});
+
+		const result = await loadDailyHabits(database, '2026-08-31');
+
+		expect(result.habits).toEqual([expect.objectContaining({ officialCardId: 'bookkeeping', recordedToday: true, details: { kind: 'bookkeeping', entries: [expect.objectContaining({ id: 'before-start', amountCents: 1200 })] } })]);
+	});
+
 	it('keeps archived expense history yellow without showing the archived card today', async () => {
 		await database.table('userCards').add({
 			id: 'expense', officialCardId: 'extra-expense', title: '额外开支', status: 'archived', sortOrder: 0,

@@ -194,6 +194,52 @@
 	white-space: nowrap;
 }
 
+.bookkeepingEntries {
+	display: grid;
+	grid-column: 1 / -1;
+	gap: 4px;
+	padding-left: 46px;
+}
+
+.bookkeepingEntry {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 8px;
+	align-items: center;
+	min-height: 42px;
+	padding: 5px 8px;
+	color: var(--text-color);
+	text-decoration: none;
+	background: var(--surface-secondary);
+	border-radius: 10px;
+}
+
+.bookkeepingEntry > span {
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+}
+
+.bookkeepingEntry strong,
+.bookkeepingEntry small {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.bookkeepingEntry strong { font-size: 12px; }
+
+.bookkeepingEntry small {
+	font-size: 10px;
+	color: var(--muted-color);
+}
+
+.bookkeepingEntry b {
+	font-size: 12px;
+	white-space: nowrap;
+}
+.bookkeepingEntry b[data-income='true'] { color: var(--success-color); }
+
 .editRecordButton {
 	display: inline-flex;
 	gap: 5px;
@@ -264,6 +310,12 @@
 .backfillButton svg {
 	flex: none;
 	font-size: 18px;
+}
+
+.bookkeepingBackfill {
+	width: 100%;
+	color: #fff;
+	background: var(--accent-color);
 }
 
 .backfillOverlay {

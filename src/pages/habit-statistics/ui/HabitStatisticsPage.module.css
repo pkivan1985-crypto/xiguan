@@ -370,6 +370,7 @@
 .budgetCard > span i { display: block; height: 100%; background: var(--reading-color); border-radius: inherit; }
 .budgetCard > small { color: var(--muted-color); }
 .categoryBody { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 18px; align-items: center; }
+/* eslint-disable-next-line css/no-invalid-properties -- CSS tree cannot resolve custom-property stops in conic-gradient */
 .donut { --ratio: 0%; display: grid; place-items: center; width: 112px; aspect-ratio: 1; background: conic-gradient(var(--reading-color) var(--ratio), var(--accent-color) 0 82%, var(--surface-raised) 0); border-radius: 50%; }
 .donut::after { grid-area: 1 / 1; width: 72px; aspect-ratio: 1; content: ''; background: var(--surface-color); border-radius: 50%; }
 .donut i { z-index: 1; grid-area: 1 / 1; font-size: 14px; font-style: normal; font-weight: 750; }

@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- Table names are stable identifiers. */
-import { groupActionRecordsByLocalDate, type ActionRecord } from '@entities/action-record';
+import { groupActionRecordsByLocalDate, type ActionRecord, type BookkeepingEntry } from '@entities/action-record';
 import { formatQuantityFromBase, type CardTemplate } from '@entities/card-template';
 import type { LongTermGoal, StageGoal } from '@entities/goal';
 import type { UserCard } from '@entities/user-card';
@@ -17,6 +17,9 @@ export interface HistoryRecordModel {
 	quantityBaseValue: number;
 	displayValue: string;
 	displayUnit: string;
+	bookkeepingEntries?: BookkeepingEntry[];
+	bookkeepingExpenseCents?: number;
+	bookkeepingIncomeCents?: number;
 	basePerDisplayUnit: number;
 	maxDecimalPlaces: number;
 	confirmationThresholdDisplay: number;
@@ -77,6 +80,9 @@ export async function loadHistory(
 				const quantityBaseValue = card?.officialCardId === 'media-output' && record.details?.kind === 'media-output'
 					? record.details.entries.filter((entry) => entry.status === 'published').length
 					: record.quantityBaseValue;
+				const bookkeepingEntries = card?.officialCardId === 'bookkeeping' && record.details?.kind === 'bookkeeping'
+					? [...record.details.entries].sort((left, right) => right.occurredTime.localeCompare(left.occurredTime))
+					: undefined;
 				return {
 					id: record.id,
 					userCardId: record.userCardId,
@@ -92,6 +98,9 @@ export async function loadHistory(
 							: formatQuantityFromBase(quantityBaseValue, template.quantity)
 						: String(quantityBaseValue),
 					displayUnit: template?.quantity.displayUnit ?? '',
+					bookkeepingEntries,
+					bookkeepingExpenseCents: bookkeepingEntries?.filter(({ type }) => type === 'expense').reduce((sum, entry) => sum + entry.amountCents, 0),
+					bookkeepingIncomeCents: bookkeepingEntries?.filter(({ type }) => type === 'income').reduce((sum, entry) => sum + entry.amountCents, 0),
 					basePerDisplayUnit: template?.quantity.basePerDisplayUnit ?? 1,
 					maxDecimalPlaces: template?.quantity.maxDecimalPlaces ?? 0,
 					confirmationThresholdDisplay: template?.quantity.confirmationThresholdDisplay ?? Number.MAX_SAFE_INTEGER,

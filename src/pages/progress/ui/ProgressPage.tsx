@@ -10,6 +10,7 @@ import {
 	PiEye,
 	PiGearSix,
 	PiPencilSimple,
+	PiReceipt,
 	PiTarget,
 	PiX,
 } from 'react-icons/pi';
@@ -133,9 +134,9 @@ function ProgressHeader({ monthlyCheckInCount = 0 }: ProgressHeaderProps) {
 				<Link
 					className={styles.settingsAction}
 					to={APP_ROUTES.SETTINGS}
-					aria-label={t('shell.actions.openSettings')}
-				>
-					<PiGearSix aria-hidden='true' />
+				aria-label={t('shell.actions.openSettings')}
+			>
+				<PiGearSix aria-hidden='true' />
 				</Link>
 			)}
 		/>
@@ -243,10 +244,11 @@ function ProgressPageContent({
 								) : (
 									<div className={styles.records}>
 										{selectedRecords.map((record) => {
-											const relatedGoalTitle = record.stageGoalTitle
-												?? record.longTermGoalTitle;
+											const relatedGoalTitle = record.stageGoalTitle ?? record.longTermGoalTitle;
 											const showRelatedGoalTitle = relatedGoalTitle
 												&& relatedGoalTitle.trim() !== record.cardTitle.trim();
+											const bookkeepingUserCardId = record.userCardId;
+
 											return (
 												<article key={record.id}>
 													<div className={styles.recordMain}>
@@ -268,7 +270,23 @@ function ProgressPageContent({
 															})}
 														</b>
 													</div>
-													{(record.plannedQuantityBaseValue
+													{record.officialCardId === 'bookkeeping' && bookkeepingUserCardId && record.bookkeepingEntries?.length ? (
+														<div className={styles.bookkeepingEntries}>
+															{record.bookkeepingEntries.map((entry) => (
+																<Link
+																	key={entry.id}
+																	to={`${APP_ROUTES.habitRecord(bookkeepingUserCardId, record.localDate)}&entry=${encodeURIComponent(entry.id)}`}
+																	className={styles.bookkeepingEntry}
+																>
+																	<span>
+																		<strong>{entry.item || entry.categoryLabel}</strong>
+																		<small>{entry.occurredTime} · {entry.categoryLabel} · {entry.accountLabel}</small>
+																	</span>
+																	<b data-income={entry.type === 'income'}>{entry.type === 'income' ? '+' : '−'}¥{(entry.amountCents / 100).toFixed(2)}</b>
+																</Link>
+															))}
+														</div>
+													) : (record.plannedQuantityBaseValue
 														|| record.durationSeconds
 														|| record.averagePaceSecondsPerKm
 														|| record.averageHeartRateBpm
@@ -276,44 +294,31 @@ function ProgressPageContent({
 														<div className={styles.recordFacts}>
 															{record.plannedQuantityBaseValue && (
 																<span>{t('shell.progress.plannedValue', {
-																	value: recordBaseValue(
-																		record.plannedQuantityBaseValue,
-																		record.basePerDisplayUnit,
-																	),
+																	value: recordBaseValue(record.plannedQuantityBaseValue, record.basePerDisplayUnit),
 																	unit: record.displayUnit,
 																})}</span>
 															)}
-															{record.carryOutBaseValue !== undefined
-																&& record.carryOutBaseValue > 0 && (
+															{record.carryOutBaseValue !== undefined && record.carryOutBaseValue > 0 && (
 																<span data-accent='warning'>{t('shell.progress.carryForward', {
-																	value: recordBaseValue(
-																		record.carryOutBaseValue,
-																		record.basePerDisplayUnit,
-																	),
+																	value: recordBaseValue(record.carryOutBaseValue, record.basePerDisplayUnit),
 																	unit: record.displayUnit,
 																})}</span>
 															)}
 															{record.durationSeconds && (
 																<span>{t('shell.progress.durationValue', {
-																	value: new Intl.NumberFormat(undefined, {
-																		maximumFractionDigits: 1,
-																	}).format(record.durationSeconds / 60),
+																	value: new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(record.durationSeconds / 60),
 																})}</span>
 															)}
 															{record.averagePaceSecondsPerKm && (
-																<span>{t('shell.progress.paceValue', {
-																	value: paceValue(record.averagePaceSecondsPerKm),
-																})}</span>
+																<span>{t('shell.progress.paceValue', { value: paceValue(record.averagePaceSecondsPerKm) })}</span>
 															)}
 															{record.averageHeartRateBpm && (
-																<span>{t('shell.progress.heartRateValue', {
-																	value: record.averageHeartRateBpm,
-																})}</span>
+																<span>{t('shell.progress.heartRateValue', { value: record.averageHeartRateBpm })}</span>
 															)}
 															{record.note && <p>{record.note}</p>}
 														</div>
 													)}
-													{onEditRecord && (
+													{onEditRecord && record.officialCardId !== 'bookkeeping' && (
 														<button
 															type='button'
 															className={styles.editRecordButton}
@@ -394,6 +399,7 @@ interface BackfillSheetProps {
 	onSaveActual: (habit: DailyHabitView, entry: HabitActualEntry) => void;
 	onOpenDetails: (habit: DailyHabitView, mediaType?: 'article' | 'short-video' | 'audio' | 'livestream') => void;
 	onAddMediaEntry: (habit: DailyHabitView) => void;
+	onAddBookkeepingEntry: (habit: DailyHabitView) => void;
 	onClose: () => void;
 }
 
@@ -407,12 +413,15 @@ function BackfillSheet({
 	onSaveActual,
 	onOpenDetails,
 	onAddMediaEntry,
+	onAddBookkeepingEntry,
 	onClose,
 }: BackfillSheetProps) {
 	const { t, i18n } = useTranslation();
 	const habits = model.habits.filter(
-		(habit) => habit.officialCardId === 'extra-expense' || (habit.scheduledToday && !habit.recordedToday),
+		(habit) => habit.officialCardId !== 'bookkeeping'
+			&& (habit.officialCardId === 'extra-expense' || (habit.scheduledToday && !habit.recordedToday)),
 	);
+	const bookkeepingHabit = model.habits.find(({ officialCardId }) => officialCardId === 'bookkeeping');
 	const dateLabel = shortDateLabel(
 		localDate,
 		i18n.resolvedLanguage ?? i18n.language,
@@ -450,19 +459,30 @@ function BackfillSheet({
 						<PiX aria-hidden='true' />
 					</button>
 				</header>
-				<TodayHabitPanel
-					habits={habits}
-					context='backfill'
-					completedExpanded
-					pendingIds={pendingIds}
-					saveErrorIds={saveErrorIds}
-					onChange={onChange}
-					onComplete={onComplete}
-					onSaveActual={onSaveActual}
-					onOpenDetails={onOpenDetails}
-					onAddMediaEntry={onAddMediaEntry}
-					onToggleCompleted={() => undefined}
-				/>
+				{habits.length > 0 && (
+					<TodayHabitPanel
+						habits={habits}
+						context='backfill'
+						completedExpanded
+						pendingIds={pendingIds}
+						saveErrorIds={saveErrorIds}
+						onChange={onChange}
+						onComplete={onComplete}
+						onSaveActual={onSaveActual}
+						onOpenDetails={onOpenDetails}
+						onAddMediaEntry={onAddMediaEntry}
+						onToggleCompleted={() => undefined}
+					/>
+				)}
+				{bookkeepingHabit && (
+					<button
+						className={`${styles.backfillButton} ${styles.bookkeepingBackfill}`}
+						type='button'
+						onClick={() => onAddBookkeepingEntry(bookkeepingHabit)}
+					>
+						<PiReceipt aria-hidden='true' />补记账目
+					</button>
+				)}
 				<p className={styles.backfillHint}>{t('shell.progress.backfillHint')}</p>
 			</section>
 		</div>
@@ -544,7 +564,9 @@ function ProgressPage() {
 		|| (month.year === now.getFullYear() && month.monthIndex < now.getMonth());
 	const backfillableHabits = backfillModel?.localDate === selectedDate
 		? backfillModel.habits.filter(
-		(habit) => habit.officialCardId === 'extra-expense' || (habit.scheduledToday && !habit.recordedToday),
+		(habit) => habit.officialCardId === 'bookkeeping'
+			|| habit.officialCardId === 'extra-expense'
+			|| (habit.scheduledToday && !habit.recordedToday),
 		)
 		: [];
 	const selectedRecord = history?.groups
@@ -738,6 +760,10 @@ function ProgressPage() {
 					navigate(APP_ROUTES.habitRecord(habit.id, selectedDate));
 				}}
 				onAddMediaEntry={(habit) => {
+					setBackfillOpen(false);
+					navigate(`${APP_ROUTES.habitRecord(habit.id, selectedDate)}&entry=new`);
+				}}
+				onAddBookkeepingEntry={(habit) => {
 					setBackfillOpen(false);
 					navigate(`${APP_ROUTES.habitRecord(habit.id, selectedDate)}&entry=new`);
 				}}

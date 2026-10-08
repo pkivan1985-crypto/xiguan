@@ -32,6 +32,7 @@
 	margin-right: auto;
 }
 
+/* eslint-disable-next-line css/no-empty-blocks -- Reserved selector; styling is composed by the runtime */
 .scrollToTopButton {
 	/* background-color: var(--bg-color-secondary); */
 }

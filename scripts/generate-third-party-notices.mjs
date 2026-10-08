@@ -56,7 +56,7 @@ export function collectThirdPartyPackages({ lockfile, nodeModulesPath }) {
 
 export function renderThirdPartyNotices(packages) {
 	const entries = packages.map(({ name, version, license }) => `- \`${name}@${version}\` — ${license}`).join('\n');
-	return `# 第三方软件告知\n\n本项目以 [DoHabit](https://github.com/iNikAnn/DoHabit) 为主代码底座，并依据 AGPL-3.0 发布本项目修改后的对应源代码。\n\n以下清单由 \`package-lock.json\` 和本机已安装包元数据确定性生成，不使用在线许可证服务。许可证标识用于归档与审计；各依赖仍由其各自作者持有版权。\n\n## npm 依赖\n\n${entries}\n`;
+	return `# 第三方软件告知\n\n本项目以 [DoHabit](https://github.com/iNikAnn/DoHabit) 为主代码底座，并依据 AGPL-3.0 发布本项目修改后的对应源代码。\n\n以下 npm 清单由 \`package-lock.json\` 和本机已安装包元数据确定性生成，不使用在线许可证服务。许可证标识用于归档与审计；各依赖仍由其各自作者持有版权。\n\n## npm 依赖\n\n${entries}\n\n## 其他开发时规则数据\n\n\`scripts/lint-css-order.mjs\` 中的 CSS 属性排序子集派生自 [stylelint-config-recess-order@7.7.0 groups.js](https://github.com/stormwarning/stylelint-config-recess-order/blob/v7.7.0/groups.js)，许可证为 ISC。检查器逻辑为本项目原创，只用于开发期 CSS Lint，不会打包进 PWA。\n`;
 }
 
 function main() {

@@ -13,6 +13,7 @@
 	box-shadow: var(--shadow-lg);
 }
 
+/* eslint-disable-next-line css/no-empty-blocks -- Reserved base slot for composed card content */
 .body {
 	/* outline: 1px solid tomato; */
 }

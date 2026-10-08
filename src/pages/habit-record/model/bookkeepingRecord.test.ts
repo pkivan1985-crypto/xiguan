@@ -25,6 +25,20 @@ describe('bookkeeping records', () => {
 		expect(record).toMatchObject({ quantityBaseValue: 2, details: { kind: 'bookkeeping', entries: [{ id: 'a' }, { id: 'b' }] } });
 	});
 
+	it('adds a backfilled transaction to its historical day without overwriting another entry', async () => {
+		await database.table('userCards').add({ id: 'ledger', officialCardId: 'bookkeeping', title: '记账', status: 'active', sortOrder: 0, createdAt: '2026-09-01T00:00:00.000Z', updatedAt: '2026-09-01T00:00:00.000Z' });
+		const existing = { id: 'old', type: 'expense' as const, amountCents: 1200, categoryId: 'food', categoryLabel: '餐饮', accountId: 'cash', accountLabel: '现金', localDate: '2026-09-10', occurredTime: '08:00', createdAt: '2026-09-10T00:00:00.000Z', updatedAt: '2026-09-10T00:00:00.000Z' };
+		await saveBookkeepingEntry(database, { userCardId: 'ledger', entry: existing, nowIso: existing.updatedAt, submissionId: 'old' });
+		const backfilled = { ...existing, id: 'backfilled', amountCents: 3850, item: '午餐', occurredTime: '12:30', createdAt: '2026-09-15T04:30:00.000Z', updatedAt: '2026-09-15T04:30:00.000Z' };
+
+		await saveBookkeepingEntry(database, { userCardId: 'ledger', entry: backfilled, nowIso: backfilled.updatedAt, submissionId: 'backfill' });
+
+		expect(await database.table('actionRecords').get('ledger:2026-09-10')).toMatchObject({
+			quantityBaseValue: 2,
+			details: { entries: [{ id: 'old' }, { id: 'backfilled', localDate: '2026-09-10', amountCents: 3850 }] },
+		});
+	});
+
 	it('moves an edited entry to its newly selected date without duplicating it', async () => {
 		await database.table('userCards').add({ id: 'ledger', officialCardId: 'bookkeeping', title: '记账', status: 'active', sortOrder: 0, createdAt: '2026-09-14T00:00:00.000Z', updatedAt: '2026-09-14T00:00:00.000Z' });
 		const entry = { id: 'salary', type: 'income' as const, amountCents: 820000, categoryId: 'salary', categoryLabel: '工资', accountId: 'bank', accountLabel: '银行卡', localDate: '2026-09-14', occurredTime: '09:00', createdAt: '2026-09-14T00:00:00.000Z', updatedAt: '2026-09-14T00:00:00.000Z' };

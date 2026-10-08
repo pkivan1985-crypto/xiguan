@@ -1,4 +1,5 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
+import css from '@eslint/css';
 import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -166,6 +167,18 @@ export default defineConfig([
 					],
 				},
 			}]
+		}
+	},
+	{
+		files: ['src/**/*.css'],
+		plugins: { css },
+		language: 'css/css',
+		extends: ['css/recommended'],
+		rules: {
+			'css/no-invalid-properties': ['error', { allowUnknownVariables: true }],
+			'css/no-important': 'off',
+			'css/use-baseline': 'off',
+			'i18next/no-literal-string': 'off'
 		}
 	},
 

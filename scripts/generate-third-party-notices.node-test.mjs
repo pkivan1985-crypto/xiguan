@@ -40,6 +40,8 @@ test('notice generation is deterministic and covers every direct dependency', as
 
 	assert.equal(first, second);
 	assert.equal(readFileSync(join(root, 'THIRD_PARTY_NOTICES.md'), 'utf8'), first);
+	assert.match(first, /stylelint-config-recess-order@7\.7\.0 groups\.js/);
+	assert.match(first, /许可证为 ISC/);
 	for (const dependency of [...Object.keys(packageJson.dependencies), ...Object.keys(packageJson.devDependencies)]) {
 		assert.ok(packages.some((entry) => entry.name === dependency), `missing direct dependency: ${dependency}`);
 	}
