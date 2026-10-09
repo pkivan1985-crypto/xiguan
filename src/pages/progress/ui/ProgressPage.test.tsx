@@ -353,6 +353,29 @@ describe('ProgressPage', () => {
 		expect(html).not.toContain('修改记录');
 	});
 
+	it('shows historical bookkeeping amounts and links each transaction to its editable detail', () => {
+		const ProgressPageContent = progressContent();
+		expect(ProgressPageContent).toBeTypeOf('function');
+		if (!ProgressPageContent) return;
+		const historyWithBookkeeping: HistoryModel = { groups: [{ localDate: '2026-07-24', records: [{
+			id: 'ledger:2026-07-24', userCardId: 'ledger', localDate: '2026-07-24', cardTitle: '日常记账', officialCardId: 'bookkeeping',
+			quantityBaseValue: 2, displayValue: '2', displayUnit: '笔', basePerDisplayUnit: 1, maxDecimalPlaces: 0,
+			confirmationThresholdDisplay: Number.MAX_SAFE_INTEGER, lastSavedAt: '2026-07-24T18:00:00.000Z', canCorrect: false, relationAvailable: true,
+			bookkeepingExpenseCents: 3850, bookkeepingIncomeCents: 0,
+			bookkeepingEntries: [{ id: 'meal', type: 'expense', amountCents: 3850, categoryId: 'food', categoryLabel: '餐饮', accountId: 'cash', accountLabel: '现金', item: '午餐', localDate: '2026-07-24', occurredTime: '12:30', createdAt: '2026-07-24T04:30:00.000Z', updatedAt: '2026-07-24T04:30:00.000Z' }],
+		}] }] };
+		const html = renderToStaticMarkup(<MemoryRouter><ProgressPageContent
+			activeTab='calendar' dashboard={dashboard} history={historyWithBookkeeping}
+			selectedDate='2026-07-24' todayLocalDate='2026-07-25' canGoNext={false}
+			onChangeTab={vi.fn()} onNextMonth={vi.fn()} onPreviousMonth={vi.fn()} onSelectDate={vi.fn()}
+		/></MemoryRouter>);
+
+		expect(html).toContain('午餐');
+		expect(html).toContain('−¥38.50');
+		expect(html).toContain('href="/record/ledger?date=2026-07-24&amp;entry=meal"');
+		expect(html).not.toContain('修改记录');
+	});
+
 	it('offers direct correction for a saved calendar record', () => {
 		const ProgressPageContent = progressContent();
 		expect(ProgressPageContent).toBeTypeOf('function');

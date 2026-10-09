@@ -4,7 +4,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 export const EXPECTED_DEPENDENCIES = Object.freeze({ dexie: '4.4.4', 'framer-motion': '12.42.2', react: '19.2.7', 'react-dom': '19.2.7', 'react-router': '8.3.0', zustand: '5.0.14' });
-export const EXPECTED_DEV_DEPENDENCIES = Object.freeze({ '@testing-library/react': '16.3.2', '@vitejs/plugin-react': '6.0.3', 'fake-indexeddb': '6.2.5', typescript: '6.0.3', vite: '8.1.4', 'vite-plugin-pwa': '1.3.0', vitest: '4.1.11' });
+export const EXPECTED_DEV_DEPENDENCIES = Object.freeze({ '@eslint/css': '2.0.0', '@testing-library/react': '16.3.2', '@vite-pwa/assets-generator': '1.0.4', '@vitejs/plugin-react': '6.0.3', 'fake-indexeddb': '6.2.5', postcss: '8.5.26', typescript: '6.0.3', vite: '8.1.4', 'vite-plugin-pwa': '1.3.0', vitest: '4.1.11' });
 const FORBIDDEN_DEPENDENCIES = ['cross-var', 'gh-pages', 'wrangler'];
 const FORBIDDEN_SCRIPTS = ['deploy:test', 'deploy:prod'];
 
@@ -24,9 +24,9 @@ export function validateProjectConfig({ packageJson, lockfile, nodeVersion, npmV
 	checkEqual(errors, 'package-lock lockfileVersion', lockfile.lockfileVersion, 3);
 	const npmrcLines = npmrc.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#'));
 	if (!npmrcLines.includes('engine-strict=true')) errors.push('.npmrc must contain engine-strict=true');
-	if (packageJson.scripts?.['lint:css'] !== 'stylelint "src/**/*.css"') errors.push('lint:css must be stylelint "src/**/*.css"');
+	if (packageJson.scripts?.['lint:css'] !== 'eslint "src/**/*.css" && node scripts/lint-css-order.mjs') errors.push('lint:css must run ESLint CSS checks and the local Recess property-order checker');
 	checkEqual(errors, 'check:release', packageJson.scripts?.['check:release'], 'node scripts/verify-release-readiness.mjs');
-	checkEqual(errors, 'test:release', packageJson.scripts?.['test:release'], 'node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs');
+	checkEqual(errors, 'test:release', packageJson.scripts?.['test:release'], 'node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs scripts/lint-css-order.node-test.mjs');
 	for (const script of FORBIDDEN_SCRIPTS) if (Object.hasOwn(packageJson.scripts ?? {}, script)) errors.push(`Forbidden script: ${script}`);
 	for (const dependency of FORBIDDEN_DEPENDENCIES) if (Object.hasOwn(allDirect, dependency)) errors.push(`Forbidden direct dependency: ${dependency}`);
 	for (const [name, expected] of Object.entries(EXPECTED_DEPENDENCIES)) {

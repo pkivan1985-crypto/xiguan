@@ -118,7 +118,7 @@ function currentStageGoal(
 }
 
 function cardExistedOnDate(card: UserCard, localDate: LocalDate): boolean {
-	if (card.habitConfig?.kind === 'bookkeeping') return card.habitConfig.startDate <= localDate;
+	if (card.officialCardId === 'bookkeeping') return true;
 	const createdAt = new Date(card.createdAt);
 	return Number.isNaN(createdAt.getTime())
 		|| formatLocalDate(createdAt) <= localDate;

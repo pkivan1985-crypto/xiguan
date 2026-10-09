@@ -544,6 +544,7 @@
 	font-size: 13px;
 	line-height: 20px;
 	color: var(--danger-color, #ff8585);
+	/* eslint-disable-next-line css/no-invalid-properties -- color-mix() is valid modern CSS */
 	background: color-mix(in srgb, var(--danger-color, #ff6b6b) 10%, var(--surface-color));
 	border: 1px solid color-mix(in srgb, var(--danger-color, #ff6b6b) 34%, transparent);
 	border-radius: 12px;

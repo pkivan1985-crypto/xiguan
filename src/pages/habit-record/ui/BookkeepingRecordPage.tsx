@@ -24,6 +24,7 @@ function BookkeepingRecordPage({ habit, localDate }: Props) {
 	const config = habit.habitConfig?.kind === 'bookkeeping' ? habit.habitConfig : undefined;
 	const accounts = config?.accounts ?? [{ id: 'cash', label: '现金' }];
 	const categories = config?.categories ?? [{ id: 'other', label: '其他' }];
+	const isToday = localDate === formatLocalDate(new Date());
 	const [values, setValues] = useState<BookkeepingFormValues>(() => existing ? {
 		type: existing.type, amount: moneyInputFromCents(existing.amountCents), categoryId: existing.categoryId,
 		categoryLabel: existing.categoryLabel, accountId: existing.accountId, accountLabel: existing.accountLabel,
@@ -67,9 +68,9 @@ function BookkeepingRecordPage({ habit, localDate }: Props) {
 	}
 
 	if (!entryId) return <main className={styles.page}>
-		<header className={styles.header}><button type='button' onClick={() => navigate(-1)} aria-label='返回'><PiArrowLeft /></button><div><small>{localDate}</small><h1>今日账本</h1></div><button type='button' onClick={() => navigate(APP_ROUTES.HOME)} aria-label='关闭'><PiX /></button></header>
-		<section className={styles.summary}><div><small>今日支出</small><strong>¥{money(totals.expenseCents)}</strong></div><div><small>今日收入</small><strong data-income='true'>+¥{money(totals.incomeCents)}</strong></div><span>{entries.length} 笔记录</span></section>
-		<section className={styles.list}>{entries.length === 0 ? <p>今天还没有收支，记下第一笔。</p> : [...entries].sort((a, b) => b.occurredTime.localeCompare(a.occurredTime)).map((entry) => <button type='button' key={entry.id} onClick={() => navigate(route(localDate, entry.id))}><span className={styles.category}><PiReceipt /></span><span><strong>{entry.item || entry.categoryLabel}</strong><small>{entry.occurredTime} · {entry.accountLabel} · {entry.categoryLabel}</small></span><b data-income={entry.type === 'income'}>{entry.type === 'income' ? '+' : '-'}¥{money(entry.amountCents)}</b><PiPencilSimple /></button>)}</section>
+		<header className={styles.header}><button type='button' onClick={() => navigate(-1)} aria-label='返回'><PiArrowLeft /></button><div><small>{localDate}</small><h1>{isToday ? '今日账本' : '账本'}</h1></div><button type='button' onClick={() => navigate(APP_ROUTES.HOME)} aria-label='关闭'><PiX /></button></header>
+		<section className={styles.summary}><div><small>{isToday ? '今日支出' : '当日支出'}</small><strong>¥{money(totals.expenseCents)}</strong></div><div><small>{isToday ? '今日收入' : '当日收入'}</small><strong data-income='true'>+¥{money(totals.incomeCents)}</strong></div><span>{entries.length} 笔记录</span></section>
+		<section className={styles.list}>{entries.length === 0 ? <p>{isToday ? '今天还没有收支，记下第一笔。' : '这一天还没有收支，补记一笔。'}</p> : [...entries].sort((a, b) => b.occurredTime.localeCompare(a.occurredTime)).map((entry) => <button type='button' key={entry.id} onClick={() => navigate(route(localDate, entry.id))}><span className={styles.category}><PiReceipt /></span><span><strong>{entry.item || entry.categoryLabel}</strong><small>{entry.occurredTime} · {entry.accountLabel} · {entry.categoryLabel}</small></span><b data-income={entry.type === 'income'}>{entry.type === 'income' ? '+' : '-'}¥{money(entry.amountCents)}</b><PiPencilSimple /></button>)}</section>
 		<nav className={styles.ledgerActions}><button type='button' onClick={() => navigate(route(localDate, 'new'))}><PiPlus />记一笔</button><button type='button' onClick={() => navigate(APP_ROUTES.goalDetails(habit.id))}><PiListBullets />查看统计</button></nav>
 	</main>;
 

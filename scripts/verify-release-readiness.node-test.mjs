@@ -154,7 +154,7 @@ test('override and transitive lock graph drift fail against the approved baselin
 test('package scripts, pinned CI workflow, and static host rules match the release baseline', () => {
 	const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 	assert.equal(pkg.scripts['check:release'], 'node scripts/verify-release-readiness.mjs');
-	assert.equal(pkg.scripts['test:release'], 'node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs');
+	assert.equal(pkg.scripts['test:release'], 'node --test scripts/verify-release-readiness.node-test.mjs scripts/generate-third-party-notices.node-test.mjs scripts/lint-css-order.node-test.mjs');
 	assert.match(pkg.scripts.verify, /npm run test:release/);
 
 	const workflowPath = join(root, '.github', 'workflows', 'verify.yml');
