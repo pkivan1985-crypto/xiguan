@@ -12,7 +12,7 @@ describe('M1 route configuration', () => {
 		const shellRoute = routeConfig.find((route) => route.path === '/');
 		const childPaths = shellRoute?.children?.map((route) => route.path ?? 'index');
 
-		expect(childPaths).toEqual(['index', 'today', 'progress', 'deck', 'history', 'settings', 'settings/data', 'goals/:userCardId']);
+		expect(childPaths).toEqual(['index', 'today', 'progress', 'deck', 'money', 'history', 'settings', 'settings/data', 'goals/:userCardId']);
 	});
 
 	it('keeps legacy DoHabit routes out of the production route table', () => {
@@ -33,5 +33,11 @@ describe('M1 route configuration', () => {
 
 	it('has an unknown-route fallback', () => {
 		expect(routeConfig.some((route) => route.path === '*')).toBe(true);
+	});
+
+	it.each(['/money/bills/new', '/money/bills/:billId/edit', '/money/bills/:billId/pay', '/money/bills/:billId', '/money/month/:month', '/money/records', '/money/accounts'])('keeps %s as a full page without duplicated shell headers or bottom-sheet input', (path) => {
+		const page = routeConfig.find((route) => route.path === path);
+		expect(page?.element).toBeTruthy();
+		expect(page?.children).toBeUndefined();
 	});
 });

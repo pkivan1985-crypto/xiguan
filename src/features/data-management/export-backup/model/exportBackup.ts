@@ -17,6 +17,8 @@ import type { UserCard } from '@entities/user-card';
 import { appDatabase, type RepeatOutcomeDatabase, type SettingRecord } from '@shared/lib/db';
 import { encryptBackupJson } from '@shared/lib/crypto';
 import { downloadBackup, type BackupFile } from '../lib/downloadBackup';
+import { assertMoneyState, MONEY_SETTING_KEY } from '@shared/lib/money-schema';
+import { resolveMoneyState } from '@shared/lib/money-schema/sources';
 
 export interface BuildBackupOptions {
 	nowIso: string;
@@ -60,6 +62,13 @@ export async function buildBackup(database: RepeatOutcomeDatabase, options: Buil
 			settings: await settings.toArray(),
 		} satisfies BackupPayloadV1,
 	}));
+	// Normalize derived links in the snapshot only: external edits need not open Money first.
+	const money = snapshot.data.settings.find(({ key }) => key === MONEY_SETTING_KEY);
+	if (money) {
+		assertMoneyState(money.value);
+		resolveMoneyState(money.value, snapshot.data.actionRecords);
+		assertMoneyState(money.value);
+	}
 	const referencedIds = new Set(snapshot.data.userCards.map((card) => card.officialCardId));
 	const refs = snapshot.templates.filter((template) => referencedIds.has(template.id)).map(({ id, version }) => ({ id, version })).sort((a, b) => a.id.localeCompare(b.id));
 	const digest = options.digest ?? sha256Hex;

@@ -5,6 +5,7 @@ export type CriticalOperationKind =
 	| 'save-outcome'
 	| 'correct-record'
 	| 'restore-backup'
+	| 'money-write'
 	| 'clear-data';
 
 export interface AppLifecycleSnapshot {

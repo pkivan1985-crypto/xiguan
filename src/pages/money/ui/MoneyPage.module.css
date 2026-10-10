@@ -1,0 +1,361 @@
+.page {
+	display: grid;
+	gap: 12px;
+	align-content: start;
+	width: 100%;
+	max-width: 390px;
+	padding-bottom: env(safe-area-inset-bottom, 0);
+	margin: 0 auto;
+}
+
+.formPage {
+	display: grid;
+	gap: 12px;
+	align-content: start;
+	width: 100%;
+	max-width: 430px;
+	min-height: 100dvh;
+	padding: env(safe-area-inset-top, 0) 16px max(20px, env(safe-area-inset-bottom, 0));
+	margin: 0 auto;
+	background: var(--page-bg);
+}
+
+.header {
+	display: grid;
+	grid-template-columns: 44px minmax(0, 1fr) 44px;
+	align-items: center;
+	min-height: 58px;
+}
+
+.header h1 {
+	font-size: 19px;
+	line-height: 26px;
+	text-align: center;
+}
+
+.iconButton {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	min-height: 44px;
+	padding: 0;
+	font-size: 22px;
+	color: var(--muted-color);
+	background: transparent;
+	border-radius: 50%;
+}
+
+.card {
+	display: grid;
+	gap: 8px;
+	min-width: 0;
+	padding: 12px;
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 14px;
+}
+
+.card h2 {
+	font-size: 15px;
+	line-height: 22px;
+}
+
+.muted {
+	font-size: 12px;
+	line-height: 19px;
+	color: var(--muted-color);
+	overflow-wrap: anywhere;
+}
+
+.amount {
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.debt {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 5px 10px;
+	align-items: center;
+}
+
+.debt > small {
+	grid-column: 1 / -1;
+}
+
+.monthPicker {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: center;
+}
+
+.monthPicker input {
+	width: 150px;
+	min-height: 44px;
+	font-size: 16px;
+	color: var(--text-color);
+	text-align: center;
+	background: transparent;
+	border: 0;
+}
+
+.cashSummary {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 6px;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+}
+
+.cashSummary > div {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.cashSummary strong {
+	font-size: 13px;
+	overflow-wrap: anywhere;
+}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.textAction {
+	display: inline-flex;
+	gap: 5px;
+	align-items: center;
+	min-height: 44px;
+	font-size: 13px;
+	color: var(--accent-color);
+	background: transparent;
+}
+
+.totals {
+	display: grid;
+	gap: 5px;
+	justify-items: end;
+	padding: 4px 2px;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	line-height: 20px;
+}
+
+.totals > div {
+	display: flex;
+	gap: 12px;
+}
+
+.totals dt {
+	color: var(--muted-color);
+}
+
+.history {
+	display: grid;
+	gap: 8px;
+	padding-top: 6px;
+}
+
+.history h2 {
+	font-size: 15px;
+}
+
+.historyLink {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 6px;
+	align-items: center;
+	min-height: 58px;
+	padding: 10px 12px;
+	font-size: 13px;
+	color: var(--text-color);
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+}
+
+.historyLink small {
+	grid-column: 1 / -1;
+	font-size: 11px;
+	line-height: 17px;
+	color: var(--muted-color);
+}
+
+.form {
+	display: grid;
+	gap: 12px;
+	align-content: start;
+}
+
+.field {
+	display: grid;
+	gap: 6px;
+	min-width: 0;
+}
+
+.field label {
+	font-size: 13px;
+	font-weight: 650;
+	line-height: 20px;
+}
+
+.field input,
+.field select,
+.field textarea {
+	width: 100%;
+	min-width: 0;
+	min-height: 46px;
+	padding: 10px 12px;
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--text-color);
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+}
+
+.field input[inputmode='decimal'] {
+	font-variant-numeric: tabular-nums;
+}
+
+.field textarea {
+	min-height: 78px;
+	resize: vertical;
+}
+
+.field small {
+	font-size: 11px;
+	line-height: 17px;
+	color: var(--muted-color);
+}
+
+.field .error,
+.error {
+	font-size: 12px;
+	line-height: 19px;
+	color: var(--error-color);
+}
+
+.field [aria-invalid='true'] {
+	border-color: var(--error-color);
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
+.iconButton:focus-visible,
+.textAction:focus-visible {
+	outline: 2px solid var(--accent-color);
+	outline-offset: 2px;
+}
+
+.dateTime {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 10px;
+}
+
+.checkField {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	min-height: 44px;
+	font-size: 14px;
+}
+
+.checkField input {
+	width: 20px;
+	height: 20px;
+	accent-color: var(--accent-color);
+}
+
+.save,
+.secondary,
+.danger {
+	display: inline-flex;
+	gap: 7px;
+	align-items: center;
+	justify-content: center;
+	min-height: 46px;
+	padding: 10px 14px;
+	font-size: 15px;
+	font-weight: 700;
+	border-radius: 12px;
+}
+
+.save {
+	color: var(--text-color);
+	background: var(--accent-color);
+}
+
+.secondary {
+	color: var(--muted-color);
+	background: var(--surface-secondary);
+}
+
+.danger {
+	color: var(--error-color);
+	background: var(--surface-color);
+	border: 1px solid var(--error-color);
+}
+
+.save:disabled,
+.secondary:disabled,
+.danger:disabled {
+	cursor: wait;
+	opacity: 0.6;
+}
+
+.records {
+	display: grid;
+	gap: 8px;
+}
+
+.record {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 6px;
+	align-items: center;
+	min-height: 58px;
+	padding: 10px 12px;
+	color: var(--text-color);
+	background: var(--surface-color);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+}
+
+.record strong {
+	font-size: 13px;
+	overflow-wrap: anywhere;
+}
+
+.record small {
+	grid-column: 1 / -1;
+	font-size: 11px;
+	line-height: 18px;
+	color: var(--muted-color);
+	overflow-wrap: anywhere;
+}
+
+.state {
+	display: grid;
+	gap: 12px;
+	place-items: center;
+	min-height: 180px;
+	font-size: 13px;
+	color: var(--muted-color);
+	text-align: center;
+}
+
+@media (max-width: 360px) {
+	.dateTime {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

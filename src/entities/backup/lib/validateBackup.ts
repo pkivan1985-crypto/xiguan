@@ -10,6 +10,8 @@ import {
 	type TemplateDefinitionRef,
 } from '../model/types';
 import { stableStringify } from './stableStringify';
+import { assertMoneyState, MONEY_SETTING_KEY } from '@shared/lib/money-schema';
+import { assertMoneySourceRelationships } from '@shared/lib/money-schema/sources';
 
 const validatedBackupBrand: unique symbol = Symbol('validatedBackup');
 
@@ -269,10 +271,20 @@ function assertPayloadShape(payload: unknown): asserts payload is BackupPayloadV
 	for (const setting of candidate.settings) {
 		if (!isRecord(setting) || !isText(setting.key) || !isIso(setting.updatedAt)) fail('INVALID_BACKUP');
 		try { stableStringify(setting.value); } catch { fail('INVALID_BACKUP'); }
+		if (setting.key === MONEY_SETTING_KEY) {
+			try { assertMoneyState(setting.value); } catch { fail('INVALID_BACKUP'); }
+		}
 	}
 }
 
 function assertRelationships(payload: BackupPayloadV1, refs: TemplateDefinitionRef[], currentDefinitions: TemplateDefinitionRef[]): void {
+	const money = payload.settings.find(({ key }) => key === MONEY_SETTING_KEY);
+	if (money) {
+		try {
+			assertMoneyState(money.value);
+			assertMoneySourceRelationships(money.value, payload.actionRecords);
+		} catch { fail('RELATIONSHIP_INVALID'); }
+	}
 	assertUnique(payload.userCards.map((item) => item.id));
 	assertUnique(payload.longTermGoals.map((item) => item.id));
 	assertUnique(payload.stageGoals.map((item) => item.id));

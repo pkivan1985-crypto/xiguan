@@ -25,13 +25,13 @@ describe('PwaStatusBarView', () => {
 		expect(html.match(/<button/g)).toHaveLength(2);
 	});
 
-	it('disables update while a critical operation is active', () => {
+	it.each(['restore-backup', 'money-write'] as const)('disables update while %s is active', (operation) => {
 		const html = renderToStaticMarkup(<PwaStatusBarView value={{
 			...available,
-			state: { kind: 'blocked', operation: 'restore-backup' },
+			state: { kind: 'blocked', operation },
 		}} />);
 		expect(html).toContain('disabled');
-		expect(html).toContain('shell.pwa.blocked.restore-backup');
+		expect(html).toContain(`shell.pwa.blocked.${operation}`);
 	});
 
 	it('shows a dismissible offline notice that stays hidden after dismissal', () => {

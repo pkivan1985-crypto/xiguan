@@ -8,6 +8,7 @@ import { CreateRunningCardPage } from '@pages/create-running-card';
 import { GoalDetailsPage } from '@pages/habit-statistics';
 import { DataManagementPage } from '@pages/data-management';
 import { HabitRecordPage } from '@pages/habit-record';
+import { MoneyPage, MoneyBillPage, MoneyPaymentPage, MoneyBillDetailsPage, MoneyMonthPage, MoneyRecordsPage, MoneyAccountsPage } from '@pages/money';
 import { APP_ROUTES } from '@shared/config';
 import { AppShell } from '@widgets/app-shell';
 
@@ -28,6 +29,7 @@ export const routeConfig: RouteObject[] = [
 			{ path: APP_ROUTES.TODAY.slice(1), element: <Navigate to={APP_ROUTES.HOME} replace /> },
 			{ path: APP_ROUTES.PROGRESS.slice(1), element: <ProgressPage /> },
 			{ path: APP_ROUTES.DECK.slice(1), element: <DeckPage /> },
+			{ path: APP_ROUTES.MONEY.slice(1), element: <MoneyPage /> },
 			{ path: APP_ROUTES.HISTORY.slice(1), element: <HistoryPage /> },
 			{ path: APP_ROUTES.SETTINGS.slice(1), element: <SettingsPage /> },
 			{ path: APP_ROUTES.DATA_MANAGEMENT.slice(1), element: <DataManagementPage /> },
@@ -42,6 +44,13 @@ export const routeConfig: RouteObject[] = [
 		path: APP_ROUTES.HABIT_RECORD_PATTERN,
 		element: <HabitRecordPage />,
 	},
+	{ path: '/money/bills/new', element: <MoneyBillPage /> },
+	{ path: '/money/bills/:billId/edit', element: <MoneyBillPage /> },
+	{ path: '/money/bills/:billId/pay', element: <MoneyPaymentPage /> },
+	{ path: '/money/bills/:billId', element: <MoneyBillDetailsPage /> },
+	{ path: '/money/month/:month', element: <MoneyMonthPage /> },
+	{ path: '/money/records', element: <MoneyRecordsPage /> },
+	{ path: '/money/accounts', element: <MoneyAccountsPage /> },
 	{
 		path: '*',
 		element: <Navigate to={APP_ROUTES.HOME} replace />,
