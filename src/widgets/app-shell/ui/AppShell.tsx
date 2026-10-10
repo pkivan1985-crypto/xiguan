@@ -1,7 +1,7 @@
 import styles from './AppShell.module.css';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { PiChartBar, PiCheckSquare, PiGear, PiStack } from 'react-icons/pi';
+import { PiChartBar, PiCheckSquare, PiGear, PiStack, PiWallet } from 'react-icons/pi';
 import { APP_ROUTES } from '@shared/config';
 import {
 	appShellTitleKey,
@@ -19,6 +19,7 @@ function AppShell() {
 		{ to: APP_ROUTES.HOME, label: t('shell.nav.today'), icon: PiCheckSquare, end: true },
 		{ to: APP_ROUTES.PROGRESS, label: t('shell.nav.progress'), icon: PiChartBar },
 		{ to: APP_ROUTES.DECK, label: t('shell.nav.habits'), icon: PiStack },
+		{ to: APP_ROUTES.MONEY, label: t('shell.nav.money'), icon: PiWallet },
 	];
 
 	return (

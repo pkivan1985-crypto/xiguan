@@ -16,12 +16,15 @@ describe('app shell route titles', () => {
 		expect(appShellTitleKey('/progress')).toBe('shell.nav.progress');
 		expect(appShellTitleKey('/goals/card-a')).toBe('shell.nav.progress');
 		expect(appShellTitleKey('/deck')).toBe('shell.nav.habits');
+		expect(appShellTitleKey('/money')).toBe('shell.nav.money');
+		expect(appShellTitleKey('/money/month/2026-06')).toBe('shell.nav.money');
 	});
 
 	it('leaves primary route titles to their page-owned headers only', () => {
 		expect(hasPageOwnedHeader('/')).toBe(true);
 		expect(hasPageOwnedHeader('/progress')).toBe(true);
 		expect(hasPageOwnedHeader('/deck')).toBe(true);
+		expect(hasPageOwnedHeader('/money')).toBe(true);
 		expect(hasPageOwnedHeader('/progress/')).toBe(true);
 		expect(hasPageOwnedHeader('/deck/')).toBe(true);
 		expect(hasPageOwnedHeader('/settings')).toBe(false);

@@ -899,6 +899,7 @@
 		"nav": {
 			"deck": "我的卡套",
 			"habits": "习惯",
+			"money": "钱",
 			"history": "历史",
 			"home": "首页",
 			"primary": "主要导航",
@@ -959,6 +960,7 @@
 				"correct-record": "正在保存记录修改，完成后可更新。",
 				"create-card": "正在创建循环卡，完成后可更新。",
 				"manage-card": "正在更新习惯，完成后可更新。",
+				"money-write": "正在保存钱专项记录，完成后可更新。",
 				"restore-backup": "正在恢复备份，完成后可更新。",
 				"save-outcome": "正在保存今日成果，完成后可更新。"
 			},

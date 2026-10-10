@@ -9,6 +9,7 @@ const BLOCKED_COPY_KEYS: Record<CriticalOperationKind, `shell.pwa.blocked.${Crit
 	'correct-record': 'shell.pwa.blocked.correct-record',
 	'create-card': 'shell.pwa.blocked.create-card',
 	'manage-card': 'shell.pwa.blocked.manage-card',
+	'money-write': 'shell.pwa.blocked.money-write',
 	'restore-backup': 'shell.pwa.blocked.restore-backup',
 	'save-outcome': 'shell.pwa.blocked.save-outcome',
 };

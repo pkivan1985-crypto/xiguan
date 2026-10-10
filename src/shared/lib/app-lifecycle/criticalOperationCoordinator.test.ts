@@ -76,4 +76,16 @@ describe('CriticalOperationCoordinator', () => {
 			canReload: true,
 		});
 	});
+
+	it('does not reload while a payment transaction is saving and rejects money writes during update', async () => {
+		const coordinator = new CriticalOperationCoordinator();
+		const gate = deferred();
+		const pending = coordinator.runCriticalOperation('money-write', () => gate.promise);
+		expect(coordinator.tryAcquireReloadLease()).toBeNull();
+		gate.resolve();
+		await pending;
+		const lease = coordinator.tryAcquireReloadLease();
+		await expect(coordinator.runCriticalOperation('money-write', async () => undefined)).rejects.toThrow('APP_UPDATE_IN_PROGRESS');
+		lease?.release();
+	});
 });

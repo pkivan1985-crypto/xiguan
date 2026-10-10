@@ -17,7 +17,7 @@ describe('M1 application contract', () => {
 		expect(pkg.description).not.toContain('DoHabit');
 	});
 
-	it('exposes compatibility routes with three primary navigation destinations', () => {
+	it('exposes compatibility routes with four primary navigation destinations', () => {
 			expect(APP_ROUTES).toMatchObject({
 			HOME: '/',
 			TODAY: '/today',
@@ -29,6 +29,6 @@ describe('M1 application contract', () => {
 			DATA_MANAGEMENT: '/settings/data',
 		});
 		expect(APP_ROUTES.goalDetails('card 1')).toBe('/goals/card%201');
-		expect(PRIMARY_NAV_ROUTES).toEqual(['/', '/progress', '/deck']);
+		expect(PRIMARY_NAV_ROUTES).toEqual(['/', '/progress', '/deck', '/money']);
 	});
 });

@@ -8,6 +8,7 @@ export const APP_ROUTES = {
 	PROGRESS: '/progress',
 	DECK: '/deck',
 	DECK_NEW: '/deck/new',
+	MONEY: '/money',
 	HISTORY: '/history',
 	SETTINGS: '/settings',
 	DATA_MANAGEMENT: '/settings/data',
@@ -21,4 +22,5 @@ export const PRIMARY_NAV_ROUTES = [
 	APP_ROUTES.HOME,
 	APP_ROUTES.PROGRESS,
 	APP_ROUTES.DECK,
+	APP_ROUTES.MONEY,
 ] as const;
