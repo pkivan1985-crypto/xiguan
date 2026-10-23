@@ -54,6 +54,18 @@ test('requires the approved M2 data dependencies at exact versions', () => {
 	assert.ok(errors.includes('devDependencies.fake-indexeddb must be 6.2.5; received undefined'));
 	assert.ok(errors.includes('package-lock root devDependencies.fake-indexeddb must be 6.2.5; received undefined'));
 });
+test('pins the approved security update without allowing a Vitest coverage mismatch or Vite rollback', () => {
+	const input = validInput();
+	assert.equal(input.packageJson.devDependencies.vite, '8.3.5');
+	assert.equal(input.packageJson.devDependencies.vitest, '4.1.12');
+	assert.equal(input.packageJson.devDependencies['@vitest/coverage-v8'], '4.1.12');
+	input.packageJson.devDependencies.vite = '8.1.4';
+	input.packageJson.devDependencies['@vitest/coverage-v8'] = '4.1.11';
+	const errors = validateProjectConfig(input);
+	assert.ok(errors.includes('devDependencies.vite must be 8.3.5; received 8.1.4'));
+	assert.ok(errors.includes('devDependencies.@vitest/coverage-v8 must be 4.1.12; received 4.1.11'));
+});
+
 test('extracts npm version from the npm user agent', () => {
 	assert.equal(npmVersionFromUserAgent('npm/11.18.0 node/v24.17.0 win32 x64'), '11.18.0');
 	assert.equal(npmVersionFromUserAgent(''), '');
