@@ -2,7 +2,7 @@
 import styles from './HistoryPage.module.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { FiClock, FiRefreshCw } from 'react-icons/fi';
 import { parseQuantityToBase } from '@entities/card-template';
 import { correctActionRecordInApp } from '@features/correct-action-record';
@@ -17,6 +17,7 @@ import { HistoryList } from '@widgets/history-list';
 import { historyErrorKey } from '../model/historyPage';
 
 function HistoryPage() {
+	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const currentLocalDate = useMemo(() => formatLocalDate(new Date()), []);
 	const [model, setModel] = useState<HistoryModel | null>(null);
@@ -80,7 +81,11 @@ function HistoryPage() {
 	if (model.groups.length === 0) return <section className={styles.empty}><div className={styles.icon}><FiClock aria-hidden='true' /></div><h2>{t('shell.history.emptyTitle')}</h2><p>{t('shell.history.emptyDescription')}</p><Link to={APP_ROUTES.TODAY}>{t('shell.history.recordToday')}</Link></section>;
 
 	return <div className={styles.page}>
-		<HistoryList model={model} currentLocalDate={currentLocalDate} onCorrect={(recordId) => { correctionIds.current = {}; setActionError(undefined); setSelectedId(recordId); }} />
+		<HistoryList model={model} currentLocalDate={currentLocalDate} onCorrect={(recordId) => {
+			const record = model.groups.flatMap(({ records }) => records).find(({ id }) => id === recordId);
+			if (record?.userCardId && record.officialCardId === 'running') { navigate(APP_ROUTES.habitRecord(record.userCardId, record.localDate)); return; }
+			correctionIds.current = {}; setActionError(undefined); setSelectedId(recordId);
+		}} />
 		{selected && <ActionRecordEditor record={selected} saving={saving} error={actionError} onClose={closeEditor} onSave={(value) => void runCorrection(selected, 'update', value)} onDelete={() => void runCorrection(selected, 'delete')} />}
 	</div>;
 }

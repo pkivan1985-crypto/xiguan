@@ -20,6 +20,19 @@ afterEach(async () => {
 });
 
 describe('loadDailyHabits', () => {
+	it('opens only the requested existing historical record without reviving archived cards in today', async () => {
+		const nowIso = '2026-10-23T00:00:00.000Z';
+		await database.table('userCards').bulkAdd([
+			{ id: 'past-run', officialCardId: 'running', title: '已归档跑步', status: 'archived', sortOrder: 0, createdAt: nowIso, updatedAt: nowIso },
+			{ id: 'extra', officialCardId: 'extra-expense', title: '额外开支', status: 'active', sortOrder: 1, createdAt: nowIso, updatedAt: nowIso },
+		]);
+		for (const userCardId of ['past-run', 'extra']) await database.table('actionRecords').add({ id: `${userCardId}:2026-10-20`, userCardId, localDate: '2026-10-20', quantityBaseValue: 500, firstSavedAt: nowIso, lastSavedAt: nowIso, lastSubmissionId: userCardId });
+		expect((await loadDailyHabits(database, '2026-10-20')).habits).toHaveLength(0);
+		expect((await loadDailyHabits(database, '2026-10-20', { recordCardId: 'past-run' })).habits.map(({ id }) => id)).toEqual(['past-run']);
+		expect((await loadDailyHabits(database, '2026-10-20', { recordCardId: 'extra' })).habits.map(({ id }) => id)).toEqual(['extra']);
+		expect((await loadDailyHabits(database, '2026-10-19', { recordCardId: 'past-run' })).habits).toHaveLength(0);
+		expect((await loadDailyHabits(database, '2026-10-23')).habits.map(({ id }) => id)).toEqual(['extra']);
+	});
 	it('loads every active card with its tracking metadata and today cumulative value', async () => {
 		await database.table('userCards').bulkAdd([
 			{ id: 'run', officialCardId: 'running', title: '晨跑', status: 'active', sortOrder: 0, createdAt: '2026-07-25T00:00:00.000Z', updatedAt: '2026-07-25T00:00:00.000Z' },

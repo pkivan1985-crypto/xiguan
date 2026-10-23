@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- This page currently ships in the product's primary Chinese locale. */
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { PiArrowLeft, PiCalendarBlank, PiCheck, PiClock, PiListBullets, PiNotePencil, PiPencilSimple, PiPlus, PiReceipt, PiTrash, PiWallet, PiX } from 'react-icons/pi';
 import { useNavigate, useSearchParams } from 'react-router';
 import type { DailyHabitView } from '@features/load-daily-habits';
@@ -21,6 +21,7 @@ function BookkeepingRecordPage({ habit, localDate }: Props) {
 	const entryId = searchParams.get('entry');
 	const [entries, setEntries] = useState(() => normalizeBookkeepingEntries(habit.details));
 	const existing = entries.find(({ id }) => id === entryId);
+	const savedEntryId = useRef(existing?.id ?? crypto.randomUUID());
 	const config = habit.habitConfig?.kind === 'bookkeeping' ? habit.habitConfig : undefined;
 	const accounts = config?.accounts ?? [{ id: 'cash', label: '现金' }];
 	const categories = config?.categories ?? [{ id: 'other', label: '其他' }];
@@ -36,6 +37,8 @@ function BookkeepingRecordPage({ habit, localDate }: Props) {
 	});
 	const [saving, setSaving] = useState(false);
 	const [invalid, setInvalid] = useState(false);
+	const [addToExtraExpense, setAddToExtraExpense] = useState(false);
+	const [saveError, setSaveError] = useState<string>();
 	const totals = useMemo(() => bookkeepingTotals(entries), [entries]);
 
 	function route(date = localDate, entry?: string): string {
@@ -46,15 +49,18 @@ function BookkeepingRecordPage({ habit, localDate }: Props) {
 	async function save(event: FormEvent): Promise<void> {
 		event.preventDefault();
 		const nowIso = new Date().toISOString();
-		const entry = buildBookkeepingEntry(values, { id: existing?.id ?? crypto.randomUUID(), nowIso, createdAt: existing?.createdAt });
+		const entry = buildBookkeepingEntry(values, { id: savedEntryId.current, nowIso, createdAt: existing?.createdAt });
 		if (!entry) { setInvalid(true); return; }
 		setSaving(true);
+		setSaveError(undefined);
 		try {
-			await saveBookkeepingEntryInApp({ userCardId: habit.id, sourceLocalDate: existing?.localDate ?? localDate, entry, nowIso, submissionId: crypto.randomUUID() });
+			await saveBookkeepingEntryInApp({ userCardId: habit.id, sourceLocalDate: existing?.localDate ?? localDate, entry, nowIso, submissionId: crypto.randomUUID(), addToExtraExpense: values.type === 'expense' && addToExtraExpense });
 			if (entry.localDate !== localDate) { navigate(route(entry.localDate), { replace: true }); return; }
 			setEntries((current) => current.some(({ id }) => id === entry.id) ? current.map((item) => item.id === entry.id ? entry : item) : [...current, entry]);
 			navigate(route(), { replace: true });
-		} catch { setInvalid(true); } finally { setSaving(false); }
+		} catch (error) {
+			setSaveError(error instanceof Error && error.message === 'EXTRA_EXPENSE_CARD_NOT_AVAILABLE' ? '请先创建一个额外开支习惯，或取消勾选后保存。' : '保存失败，请重试；这笔账没有部分保存。');
+		} finally { setSaving(false); }
 	}
 
 	async function remove(): Promise<void> {
@@ -88,6 +94,8 @@ function BookkeepingRecordPage({ habit, localDate }: Props) {
 			<fieldset><legend>账户</legend><div className={styles.chips}>{accounts.map((option) => <button type='button' key={option.id} aria-pressed={values.accountId === option.id} onClick={() => setValues((current) => ({ ...current, accountId: option.id, accountLabel: option.label }))}><PiWallet />{option.label}</button>)}</div></fieldset>
 			<label className={styles.textField}><PiReceipt /><input maxLength={80} value={values.item} placeholder='买了什么或收入来源（选填）' onChange={(event) => setValues((current) => ({ ...current, item: event.target.value }))} /></label>
 			<label className={styles.textField}><PiNotePencil /><textarea maxLength={280} value={values.note} placeholder='备注（选填）' onChange={(event) => setValues((current) => ({ ...current, note: event.target.value }))} /></label>
+			{values.type === 'expense' && <label className={styles.expenseLink}><input type='checkbox' checked={addToExtraExpense} onChange={(event) => setAddToExtraExpense(event.currentTarget.checked)} /><span>同时添加到额外开支<small>首次带入金额、事项和时间；购买原因等可到额外开支补充，重复勾选不会重复新增。</small></span></label>}
+			{saveError && <p className={styles.error} role='alert'>{saveError}</p>}
 			{invalid && <p className={styles.error} role='alert'>请检查金额、日期、时间、分类和账户。</p>}
 			<button className={styles.save} type='submit' disabled={saving}><PiCheck />保存这笔账</button>
 			{existing && <button className={styles.delete} type='button' disabled={saving} onClick={() => void remove()}><PiTrash />删除这笔账</button>}

@@ -2,6 +2,17 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 describe('HabitRecordPage R5.1 presentation', () => {
+	it('uses the regular running page for past edits and saves with an explicit historical context', () => {
+		const progress = readFileSync(new URL('../../progress/ui/ProgressPage.tsx', import.meta.url), 'utf8');
+		const history = readFileSync(new URL('../../history/ui/HistoryPage.tsx', import.meta.url), 'utf8');
+		const source = readFileSync(new URL('./HabitRecordPage.tsx', import.meta.url), 'utf8');
+		expect(progress).toMatch(/record\.officialCardId === 'running'\)\)\s*\{\s*navigate\(APP_ROUTES\.habitRecord\(record\.userCardId, record\.localDate\)\)/);
+		expect(history).toContain("record.officialCardId === 'running') { navigate(APP_ROUTES.habitRecord(record.userCardId, record.localDate))");
+		expect(source).toContain("recordingContext: localDate < formatLocalDate(new Date()) ? (habit.recordedToday ? 'correction' : 'backfill') : 'today'");
+		expect(source).toContain('`${APP_ROUTES.PROGRESS}?date=${localDate}`');
+		expect(source).toContain("habit.officialCardId === 'running' && habit.recordedToday && localDate < formatLocalDate(new Date())");
+		expect(source).toContain('await correctActionRecordInApp({ actionRecordId: `${habit.id}:${localDate}`, operation: \'update\'');
+	});
 	it('keeps the running record compact without removing detailed metrics', () => {
 		const source = readFileSync(new URL('./HabitRecordPage.tsx', import.meta.url), 'utf8');
 		const css = readFileSync(new URL('./HabitRecordPage.module.css', import.meta.url), 'utf8');

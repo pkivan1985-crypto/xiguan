@@ -31,6 +31,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router';
 import type { HabitRecordDetails } from '@entities/action-record';
 import { loadDailyHabitsInApp, type DailyHabitView } from '@features/load-daily-habits';
 import { saveDailyHabitInApp } from '@features/save-daily-habit';
+import { correctActionRecordInApp } from '@features/correct-action-record';
 import { APP_ROUTES } from '@shared/config';
 import { formatLocalDate, parseLocalDate } from '@shared/lib/date';
 import { formatMoneyInput, moneyInputFromCents, normalizeMoneyInput, prepareMoneyInputForEditing } from '@shared/lib/money-input';
@@ -173,7 +174,7 @@ function HabitRecordPage() {
 
 	useEffect(() => {
 		let active = true;
-		void loadDailyHabitsInApp(localDate)
+		void loadDailyHabitsInApp(localDate, { recordCardId: userCardId })
 			.then((model) => {
 				if (!active) return;
 				const selected = model.habits.find(({ id }) => id === userCardId);
@@ -349,10 +350,18 @@ function HabitRecordPage() {
 		setSaving(true);
 		setError(false);
 		try {
-			await saveDailyHabitInApp({
+			if (habit.officialCardId === 'running' && habit.recordedToday && localDate < formatLocalDate(new Date())) {
+				// Preserve the existing historical correction transaction, including goal rollback.
+				await correctActionRecordInApp({ actionRecordId: `${habit.id}:${localDate}`, operation: 'update',
+					recordLocalDate: localDate, currentLocalDate: formatLocalDate(new Date()), quantityBaseValue: entry.quantityBaseValue,
+					nowIso: new Date().toISOString(), correctionId: crypto.randomUUID(),
+					details: { durationSeconds: positiveOrUndefined(duration) ? positiveOrUndefined(duration)! * 60 : undefined,
+						averagePaceSecondsPerKm: parsedPace, averageHeartRateBpm: positiveOrUndefined(heartRate), note: note.trim() || undefined } });
+			} else await saveDailyHabitInApp({
 				userCardId: habit.id,
 				localDate,
 				currentLocalDate: formatLocalDate(new Date()),
+				recordingContext: localDate < formatLocalDate(new Date()) ? (habit.recordedToday ? 'correction' : 'backfill') : 'today',
 				quantityBaseValue: entry.quantityBaseValue,
 				entryMethod: 'actual',
 				plannedQuantityBaseValue: habit.dailyTargetBase,
@@ -365,12 +374,22 @@ function HabitRecordPage() {
 				nowIso: new Date().toISOString(),
 				submissionId: crypto.randomUUID(),
 			});
-			navigate(APP_ROUTES.HOME, { replace: true });
+			navigate(localDate < formatLocalDate(new Date()) ? `${APP_ROUTES.PROGRESS}?date=${localDate}` : APP_ROUTES.HOME, { replace: true });
 		} catch {
 			setError(true);
 		} finally {
 			setSaving(false);
 		}
+	}
+
+	async function deleteHistoricalRun() {
+		if (!habit || !window.confirm(t('shell.history.deleteConfirmationTitle'))) return;
+		setSaving(true); setError(false);
+		try {
+			await saveDailyHabitInApp({ userCardId: habit.id, localDate, currentLocalDate: formatLocalDate(new Date()),
+				recordingContext: 'correction', quantityBaseValue: 0, nowIso: new Date().toISOString(), submissionId: crypto.randomUUID() });
+			navigate(`${APP_ROUTES.PROGRESS}?date=${localDate}`, { replace: true });
+		} catch { setError(true); } finally { setSaving(false); }
 	}
 
 	if (loading) return <p className={styles.state}>{t('shell.record.loading')}</p>;
@@ -496,7 +515,7 @@ function HabitRecordPage() {
 						: localDate}</small>
 					<h1>{isRunning ? t('shell.record.running.title') : isExpense ? t(expenseEntryId === 'new' ? 'shell.record.expense.title' : 'shell.record.expense.editTitle') : habit.title}</h1>
 				</div>
-				<button type='button' onClick={() => navigate(APP_ROUTES.HOME)} aria-label={t('shell.createCard.close')}><PiX aria-hidden='true' /></button>
+				<button type='button' onClick={() => navigate(localDate < formatLocalDate(new Date()) ? `${APP_ROUTES.PROGRESS}?date=${localDate}` : APP_ROUTES.HOME)} aria-label={t('shell.createCard.close')}><PiX aria-hidden='true' /></button>
 			</header>
 			<form className={`${styles.form} ${isRunning ? styles.runningForm : ''} ${isExpense ? styles.expenseForm : ''}`} onSubmit={isExpense ? saveExpense : submit}>
 				{!isRunning && !isExpense && <section className={styles.hero}>
@@ -541,6 +560,7 @@ function HabitRecordPage() {
 				)}
 				{error && <p className={styles.error} role='alert'>{t('shell.record.invalid')}</p>}
 				<button className={`${styles.save} ${isRunning ? styles.runningSave : ''} ${isExpense ? styles.expenseSave : ''}`} type='submit' disabled={saving}><PiCheck aria-hidden='true' />{t(isExpense ? 'shell.record.expense.save' : 'shell.record.save')}</button>
+				{isRunning && habit.recordedToday && localDate < formatLocalDate(new Date()) && <button className={styles.expenseDelete} type='button' disabled={saving} onClick={() => void deleteHistoricalRun()}>{t('shell.history.deleteRecord')}</button>}
 				{isExpense && expenseEntryId !== 'new' && <button className={styles.expenseDelete} type='button' disabled={saving} onClick={() => void deleteExpenseEntry(expenseEntryId!)}>{t('shell.record.expense.delete')}</button>}
 			</form>
 		</main>
@@ -580,7 +600,7 @@ function HabitRecordPage() {
 			<header className={styles.runValueHeader}>
 				<div>
 					<strong>{habit!.title}</strong>
-					<small>{t('shell.record.target', { value: planDistance, unit: habit!.displayUnit })}</small>
+					<small>{t(localDate < formatLocalDate(new Date()) ? 'shell.progress.plannedValue' : 'shell.record.target', { value: planDistance, unit: habit!.displayUnit })}</small>
 				</div>
 				{completionLocked && (
 					<span className={styles.completedStatus}>

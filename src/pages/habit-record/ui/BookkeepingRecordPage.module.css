@@ -50,5 +50,8 @@
 .chips button[aria-pressed='true'] { font-weight: 700; color: var(--accent-color); background: color-mix(in srgb, var(--accent-color) 10%, var(--surface-color)); border-color: var(--accent-color); }
 .error { margin: 0; color: var(--error-color); }
 .delete { color: var(--error-color); background: color-mix(in srgb, var(--error-color) 9%, transparent); }
+.expenseLink { display: flex; gap: 10px; align-items: center; min-height: 44px; font-size: 14px; }
+.expenseLink input { flex-shrink: 0; width: 20px; height: 20px; accent-color: var(--accent-color); }
+.expenseLink small { display: block; margin-top: 4px; font-size: 11px; line-height: 17px; color: var(--muted-color); }
 
 @media (max-width: 360px) { .dateTime { grid-template-columns: 1fr; } .ledgerActions { grid-template-columns: 1fr; } }

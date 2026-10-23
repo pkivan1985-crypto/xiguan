@@ -54,6 +54,11 @@ afterEach(async () => {
 });
 
 describe('saveDailyHabit', () => {
+	it('keeps explicit deletion available when the regular editor corrects a historical run', async () => {
+		await saveDailyHabit(database, { userCardId: 'card-a', localDate: LOCAL_DATE, currentLocalDate: LOCAL_DATE, quantityBaseValue: 3000, nowIso: '2026-07-25T02:00:00.000Z', submissionId: 'original-run' });
+		await saveDailyHabit(database, { userCardId: 'card-a', localDate: LOCAL_DATE, currentLocalDate: '2026-07-26', recordingContext: 'correction', quantityBaseValue: 0, nowIso: '2026-07-26T02:00:00.000Z', submissionId: 'delete-past-run' });
+		expect(await database.table('actionRecords').get(`card-a:${LOCAL_DATE}`)).toBeUndefined();
+	});
 	it('saves one cumulative value and completes its audit batch without playback', async () => {
 		const result = await saveDailyHabit(database, {
 			userCardId: 'card-a',
@@ -122,7 +127,7 @@ describe('saveDailyHabit', () => {
 		});
 	});
 
-	it('preserves an explicit completed check-in when later details use an actual value', async () => {
+	it.each(['today', 'correction'] as const)('preserves an explicit completed check-in when later details use an actual value (%s)', async (recordingContext) => {
 		await saveDailyHabit(database, {
 			userCardId: 'card-a',
 			localDate: LOCAL_DATE,
@@ -138,7 +143,8 @@ describe('saveDailyHabit', () => {
 		await saveDailyHabit(database, {
 			userCardId: 'card-a',
 			localDate: LOCAL_DATE,
-			currentLocalDate: LOCAL_DATE,
+			currentLocalDate: recordingContext === 'correction' ? '2026-07-26' : LOCAL_DATE,
+			recordingContext,
 			quantityBaseValue: 3_000,
 			entryMethod: 'actual',
 			plannedQuantityBaseValue: 5_000,
