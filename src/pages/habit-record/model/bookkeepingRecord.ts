@@ -5,6 +5,7 @@ import { appLifecycleCoordinator } from '@shared/lib/app-lifecycle';
 import { parseLocalDate } from '@shared/lib/date';
 import { appDatabase, type RepeatOutcomeDatabase } from '@shared/lib/db';
 import { parseMoneyInputToCents } from '@shared/lib/money-input';
+import { mergeExpenseLineItem, normalizeExpenseEntries } from './expenseRecord';
 
 export interface BookkeepingFormValues {
 	type: BookkeepingEntry['type'];
@@ -92,7 +93,7 @@ async function putDayRecord(
 
 export async function saveBookkeepingEntry(
 	database: RepeatOutcomeDatabase,
-	input: { userCardId: string; sourceLocalDate?: string; entry: BookkeepingEntry; nowIso: string; submissionId: string },
+	input: { userCardId: string; sourceLocalDate?: string; entry: BookkeepingEntry; nowIso: string; submissionId: string; addToExtraExpense?: boolean },
 ): Promise<void> {
 	const cards = database.tableFor<UserCard>('userCards');
 	const records = database.tableFor<ActionRecord>('actionRecords');
@@ -100,7 +101,28 @@ export async function saveBookkeepingEntry(
 	if (!card || card.status !== 'active' || card.officialCardId !== 'bookkeeping') throw new Error('BOOKKEEPING_CARD_NOT_AVAILABLE');
 	const targetDate = input.entry.localDate;
 	const sourceDate = input.sourceLocalDate ?? targetDate;
-	await database.transaction('rw', records, async () => {
+	await database.transaction('rw', [records, cards], async () => {
+		if (input.addToExtraExpense) {
+			if (input.entry.type !== 'expense') throw new Error('EXTRA_EXPENSE_REQUIRES_EXPENSE');
+			const expenseCard = await cards.where('officialCardId').equals('extra-expense').filter((value) => value.status === 'active').first();
+			if (!expenseCard) throw new Error('EXTRA_EXPENSE_CARD_NOT_AVAILABLE');
+			const id = `${expenseCard.id}:${targetDate}`;
+			const previous = await records.get(id);
+			// The stable id makes a retry/add-on from the editor a no-op, preserving the user's reflection.
+			const lineId = `linked-bookkeeping:${encodeURIComponent(card.id)}:${encodeURIComponent(input.entry.id)}`;
+			const fallback = { id: `legacy-${targetDate}`, quantityBaseValue: previous?.quantityBaseValue, timestamp: previous?.lastSavedAt ?? input.nowIso };
+			const linked = (await records.toArray()).some((record) => !record.deletedAt && normalizeExpenseEntries(record.details).some((line) => line.id === lineId));
+			if (!linked) {
+				const aggregate = mergeExpenseLineItem(previous?.deletedAt ? undefined : previous?.details, {
+					id: lineId, amountCents: input.entry.amountCents, item: input.entry.item || input.entry.categoryLabel,
+					reason: '待填写购买原因', necessity: 'delayable', occurredTime: input.entry.occurredTime,
+					createdAt: input.nowIso, updatedAt: input.nowIso,
+				}, fallback);
+				if (!Number.isSafeInteger(aggregate.quantityBaseValue)) throw new Error('INVALID_QUANTITY');
+				await records.put({ id, userCardId: expenseCard.id, localDate: targetDate, ...aggregate, entryMethod: 'actual',
+					firstSavedAt: previous?.firstSavedAt ?? input.nowIso, lastSavedAt: input.nowIso, lastSubmissionId: input.submissionId });
+			}
+		}
 		const source = await records.get(`${card.id}:${sourceDate}`);
 		const target = sourceDate === targetDate ? source : await records.get(`${card.id}:${targetDate}`);
 		const sourceEntries = normalizeBookkeepingEntries(source?.details).filter(({ id }) => id !== input.entry.id);

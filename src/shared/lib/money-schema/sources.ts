@@ -7,7 +7,12 @@ export interface MoneySourceRecord {
 	deletedAt?: string; note?: string; details?: unknown;
 }
 export function externalMoneyEntries(records: MoneySourceRecord[]): MoneyEntry[] {
-	return records.filter((record) => !record.deletedAt).flatMap((record): MoneyEntry[] => {
+	const active = records.filter((record) => !record.deletedAt);
+	const bookkeepingLinks = new Set(active.flatMap((record) => {
+		const details = record.details as { kind?: string; entries?: Array<{ id: string }> } | undefined;
+		return details?.kind === 'bookkeeping' && Array.isArray(details.entries) ? details.entries.map((entry) => `linked-bookkeeping:${encodeURIComponent(record.userCardId)}:${encodeURIComponent(entry.id)}`) : [];
+	}));
+	return active.flatMap((record): MoneyEntry[] => {
 		const details = record.details as { kind?: string; entries?: Array<Record<string, unknown>>; item?: string; reason?: string } | undefined;
 		if (!details || !['bookkeeping', 'extra-expense'].includes(details.kind ?? '')) return [];
 		const kind = details.kind!;
@@ -15,7 +20,8 @@ export function externalMoneyEntries(records: MoneySourceRecord[]): MoneyEntry[]
 		const legacyTime = Number.isFinite(savedAt.getTime()) ? `${String(savedAt.getHours()).padStart(2, '0')}:${String(savedAt.getMinutes()).padStart(2, '0')}` : '00:00';
 		const entries = Array.isArray(details.entries) ? details.entries : kind === 'extra-expense'
 			? [{ id: `legacy-${record.localDate}`, occurredTime: legacyTime, amountCents: record.quantityBaseValue, item: details.item, reason: details.reason }] : [];
-		return entries.map((entry): MoneyEntry => {
+		// A reflection linked from bookkeeping is the same expense, not a second charge.
+		return entries.filter((entry) => kind !== 'extra-expense' || !bookkeepingLinks.has(String(entry.id))).map((entry): MoneyEntry => {
 			const sourceId = `${kind}:${encodeURIComponent(record.id)}:${encodeURIComponent(String(entry.id))}`;
 			return { id: sourceId, sourceId, type: kind === 'bookkeeping' && entry.type === 'income' ? 'income' : 'expense',
 				date: kind === 'bookkeeping' ? String(entry.localDate) : record.localDate,

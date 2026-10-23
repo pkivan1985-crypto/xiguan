@@ -16,6 +16,15 @@ const historicalLedger = {
 } as DailyHabitView;
 
 describe('BookkeepingRecordPage compact presentation', () => {
+	it('offers the optional expense reflection without changing the existing entry form', () => {
+		const html = renderToStaticMarkup(createElement(MemoryRouter, { initialEntries: ['/record/ledger?date=2026-07-10&entry=new'] },
+			createElement(BookkeepingRecordPage, { habit: historicalLedger, localDate: '2026-07-10' }),
+		));
+		expect(html).toContain('type="checkbox"');
+		expect(html).toContain('同时添加到额外开支');
+		expect(html).toContain('购买原因等可到额外开支补充');
+		expect(html).not.toMatch(/type="checkbox"[^>]*checked/);
+	});
 	it('uses the app accent and keeps the daily ledger dense on mobile', () => {
 		const css = readFileSync(new URL('./BookkeepingRecordPage.module.css', import.meta.url), 'utf8');
 

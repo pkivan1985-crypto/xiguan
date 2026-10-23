@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router';
 
 import { HistoryPage } from './HistoryPage';
 import { historyErrorKey } from '../model/historyPage';
@@ -12,7 +13,7 @@ vi.mock('@features/load-history', async (importOriginal) => ({
 
 describe('HistoryPage', () => {
 	it('renders truthful loading before IndexedDB readback', () => {
-		expect(renderToStaticMarkup(<HistoryPage />)).toContain('shell.history.loading');
+		expect(renderToStaticMarkup(<MemoryRouter><HistoryPage /></MemoryRouter>)).toContain('shell.history.loading');
 	});
 
 	it('maps date and quantity failures without hiding unknown errors', () => {

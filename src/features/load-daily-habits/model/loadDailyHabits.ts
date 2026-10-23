@@ -139,6 +139,7 @@ function publishedOutputCount(record: ActionRecord): number {
 export async function loadDailyHabits(
 	database: RepeatOutcomeDatabase,
 	localDate: LocalDate,
+	options: { recordCardId?: string } = {},
 ): Promise<DailyHabitsModel> {
 	const templates = database.tableFor<CardTemplate>('cardTemplates');
 	if (await templates.count() < SYSTEM_CARD_TEMPLATES.length) await seedSystemDefinitions(database);
@@ -170,8 +171,9 @@ export async function loadDailyHabits(
 	}
 	const todayWeekday = weekday(localDate);
 	const habits = data.cards
-		.filter((card) => card.status === 'active')
-		.filter((card) => cardExistedOnDate(card, localDate))
+		.filter((card) => (card.status === 'active' && cardExistedOnDate(card, localDate))
+			|| (card.id === options.recordCardId && todayRecords.has(card.id)
+				&& (card.status === 'active' || card.officialCardId === 'running')))
 		.sort((left, right) => left.sortOrder - right.sortOrder)
 		.flatMap((card): DailyHabitView[] => {
 			const template = templatesById.get(card.officialCardId);
@@ -314,6 +316,6 @@ export async function loadDailyHabits(
 	};
 }
 
-export function loadDailyHabitsInApp(localDate: LocalDate): Promise<DailyHabitsModel> {
-	return loadDailyHabits(appDatabase, localDate);
+export function loadDailyHabitsInApp(localDate: LocalDate, options?: { recordCardId?: string }): Promise<DailyHabitsModel> {
+	return loadDailyHabits(appDatabase, localDate, options);
 }

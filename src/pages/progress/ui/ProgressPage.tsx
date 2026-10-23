@@ -725,7 +725,7 @@ function ProgressPage() {
 			onOpenBackfill={() => setBackfillOpen(true)}
 			onEditRecord={(recordId) => {
 				const record = history.groups.flatMap(({ records }) => records).find(({ id }) => id === recordId);
-				if (record?.officialCardId === 'extra-expense' && record.userCardId) {
+				if (record?.userCardId && (record.officialCardId === 'extra-expense' || record.officialCardId === 'running')) {
 					navigate(APP_ROUTES.habitRecord(record.userCardId, record.localDate));
 					return;
 				}

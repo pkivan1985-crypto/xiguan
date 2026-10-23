@@ -11,6 +11,13 @@ const runningQuantity = {
 } as const;
 
 describe('parseQuantityToBase', () => {
+	it.each([['8.05', 805], ['0.29', 29], ['12.30', 1230], ['81.01', 8101]])('converts %s money to exact integer cents for reflection edits', (input, expected) => {
+		expect(parseQuantityToBase(input, { baseUnit: 'cent', displayUnit: '元', basePerDisplayUnit: 100, maxDecimalPlaces: 2, confirmationThresholdDisplay: 100000 })).toBe(expected);
+	});
+	it('rejects fractional base units and unsafe totals instead of silently rounding them', () => {
+		expect(() => parseQuantityToBase('0.01', { ...runningQuantity, basePerDisplayUnit: 1 })).toThrow('INVALID_QUANTITY');
+		expect(() => parseQuantityToBase('9007199254740992', runningQuantity, { confirmedOverLimit: true })).toThrow('INVALID_QUANTITY');
+	});
 	it.each([
 		['1', 1000],
 		['1.25', 1250],
